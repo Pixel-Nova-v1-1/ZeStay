@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="match.css">
+</head>
+
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo">App Name</div>
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+                    <button><i class="fa-regular fa-circle-user"></i></button>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <section>
+        <h1>Find the best match for you!</h1>
+        <div class="sub-nav">
+            <div class="switch-toggle">
+                <div class="toggle-option active">
+                    <i class="fa-solid fa-hotel"></i>
+                    <span>Roommates</span>
+                </div>
+                <div class="toggle-option">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Flats</span>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="location-search">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <input type="text" id="matchSearchInput" placeholder="Enter City Name">
+                </div>
+                <div class="dropdown">
+                    <button class="filter-dropdown">
+                        ANY <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#">ANY</a>
+                        <a href="#">MALE</a>
+                        <a href="#">FEMALE</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="listings-container">
+
+        <div class="listing-card">
+            <div class="card-content">
+                <div class="card-avatar">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Felix" alt="Avatar">
+                </div>
+                <div class="card-details">
+                    <h3>Name of the person</h3>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> location</p>
+
+                    <div class="card-info-grid">
+                        <div class="info-item">
+                            <span class="label">Rent</span>
+                            <span class="value">₹ 5,000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Looking for</span>
+                            <span class="value">Female</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="match-score">77% match!</span>
+                <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
+            </div>
+        </div>
+
+
+        <div class="listing-card">
+            <div class="card-content">
+                <div class="card-avatar">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka" alt="Avatar">
+                </div>
+                <div class="card-details">
+                    <h3>Name of person</h3>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> location</p>
+
+                    <div class="card-info-grid">
+                        <div class="info-item">
+                            <span class="label">Rent</span>
+                            <span class="value">₹ 5,000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Looking for</span>
+                            <span class="value">Male</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="match-score">89% match!</span>
+                <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="more">
+        <button class="bhagwan">MORE<i class="fa-solid fa-chevron-down"></i></button>
+    </div>
+    <footer class="finally">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h2 class="footer-logo">App Name</h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="landing.html">About Us</a></li>
+                    <li><a href="landing.html">How it Works</a></li>
+                    <li><a href="landing.html">Safety Tips</a></li>
+                    <li><a href="landing.html">FAQ</a></li>
+                    <li><a href="landing.html">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Popular Cities</h3>
+                <ul>
+                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Delhi</a></li>
+                    <li><a href="#">Pune</a></li>
+                    <li><a href="#">Hyderabad</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@appname.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </footer>
+    <script src="match.js"></script>
+</body>
+
+</html>
