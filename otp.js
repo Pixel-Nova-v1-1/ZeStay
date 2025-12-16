@@ -73,9 +73,9 @@ window.addEventListener('load', () => {
             // Call Mock API
             verifyOtpWithBackend(enteredOtp)
                 .then((response) => {
-                    alert('Verification Successful!');
-                    // Redirect to dashboard or next page here
-                    // window.location.href = 'dashboard.html';
+                    localStorage.setItem('isLoggedIn', 'true');
+                    // Redirect to landing page
+                    window.location.href = 'landing.html';
                 })
                 .catch((error) => {
                     alert(error.message || 'Invalid OTP');
