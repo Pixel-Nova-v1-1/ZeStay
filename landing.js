@@ -31,7 +31,7 @@ if (featureImage) {
     observer.observe(featureImage);
 }
 
-// Redirect to Match Page logic
+
 const landingSearchBtn = document.getElementById('landingSearchBtn');
 const landingSearchInput = document.getElementById('landingSearchInput');
 
@@ -39,7 +39,7 @@ if (landingSearchBtn && landingSearchInput) {
     landingSearchBtn.addEventListener('click', () => {
         const query = landingSearchInput.value.trim();
 
-        // Determine search type based on active tab
+       
         const activeTab = document.querySelector('.tab.active');
         let searchType = 'Roommates'; // Default
         if (activeTab && activeTab.innerText.toLowerCase().includes('room')) {
@@ -61,4 +61,53 @@ if (landingSearchBtn && landingSearchInput) {
             landingSearchBtn.click();
         }
     });
+}
+
+// User Authentication and Backend Placeholders
+document.addEventListener('DOMContentLoaded', () => {
+    // Check login status
+    checkLoginStatus();
+});
+
+function checkLoginStatus() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+    const authButtons = document.getElementById('auth-buttons');
+    const userProfile = document.getElementById('user-profile');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (isLoggedIn) {
+        if (authButtons) authButtons.style.display = 'none';
+        if (userProfile) userProfile.style.display = 'flex';
+    } else {
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userProfile) userProfile.style.display = 'none';
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('isLoggedIn');
+            window.location.reload();
+        });
+    }
+}
+
+
+async function loginUser(email, password) {
+    try {
+        console.log("Attempting login...");
+     
+    } catch (error) {
+        console.error("Login failed:", error);
+    }
+}
+
+// Placeholder for Register (Connect to SQL/Backend here)
+async function registerUser(userData) {
+    try {
+        console.log("Attempting registration...");
+        // const response = await fetch('/api/register', { ... });
+    } catch (error) {
+        console.error("Registration failed:", error);
+    }
 }
