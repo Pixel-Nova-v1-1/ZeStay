@@ -526,3 +526,6 @@ textarea:focus {
     color: #555;
     text-align: center;
 }
+.scam-link {
+    text-decoration: none;
+}
