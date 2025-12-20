@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roommate</title>
+    <link rel="stylesheet" href="">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/landing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo">App Name</div>
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+
+                    <!-- 🔽 AUTH BUTTONS (UPDATED) -->
+                    <div id="auth-buttons">
+                        <a href="regimob.html?mode=login">Login</a>
+                        <a href="regimob.html?mode=register">Register</a>
+                    </div>
+
+                    <div id="user-profile" style="display: none; align-items: center; gap: 10px;">
+                        <button class="btn-profile">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button
+                            id="logoutBtn"
+                            style="background: none; border: none; color: #666; cursor: pointer; font-size: 16px;">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Find Your Perfect <br>
+                <span class="highlight">Flatmate</span> or <span class="highlight">Room</span>
+            </h1>
+            <p class="subtitle">
+                Connect with verified flatmates and discover the perfect shared living space in your city
+            </p>
+
+            <div class="find">
+                <div class="search-tabs">
+                    <button class="tab active">Find flatmates</button>
+                    <button class="tab">Find room</button>
+                </div>
+                <div class="search-input-area">
+                    <div class="input-group">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" id="landingSearchInput" placeholder="Enter your city or location">
+                    </div>
+                    <button class="btn-search" id="landingSearchBtn">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search
+                    </button>
+                </div>
+                <div class="top-cities">
+                    Top cities:
+                    <a href="match.html?location=Mumbai">Mumbai</a>,
+                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>,
+                    <a href="match.html?location=Pune">Pune</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1594873604892-b599f847e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcGFydG1lbnQlMjBpbnRlcmlvcnxlbnwxfHx8fDE3NjU0NzEzMTB8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                alt="Modern Living Room">
+        </div>
+    </section>
+
+    <!-- everything below unchanged -->
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
