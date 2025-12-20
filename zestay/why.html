@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="src/css/why.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="title">
+        <h1>App Name</h1>
+    </div>
+    <div class="subtitle">
+        <h2>Post Your Requirement</h2>
+        <p>Find your perfect roommate or room effortlessly. Just post your
+            requirement and let the matching begin!</p>
+    </div>
+    <section class="main">
+        <div class="box" id="openRoomModal">
+            <p>Need <br>a Roomate </p>
+            <p class="p">For your Room ></p>
+            <img src="https://media.discordapp.net/attachments/1447539234528428036/1449435453429121074/Group_of_people.png?ex=694034f5&is=693ee375&hm=3d71c036a7ba096cbe466d0a4e4e7c8b92ed69a940fd989f23b81d958ea9a55d&=&format=webp&quality=lossless&width=943&height=943"
+                alt="Roommates" class="box-image">
+        </div>
+        <div class="box" id="openReqModal">
+            <p>Need <br>a Room/Flat? </p>
+            <p class="p">With a Roommate ></p>
+            <img src="/images/house-removebg-preview.png" alt="House" class="box-image">
+        </div>
+    </section>
+    <section>
+        <div class="scam">
+            <a href="veri.html" class="scam-link"><button><i class="fa-solid fa-triangle-exclamation"></i> Beware of Scams, verify flatmates/tenants</button></a>
+        </div>
+    </section>
+    <!-- Requirement Modal -->
+    <div class="modal-overlay" id="reqModal">
+        <div class="modal-card">
+            <button class="close-btn" id="closeReqModal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header">
+                <h1>Add Your Requirment</h1>
+                <p>so that other user can contact you.</p>
+            </div>
+            <form class="req-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Approx Rent*</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-indian-rupee-sign icon"></i>
+                            <input type="number" placeholder="0000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location*</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-location-dot icon"></i>
+                            <input type="text" placeholder="Add location">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Looking For</label>
+                        <div class="toggle-group single-select" data-group="gender">
+                            <button type="button" class="toggle-btn" data-value="male">Male</button>
+                            <button type="button" class="toggle-btn" data-value="female">Female</button>
+                            <button type="button" class="toggle-btn active" data-value="any">Any</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Occupancy</label>
+                        <div class="toggle-group single-select" data-group="occupancy">
+                            <button type="button" class="toggle-btn active" data-value="single">Single</button>
+                            <button type="button" class="toggle-btn" data-value="shared">Shared</button>
+                            <button type="button" class="toggle-btn" data-value="any">Any</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Your living preferences</label>
+                    <div class="chips-container multi-select">
+                        <button type="button" class="chip active">Clean & organized</button>
+                        <button type="button" class="chip">Work from home</button>
+                        <button type="button" class="chip">Easy going</button>
+                        <button type="button" class="chip">Long-term stay</button>
+                        <button type="button" class="chip">College student</button>
+                        <button type="button" class="chip">Minimal lifestyle</button>
+                        <button type="button" class="chip">Short-term stay</button>
+                        <button type="button" class="chip">Privacy focused</button>
+                        <button type="button" class="chip">Freelancer</button>
+                        <button type="button" class="chip">Calm & quiet</button>
+                        <button type="button" class="chip">First-time renter</button>
+                        <button type="button" class="chip">Working professional</button>
+                        <button type="button" class="chip">Social but balanced</button>
+                        <button type="button" class="chip">Flexible routine</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Are you Interested in PG?</label>
+                        <div class="toggle-group binary-select" data-group="pg">
+                            <button type="button" class="toggle-btn" data-value="yes">Yes</button>
+                            <button type="button" class="toggle-btn active" data-value="no">No</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Are you Interested in making <span class="highlight-text">Teams?</span></label>
+                        <div class="toggle-group binary-select" data-group="teams">
+                            <button type="button" class="toggle-btn" data-value="yes">Yes</button>
+                            <button type="button" class="toggle-btn active" data-value="no">No</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width contact-visible-group">
+                    <label>Do you want to make your contact number visible to other users?</label>
+                    <div class="toggle-group binary-select contact-toggle" data-group="contact">
+                        <button type="button" class="toggle-btn pill active" data-value="yes">Yes! make it
+                            public</button>
+                        <button type="button" class="toggle-btn pill" data-value="no">No! keep it private</button>
+                    </div>
+                    <p class="note">NOTE: If your contact number is private, others can contact you only through chat.
+                    </p>
+                </div>
+                <div class="form-group full-width">
+                    <label>Description*</label>
+                    <textarea placeholder="I am looking Roommate for my room.(This is a text box)"></textarea>
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="submit-btn" id="submitReq">Submit</button>
+                    <p class="footer-link">Have room & need roommate? <a href="#" id="switchToRoomModal">Add Room ></a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Room Modal -->
+    <div class="modal-overlay" id="roomModal">
+        <div class="modal-card">
+            <button class="close-btn" id="closeRoomModal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header">
+                <h1>Add Your Room Details</h1>
+                <p>so that other user can contact you.</p>
+            </div>
+            <form class="req-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Approx Rent*</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-indian-rupee-sign icon"></i>
+                            <input type="number" placeholder="0000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location*</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-location-dot icon"></i>
+                            <input type="text" placeholder="Add location">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Looking For</label>
+                        <div class="toggle-group single-select" data-group="gender">
+                            <button type="button" class="toggle-btn" data-value="male">Male</button>
+                            <button type="button" class="toggle-btn" data-value="female">Female</button>
+                            <button type="button" class="toggle-btn active" data-value="any">Any</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Occupancy</label>
+                        <div class="toggle-group single-select" data-group="occupancy">
+                            <button type="button" class="toggle-btn active" data-value="single">Single</button>
+                            <button type="button" class="toggle-btn" data-value="shared">Shared</button>
+                            <button type="button" class="toggle-btn" data-value="any">Any</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Choose Highlights of the Room</label>
+                    <div class="chips-container multi-select">
+                        <button type="button" class="chip active">Fully furnished</button>
+                        <button type="button" class="chip">Semi furnished</button>
+                        <button type="button" class="chip">Market nearby</button>
+                        <button type="button" class="chip">Park nearby</button>
+                        <button type="button" class="chip">Attached washroom</button>
+                        <button type="button" class="chip">Gated society</button>
+                        <button type="button" class="chip">No restriction</button>
+                        <button type="button" class="chip">Security guard</button>
+                        <button type="button" class="chip">Close to metro station</button>
+                        <button type="button" class="chip">Well ventilated</button>
+                        <button type="button" class="chip">Clean & hygienic</button>
+                        <button type="button" class="chip">Public transport nearby</button>
+                        <button type="button" class="chip">Spacious room</button>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Upload 3 Photos Of Your Room</label>
+                    <div class="upload-area">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span></p>
+                        <input type="file" id="fileInput" name="roomPhotos" multiple hidden>
+                    </div>
+                    <p class="note">Upload an image upto 10mb</p>
+                </div>
+
+                <div class="form-group full-width contact-visible-group">
+                    <label>Do you want to make your contact number visible to other users?</label>
+                    <div class="toggle-group binary-select contact-toggle" data-group="contact">
+                        <button type="button" class="toggle-btn pill active" data-value="yes">Yes! make it
+                            public</button>
+                        <button type="button" class="toggle-btn pill" data-value="no">No! keep it private</button>
+                    </div>
+                    <p class="note">NOTE: If your contact number is private, others can contact you only through chat.
+                    </p>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Amenities</label>
+                    <div class="amenities-grid">
+                        <div class="amenity-item">
+                            <div class="amenity-icon active"><i class="fa-solid fa-shirt"></i></div>
+                            <span>Washing Machine</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
+                            <span>Parking</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-snowflake"></i></div>
+                            <span>Fridge</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-elevator"></i></div>
+                            <span>Lift</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-wifi"></i></div>
+                            <span>WiFi</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-tv"></i></div>
+                            <span>TV</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-battery-full"></i></div>
+                            <span>Power Backup</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-bottle-water"></i></div>
+                            <span>RO Water</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-wind"></i></div>
+                            <span>AC</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                            <span>Kitchen</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+                            <span>Cook</span>
+                        </div>
+                        <div class="amenity-item">
+                            <div class="amenity-icon"><i class="fa-solid fa-faucet"></i></div>
+                            <span>Geyser</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Description*</label>
+                    <textarea placeholder="I am looking Roommate for my room.(This is a text box)"></textarea>
+                </div>
+
+                <div class="form-footer">
+                    <button type="submit" class="submit-btn">Submit</button>
+                    <p class="footer-link">Looking For Room? <a href="#" id="switchToReqModal">Add Requirement ></a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="src/js/why.js"></script>
+</body>
+
+</html>
