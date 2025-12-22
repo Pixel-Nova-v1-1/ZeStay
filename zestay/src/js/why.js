@@ -243,6 +243,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log("Photos:", storedFiles);
 
+
+            /* 
+               --- BACKEND INTEGRATION NOTE ---
+               Replace the localStorage logic below with an API call.
+               Example:
+               
+               fetch('/api/listings', {
+                   method: 'POST',
+                   body: formData // formData contains all fields including files
+               })
+               .then(response => response.json())
+               .then(data => {
+                   // Handle success
+               })
+               .catch(error => console.error('Error:', error));
+            */
+            const newListing = {};
+            for (let [key, value] of formData.entries()) {
+                if (newListing[key]) {
+                    newListing[key] = newListing[key] + ', ' + value;
+                } else {
+                    newListing[key] = value;
+                }
+            }
+            newListing.photos = storedFiles.map(f => f.name);
+            newListing.timestamp = new Date().toISOString();
+
+            const existingListings = JSON.parse(localStorage.getItem('userListings') || '[]');
+            existingListings.push(newListing);
+            localStorage.setItem('userListings', JSON.stringify(existingListings));
+
             alert('Requirement/Room Details Submitted Successfully! check console for data.');
             const parentModal = form.closest('.modal-overlay');
             if (parentModal) {

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looking for Roommate</title>
+    <link rel="stylesheet" href="src/css/lookingroommate.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+                    <button id="matchProfileBtn"><i class="fa-regular fa-circle-user"></i></button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-img-container">
+                <img id="profileImage" src="https://api.dicebear.com/9.x/avataaars/svg?seed=User" alt="Profile">
+            </div>
+            <h2 class="profile-name" id="profileName">Name of person</h2>
+            <div class="action-buttons">
+                <button class="btn-action"><i class="fa-solid fa-phone"></i> Call</button>
+                <button class="btn-action"><i class="fa-solid fa-comments"></i> Chat</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Location -->
+            <section>
+                <h3 class="section-header">Location</h3>
+                <div class="location-text">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span id="displayLocation">Navi Mumbai, Maharashtra</span>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Pictures Slideshow -->
+            <section>
+                <h3 class="section-header">Pictures</h3>
+                <div class="slider-container">
+                    <button class="slider-btn prev-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&w=800&q=80"
+                        alt="Room" class="slider-img" id="sliderImage">
+                    <button class="slider-btn next-btn">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <div class="dots-container">
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Basic Info -->
+            <section>
+                <h3 class="section-header">Basic Info</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h4>Gender</h4>
+                        <p><i class="fa-solid fa-mars"></i> <span id="displayGender">Male</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Approx. Rent</h4>
+                        <p>₹ <span id="displayRent">6767</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Occupancy</h4>
+                        <p><i class="fa-solid fa-user"></i> <span id="displayOccupancy">Single</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Looking For</h4>
+                        <p><i class="fa-solid fa-venus"></i> <span id="displayLookingFor">Female</span></p>
+                    </div>
+                </div>
+                <div class="purple-line"></div>
+                <!-- <div class="divider"></div> -->
+            </section>
+
+            <!-- Preferences -->
+            <section>
+                <h3 class="section-header" style="margin-top: 20px;">Preferences</h3>
+                <div class="items-row" id="preferencesContainer">
+                    <!-- Populated by JS -->
+                    <div class="item-circle">
+                        <div class="circle-icon"><img
+                                src="/images/https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png"
+                                alt="Night Owl"></div>
+                        <span class="item-label">Night Owl</span>
+                    </div>
+                    <div class="item-circle">
+                        <div class="circle-icon"><img
+                                src="/images/https://media.discordapp.net/attachments/1447539234528428034/1451842877566095521/2.png"
+                                alt="Early Bird"></div>
+                        <span class="item-label">Early Bird</span>
+                    </div>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Amenities -->
+            <section>
+                <h3 class="section-header">Amenities</h3>
+                <div class="items-row" id="amenitiesContainer">
+                    <div class="item-circle">
+                        <div class="amenity-icon"><i class="fa-solid fa-shirt"></i></div>
+                        <span class="item-label">Washing Machine</span>
+                    </div>
+                    <div class="item-circle">
+                        <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
+                        <span class="item-label">Parking</span>
+                    </div>
+                    <div class="item-circle">
+                        <div class="amenity-icon"><i class="fa-regular fa-snowflake"></i></div>
+                        <span class="item-label">Fridge</span>
+                    </div>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Highlights -->
+            <section>
+                <h3 class="section-header">Highlights</h3>
+                <div class="highlights-grid" id="highlightsContainer">
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Fully furnished</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Gated society</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Market nearby</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Security guard</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Close to metro station</div>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+
+            <section>
+                <h3 class="section-header">Description</h3>
+                <div class="desc-box" id="displayDescription">
+                    Long Description abt their room and them self
+                </div>
+            </section>
+
+
+            <div class="report-section">
+                <span class="report-text">Found Wrong information?</span>
+                <button class="btn-report"><i class="fa-solid fa-triangle-exclamation"></i> Report here</button>
+            </div>
+
+        </main>
+
+    </div>
+
+    <footer class="finally">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h2 class="footer-logo">App Name</h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How it Works</a></li>
+                    <li><a href="#">Safety Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Popular Cities</h3>
+                <ul>
+                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Delhi</a></li>
+                    <li><a href="#">Pune</a></li>
+                    <li><a href="#">Hyderabad</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@appname.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </footer>
+
+
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-img-container">
+                <img src="https://media.discordapp.net/attachments/1063139368367468605/1197463688827998248/image-removebg-preview_6.png?ex=66f66cce&is=66f51b4e&hm=25b74681f26a11e8605481d6d0340794931988ef43973a06764d8a264a778e7f&=&format=webp&quality=lossless&width=450&height=392"
+                    alt="Report Illustration">
+            </div>
+            <h2>Found Wrong Information?</h2>
+            <p class="modal-subtitle">Please choose from the following option</p>
+
+            <div class="modal-actions">
+                <button class="btn-option occupied" data-reason="occupied">It is Occupied</button>
+                <button class="btn-option wrong-info" data-reason="wrong_info">Wrong information</button>
+            </div>
+
+            <p class="modal-note">
+                Note: We'll review this listing and proceed with its removal once we've confirmed the decision with the
+                user who posted it.
+            </p>
+        </div>
+    </div>
+
+
+
+    <script src="src/js/lookingroommate.js"></script>
+</body>
+
+</html>

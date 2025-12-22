@@ -1,58 +1,39 @@
-import { auth, db } from "../firebase";
-import { doc, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
-
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('.questions-form');
 
-    if (!form) return;
-
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
-
-        const user = auth.currentUser;
-
-        if (!user) {
-            alert("You are not logged in. Please log in again.");
-            window.location.href = "/regimob.html";
-            return;
-        }
 
         const formData = new FormData(form);
         const data = {};
 
-        for (let i = 1; i <= 10; i++) {
+
+        for (let i = 1; i <= 12; i++) {
             const key = `q${i}`;
             const value = formData.get(key);
+
+
             data[key] = value ? parseInt(value) : null;
         }
 
+
         const answeredCount = Object.values(data).filter(val => val !== null).length;
 
-        if (answeredCount < 10) {
-            alert(`You answered ${answeredCount} out of 10 questions. Please answer all questions.`);
+        if (answeredCount < 12) {
+            alert(`You answered ${answeredCount} out of 12 questions. Please answer all questions.`);
             return;
         }
 
-        try {
-            // 🔥 Save answers + mark onboarding complete
-            await updateDoc(doc(db, "users", user.uid), {
-                onboardingComplete: true,
-                answers: data,
-                onboardingCompletedAt: serverTimestamp()
-            });
+        console.log('Form Submitted!', data);
+        alert('Registration successful! Redirecting to home...');
 
-            console.log("Onboarding completed:", data);
+        // Redirect to landing page
+        window.location.href = 'index.html';
 
-            alert("Registration complete!");
-            window.location.replace("/why.html");
 
-        } catch (error) {
-            console.error("Failed to save onboarding data:", error);
-            alert("Something went wrong. Please try again.");
-        }
     });
 
-    // -------- Scroll Animation Logic (UNCHANGED) --------
+    // Scroll Animation Logic
     const observerOptions = {
         root: null,
         rootMargin: '0px',
@@ -63,15 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target);
+                observer.unobserve(entry.target); // Only animate once
             }
         });
     }, observerOptions);
 
-    const elementsToAnimate = document.querySelectorAll(
-        '.page-header, .question-block, .register-btn'
-    );
-
+    const elementsToAnimate = document.querySelectorAll('.page-header, .question-block, .register-btn');
     elementsToAnimate.forEach(el => {
         el.classList.add('fade-in-section');
         observer.observe(el);

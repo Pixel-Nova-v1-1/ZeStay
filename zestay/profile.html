@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Zestay</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/profile.css">
+</head>
+
+<body>
+
+
+    <header>
+        <div class="navbar">
+            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+                    <div id="user-profile" class="user-profile-header">
+                        <button class="btn-profile"><i class="fa-regular fa-circle-user"></i></button>
+                        <button id="logoutBtn" class="logout-btn-header">Logout</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="profile-container">
+
+        <section class="profile-header">
+            <div class="avatar-upload-container">
+                <div class="profile-avatar-wrapper">
+                    <img id="profileAvatar" src="https://api.dicebear.com/9.x/avataaars/svg?seed=User"
+                        alt="Profile Avatar">
+                </div>
+
+                <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;">
+
+                <label for="avatarUploadInput" class="upload-icon-btn">
+                    <i class="fa-solid fa-camera"></i>
+                </label>
+            </div>
+            <div class="profile-info">
+                <h1 id="profileName">User Name</h1>
+            </div>
+        </section>
+
+
+        <div class="profile-tabs">
+            <button class="tab-btn active" data-tab="my-profile">
+                <i class="fa-solid fa-user"></i> My Profile
+            </button>
+            <button class="tab-btn" data-tab="preferences">
+                <i class="fa-solid fa-sliders"></i> My Preferences
+            </button>
+            <button class="tab-btn" data-tab="listings">
+                <i class="fa-solid fa-list-check"></i> My Listings
+            </button>
+            <button class="tab-btn" data-tab="notifications">
+                <i class="fa-regular fa-bell"></i> My Notifications
+            </button>
+        </div>
+
+
+        <div class="tab-content-container">
+
+            <!-- 0. My Profile Section -->
+            <div id="my-profile" class="tab-content active">
+                <div class="profile-details-form">
+                    <div class="form-row">
+                        <div class="form-group-half">
+                            <label for="display-name">Name</label>
+                            <input type="text" id="display-name" class="profile-input" readonly>
+                        </div>
+                        <div class="form-group-half">
+                            <label for="display-occupation">Occupation</label>
+                            <input type="text" id="display-occupation" class="profile-input" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group-half">
+                            <label for="display-email">Email</label>
+                            <input type="email" id="display-email" class="profile-input" readonly>
+                        </div>
+                        <div class="form-group-half">
+                            <label for="display-gender">Gender</label>
+                            <div class="gender-pill-display" id="display-gender">
+                                <!-- Will be populated with both options, active class on selected -->
+                                <span class="gender-option">Male</span>
+                                <span class="gender-option">Female</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="save-btn-container">
+                        <button class="btn-save" id="editProfileBtn"><i class="fa-solid fa-pen-to-square"></i> Edit
+                            Profile</button>
+                        <button class="btn-save" id="saveProfileBtn" style="display: none;">Save Changes <i
+                                class="fa-solid fa-check"></i></button>
+                    </div>
+                </div>
+                <hr class="divider">
+            </div>
+
+
+            <div id="preferences" class="tab-content">
+                <div class="section-header">
+
+
+                </div>
+
+                <div class="preferences-wrapper-centered">
+                    <!-- Display Grid (Read Only) -->
+                    <div id="userPreferencesGrid" class="preferences-grid">
+                        <p class="empty-state">No preferences set yet.</p>
+                    </div>
+
+                    <!-- Edit Grid (Interactive) -->
+                    <div id="editPreferencesGrid" class="preferences-grid" style="display: none;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="save-btn-container">
+                    <button class="btn-save" id="editPrefsBtn"><i class="fa-solid fa-pen-to-square"></i> Edit
+                        Preferences</button>
+                    <button class="btn-save" id="savePrefsBtn" style="display: none;">Save Changes <i
+                            class="fa-solid fa-check"></i></button>
+                </div>
+
+                <hr class="divider">
+            </div>
+
+
+            <div id="listings" class="tab-content">
+                <div class="section-header-center">
+                    <h2>My Listings</h2>
+                </div>
+                <div id="userListingsContainer" class="listings-grid">
+
+                    <p class="empty-state">You haven't posted any listings yet.</p>
+                </div>
+                <div class="action-buttons-center">
+                    <button class="btn-edit">Edit <i class="fa-regular fa-pen-to-square"></i></button>
+                    <button class="btn-save">Save Changes <i class="fa-solid fa-check"></i></button>
+                </div>
+                <hr class="divider">
+            </div>
+
+
+            <div id="notifications" class="tab-content">
+                <div class="section-header-center">
+                    <h2>My Notifications</h2>
+                </div>
+                <div id="notificationsContainer" class="notifications-list">
+                    <p class="empty-state">No new notifications.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Lightbox Modal -->
+    <div id="avatarLightbox" class="lightbox-modal">
+        <span class="close-lightbox">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+    </div>
+
+    <script src="src/js/profile.js"></script>
+</body>
+
+</html>

@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verification - App Name</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/veri.css">
 </head>
 
 <body>
     <div class="page-container">
         <header>
-            <div class="logo">App Name</div>
+            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
         </header>
 
         <main class="content-wrapper">
@@ -24,10 +25,91 @@
             </div>
 
             <div class="image-section">
-                <img src="https://media.discordapp.net/attachments/1447539234528428034/1450038638875512863/verification_page.png?ex=69411537&is=693fc3b7&hm=8f4da51e7dc80192360455716b22bc24046571b56079b3cdb30372f4edd2c166&=&format=webp&quality=lossless&width=943&height=943" alt="Secure Living Illustration">
+                <img src="https://media.discordapp.net/attachments/1447539234528428034/1450038638875512863/verification_page.png?ex=6947acb7&is=69465b37&hm=ef8db8b7ee5b9713be4828c48d5e1e83a7810e13085f9047b42c7c2b58f6f631&=&format=webp&quality=lossless&width=438&height=438"
+                    alt="Secure Living Illustration">
             </div>
         </main>
+        <div id="verificationModal" class="modal-overlay">
+            <div class="modal-container">
+                <button class="modal-close-btn">&times;</button>
+                <div class="modal-header">
+                    <h2>Request for Verification</h2>
+                </div>
+
+                <form id="verificationForm">
+                    <div class="form-section">
+                        <h3>Self Information</h3>
+                        <p class="section-desc">Please ensure that the information belongs to you, as these details will
+                            be used for contact purposes and to send the final verification report.</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="v-name">Name</label>
+                                <input type="text" id="v-name" required class="modal-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="v-mobile">Mobile</label>
+                                <input type="tel" id="v-mobile" required class="modal-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="v-email">Email</label>
+                                <input type="email" id="v-email" required class="modal-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Upload ID Card</h3>
+                        <p class="section-desc">Please upload your Valid College/Office ID to verify</p>
+
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label class="upload-label">Front Side</label>
+                                <div class="file-upload-box" id="drop-zone-front">
+                                    <input type="file" id="id-front" accept="image/jpeg,image/png" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fa-regular fa-file-image"></i>
+                                        <span>Click or Drag Image to Upload<br>(JPG,JPEG,PNG)</span>
+                                    </div>
+                                    <div class="file-preview"></div>
+                                </div>
+                            </div>
+                            <div class="upload-group">
+                                <label class="upload-label">Back Side</label>
+                                <div class="file-upload-box" id="drop-zone-back">
+                                    <input type="file" id="id-back" accept="image/jpeg,image/png" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fa-regular fa-file-image"></i>
+                                        <span>Click or Drag Image to Upload<br>(JPG,JPEG,PNG)</span>
+                                    </div>
+                                    <div class="file-preview"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="note-text">NOTE: We collect your ID only to verify your affiliation. It will not be
+                            shared.</p>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Upload Your Selfie</h3>
+                        <div class="file-upload-box full-width" id="drop-zone-selfie">
+                            <input type="file" id="selfie" accept="image/jpeg,image/png" hidden>
+                            <div class="upload-placeholder">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>Click or Drag Image to Upload<br>(JPG,JPEG,PNG)</span>
+                            </div>
+                            <div class="file-preview"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+    <script src="src/js/veri.js"></script>
 </body>
 
 </html>
