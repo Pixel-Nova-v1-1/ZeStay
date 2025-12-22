@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looking for a Roommate</title>
+    <link rel="stylesheet" href="src/css/lookingroom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+                    <button id="matchProfileBtn"><i class="fa-regular fa-circle-user"></i></button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <aside class="sidebar">
+            <div class="profile-img-container">
+                <img id="profileImage" src="https://api.dicebear.com/9.x/avataaars/svg?seed=User" alt="Profile">
+            </div>
+            <h2 class="profile-name" id="profileName">Name of person</h2>
+            <div class="action-buttons">
+                <button class="btn-action"><i class="fa-solid fa-phone"></i> Call</button>
+                <button class="btn-action"><i class="fa-solid fa-comments"></i> Chat</button>
+            </div>
+        </aside>
+
+
+        <main class="main-content">
+
+
+            <section>
+                <h3 class="section-header">Location</h3>
+                <div class="location-text">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span id="displayLocation">Navi Mumbai, Maharashtra</span>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <section>
+                <h3 class="section-header">Basic Info</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h4>Gender</h4>
+                        <p><i class="fa-solid fa-mars"></i> <span id="displayGender">Male</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Approx. Rent</h4>
+                        <p>₹ <span id="displayRent">6767</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Occupancy</h4>
+                        <p><i class="fa-solid fa-user"></i> <span id="displayOccupancy">Single</span></p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Looking For</h4>
+                        <p><i class="fa-solid fa-venus"></i> <span id="displayLookingFor">Female</span></p>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+            </section>
+
+            <section>
+                <h3 class="section-header">Preferences</h3>
+                <div class="items-row" id="preferencesContainer">
+                    <div class="item-circle">
+                        <div class="circle-icon"><img
+                                src="/images/https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png"
+                                alt="Night Owl"></div>
+                        <span class="item-label">Night Owl</span>
+                    </div>
+                    <!-- More can be added by JS -->
+                </div>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Highlights -->
+            <section>
+                <h3 class="section-header">Highlights</h3>
+                <div class="highlights-grid" id="highlightsContainer">
+                    <!-- Populated by JS -->
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Clean & organized</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Easy going</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Flexible routine</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> College student</div>
+                    <div class="highlight-pill"><i class="fa-solid fa-check"></i> Long-term stay</div>
+                </div>
+                <div class="divider"></div>
+            </section>
+
+
+            <section>
+                <h3 class="section-header">Description</h3>
+                <div class="desc-box" id="displayDescription">
+                    Long Description abt their room and them self
+                </div>
+            </section>
+
+
+            <div class="report-section">
+                <span class="report-text">Found Wrong information?</span>
+                <button class="btn-report"><i class="fa-solid fa-triangle-exclamation"></i> Report here</button>
+            </div>
+
+        </main>
+
+    </div>
+
+    <footer class="finally">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h2 class="footer-logo">App Name</h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How it Works</a></li>
+                    <li><a href="#">Safety Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Popular Cities</h3>
+                <ul>
+                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Delhi</a></li>
+                    <li><a href="#">Pune</a></li>
+                    <li><a href="#">Hyderabad</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@appname.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-img-container">
+                <img src="https://media.discordapp.net/attachments/1063139368367468605/1197463688827998248/image-removebg-preview_6.png?ex=66f66cce&is=66f51b4e&hm=25b74681f26a11e8605481d6d0340794931988ef43973a06764d8a264a778e7f&=&format=webp&quality=lossless&width=450&height=392"
+                    alt="Report Illustration">
+            </div>
+            <h2>Found Wrong Information?</h2>
+            <p class="modal-subtitle">Please choose from the following option</p>
+
+            <div class="modal-actions">
+                <button class="btn-option occupied" data-reason="occupied">It is Occupied</button>
+                <button class="btn-option wrong-info" data-reason="wrong_info">Wrong information</button>
+            </div>
+
+            <p class="modal-note">
+                Note: We'll review this listing and proceed with its removal once we've confirmed the decision with the
+                user who posted it.
+            </p>
+        </div>
+    </div>
+
+
+
+    <script src="src/js/lookingroom.js"></script>
+</body>
+
+</html>

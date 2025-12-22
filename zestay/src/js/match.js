@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <div class="listing-card" ${style}>
+            <div class="listing-card" ${style} onclick="window.location.href='lookingroom.html?id=${index}'" style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-avatar">
                        <img src="${item.avatar}" alt="Avatar">
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
-                    <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
+                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
                 </div>
             </div>`;
         } else {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <div class="listing-card" ${style}>
+            <div class="listing-card" ${style} onclick="window.location.href='lookingroommate.html?id=${index}&type=flat'" style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-avatar" style="border-radius: 10px; border: none;">
                        <img src="${item.image}" alt="Flat Image" style="border-radius: 10px;">
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-footer">
                     <span style="font-size: 13px; color: #555;">${item.distance}</span>
                     ${matchHTML}
-                    <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
+                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
                 </div>
             </div>`;
         }
@@ -269,6 +269,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+
+    // --- User Avatar Logic ---
+    const matchProfileBtn = document.getElementById('matchProfileBtn');
+    if (matchProfileBtn) {
+        const storedProfile = localStorage.getItem('userProfile');
+        if (storedProfile) {
+            const data = JSON.parse(storedProfile);
+            let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User'; // Default
+
+            if (data.profileOption === 'upload' && data.uploadedAvatar) {
+                imgSrc = data.uploadedAvatar;
+            } else if (data.profileOption === 'avatar' && data.avatarId) {
+                if (!data.avatarId.startsWith('http')) {
+                    imgSrc = `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
+                } else {
+                    imgSrc = data.avatarId;
+                }
+            }
+
+            // Replace icon with image
+            matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
+        }
+
+        matchProfileBtn.addEventListener('click', () => {
+            window.location.href = 'profile.html';
+        });
+    }
 
     init();
 
