@@ -21,18 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const preferenceMap = {
-        'night-owl': { label: 'Night Owl', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png?ex=6947a58c&is=6946540c&hm=4beaa2241099fade45cc8db362da8dab01c34f66fe51eee157d6179bc41d956b&=&format=webp&quality=lossless&width=813&height=813' },
-        'early-bird': { label: 'Early Bird', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842877566095521/2.png?ex=6947a58b&is=6946540b&hm=4eefa0218a3d0c48f5219543083593a8ccf22a9c23908cea4ca9207b6b63298c&=&format=webp&quality=lossless&width=813&height=813' },
-        'music-lover': { label: 'Music Lover', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842876764979373/3.png?ex=6947a58b&is=6946540b&hm=2e57e6525773c585c332b6c2b7c712e736d1dc4dcf9d0e037d9a084bcde923b0&=&format=webp&quality=lossless&width=813&height=813' },
-        'quiet-seeker': { label: 'Quiet Seeker', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842875880112282/4.png?ex=6947a58b&is=6946540b&hm=a48f35e7b922f190832469503d3297d32fc1cbe662af54b81e1324ae3a7d8a29&=&format=webp&quality=lossless&width=813&height=813' },
-        'pet-lover': { label: 'Pet Lover', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842874877677628/5.png?ex=6947a58b&is=6946540b&hm=e3f121878387af876f317ad49a28448f624119b324538a31ed699b91ea374417&=&format=webp&quality=lossless&width=813&height=813' },
-        'studious': { label: 'Studious', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa899ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813' },
-        'sporty': { label: 'Sporty', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842866501521469/7.png?ex=6947a589&is=69465409&hm=b5d5751857454bee6c4d7b2f2588b6db7b2e09b534eb20a989db8656698caf90&=&format=webp&quality=lossless&width=813&height=813' },
-        'guest-friendly': { label: 'Guest Friendly', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842865788616824/8.png?ex=6947a589&is=69465409&hm=2b211f2b7f2753156273fffe44f119b8381d9f93dbea5f357d99ae8914189e87&=&format=webp&quality=lossless&width=813&height=813' },
-        'wanderer': { label: 'Wanderer', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842865184641186/9.png?ex=6947a588&is=69465408&hm=700bdeb38db6608322e166b5c9082b9969bf0572c6c96c677bd23dac4bb4a466&=&format=webp&quality=lossless&width=813&height=813' },
-        'clean-centric': { label: 'Clean centric', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842864391655454/10.png?ex=6947a588&is=69465408&hm=a0b8956aa9787ce2ac68f47c11d54c5088c9bfec2e5b7038d243dc58856d0d86&=&format=webp&quality=lossless&width=813&height=813' },
-        'non-alcoholic': { label: 'Non-alcoholic', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842886642438155/11.png?ex=6947a58e&is=6946540e&hm=193067eb44a6bfdeab2c90572ca381eb3ffa7dd6eb0176e069827f5fa07ee152&=&format=webp&quality=lossless&width=813&height=813' },
-        'non-smoker': { label: 'Non-smoker', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842885996773417/12.png?ex=6947a58d&is=6946540d&hm=f6bdb9d69c407be0a9abe0ea66b4ab3def35790ca12acec6b4161fd51824ef63&=&format=webp&quality=lossless&width=813&height=813' }
+        'night-owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
+        'early-bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
+        'music-lover': { label: 'Music Lover', image: 'public/images/music.png' },
+        'quiet-seeker': { label: 'Quiet Seeker', image: 'public/images/quiet.png' },
+        'pet-lover': { label: 'Pet Lover', image: 'public/images/petlover.png' },
+        'studious': { label: 'Studious', image: 'public/images/studious.png' },
+        'sporty': { label: 'Sporty', image: 'public/images/sporty.png' },
+        'guest-friendly': { label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
+        'wanderer': { label: 'Wanderer', image: 'public/images/wanderer.png' },
+        'clean-centric': { label: 'Clean centric', image: 'public/images/cleaner.png' },
+        'non-alcoholic': { label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
+        'non-smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
     };
 
 
