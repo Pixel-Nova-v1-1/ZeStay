@@ -4,10 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
-
-    <!-- FIXED path for Vite -->
-    <link rel="stylesheet" href="/src/css/otp.css">
+    <title>Registration</title>
+    <link rel="stylesheet" href="src/css/otp.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -19,18 +17,19 @@
 
         <div class="left-section">
             <div class="image-wrapper">
-                <!-- FIXED image path -->
                 <img src="/images/roommates.png" alt="Friends Group Illustration">
             </div>
         </div>
 
+
         <div class="right-section">
             <div class="content-wrapper">
-                <h2 class="app-name">App Name</h2>
+                <h2 class="app-name"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a>
+                </h2>
 
                 <div class="form-container">
                     <h1 class="title">Enter OTP</h1>
-                    <p class="subtitle">Enter the verification code sent to your number</p>
+                    <p class="subtitle">Enter the Verification code sent to your number</p>
 
                     <div class="otp-container">
                         <input type="text" maxlength="1" class="otp-input" data-index="0">
@@ -46,9 +45,7 @@
             </div>
         </div>
     </div>
-
-    <!-- IMPORTANT: load through Vite entry -->
-    <script type="module" src="/src/main.js"></script>
+    <script src="src/js/otp.js"></script>
 </body>
 
 </html>
