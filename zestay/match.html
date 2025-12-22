@@ -15,8 +15,24 @@
             <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
             <nav class="nav-links">
                 <div class="nav-actions">
-                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
-                    <button id="matchProfileBtn"><i class="fa-regular fa-circle-user"></i></button>
+                    <a href="why.html" class="btn-post">
+                        <i class="fa-solid fa-plus"></i> Post Listing
+                    </a>
+
+                    <div id="auth-buttons">
+                        <a href="regimob.html?mode=login">Login</a>
+                        <a href="regimob.html?mode=register">Register</a>
+                    </div>
+
+                    <div id="user-profile" style="display:none; align-items:center; gap:10px;">
+                        <button class="btn-profile" id="matchProfileBtn">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button id="logoutBtn"
+                            style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </nav>
         </div>
