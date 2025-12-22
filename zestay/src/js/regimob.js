@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const actionCodeSettings = {
-        url: window.location.origin,
+        url: window.location.origin + "/regimob.html",
         handleCodeInApp: true
       };
 
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ---------- VERIFY LOGIN LINK ----------
-  if (isSignInWithEmailLink(auth, window.location.href)) {
+  if (window.location.pathname.includes("regimob.html") && isSignInWithEmailLink(auth, window.location.href)) {
     let email = localStorage.getItem("emailForSignIn");
 
     if (!email) {

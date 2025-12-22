@@ -271,32 +271,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // --- User Avatar Logic ---
-    const matchProfileBtn = document.getElementById('matchProfileBtn');
-    if (matchProfileBtn) {
-        const storedProfile = localStorage.getItem('userProfile');
-        if (storedProfile) {
-            const data = JSON.parse(storedProfile);
-            let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User'; // Default
+    // --- Auth Sync Logic ---
+    function checkLoginStatus() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const authButtons = document.getElementById('auth-buttons');
+        const userProfile = document.getElementById('user-profile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const matchProfileBtn = document.getElementById('matchProfileBtn');
 
-            if (data.profileOption === 'upload' && data.uploadedAvatar) {
-                imgSrc = data.uploadedAvatar;
-            } else if (data.profileOption === 'avatar' && data.avatarId) {
-                if (!data.avatarId.startsWith('http')) {
-                    imgSrc = `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
-                } else {
-                    imgSrc = data.avatarId;
+        if (isLoggedIn) {
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
+
+            if (matchProfileBtn) {
+                const storedProfile = localStorage.getItem('userProfile');
+                if (storedProfile) {
+                    const data = JSON.parse(storedProfile);
+                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+
+                    if (data.profileOption === 'upload' && data.uploadedAvatar) {
+                        imgSrc = data.uploadedAvatar;
+                    } else if (data.profileOption === 'avatar' && data.avatarId) {
+                        imgSrc = data.avatarId.startsWith('http')
+                            ? data.avatarId
+                            : `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
+                    }
+
+                    matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">`;
                 }
-            }
 
-            // Replace icon with image
-            matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
+                matchProfileBtn.onclick = () => {
+                    window.location.href = 'profile.html';
+                };
+            }
+        } else {
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userProfile) userProfile.style.display = 'none';
         }
 
-        matchProfileBtn.addEventListener('click', () => {
-            window.location.href = 'profile.html';
-        });
+        if (logoutBtn) {
+            logoutBtn.onclick = () => {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('isVerified');
+                window.location.reload();
+            };
+        }
     }
+
+    checkLoginStatus();
 
     init();
 
