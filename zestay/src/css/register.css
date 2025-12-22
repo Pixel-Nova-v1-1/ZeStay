@@ -1,0 +1,407 @@
+:root {
+    --primary-teal: #00c9b7;
+    --light-teal: #e0fbf8;
+    --text-color: #333;
+    --border-color: #ccc;
+    --bg-white: #ffffff;
+    --hover-teal: #00b3a3;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: transparent;
+    color: var(--text-color);
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Background Shapes (Copied and adapted from Ques.css) */
+.bg-shape {
+    position: absolute;
+    z-index: -1;
+}
+
+.img {
+    position: absolute;
+    top: -470px;
+    left: -430px;
+    width: 1000px;
+    height: auto;
+    z-index: -1;
+}
+
+.img img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.top-right-circle-outline {
+    top: -80px;
+    right: 50px;
+    width: 200px;
+    height: 200px;
+    border: 1px solid #333;
+    border-radius: 50%;
+}
+
+.top-right-circle-solid {
+    position: absolute;
+    top: 20px;
+    right: -40px;
+    width: 220px;
+    height: 220px;
+    background-color: var(--primary-teal);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.right-small-circle-1 {
+    top: 450px;
+    right: 80px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-teal);
+    border-radius: 50%;
+}
+
+.right-small-circle-2 {
+    top: 600px;
+    right: 30px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--primary-teal);
+    border-radius: 50%;
+}
+
+
+/* Layout */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+}
+
+.register-form {
+    width: 100%;
+    max-width: 800px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 50px;
+    row-gap: 30px;
+    margin-bottom: 40px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    /* Or row depending on design? Design shows label inside or placeholder? Image shows inputs with Placeholder texts like "Name:", but labels are standard. I'll use placeholders as labels inside input style if I can, or top labels. Image has inputs with borders and "Name:" inside. Let's make it look like the image. */
+    /* Actually image shows "Name:" inside the input box style. I'll use placeholders. */
+}
+
+/* Custom Input Styling to match design */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #999;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #555;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: white;
+    box-sizing: border-box;
+    /* Ensure padding doesn't affect width */
+}
+
+/* Remove default date placeholder logic if needed, or style it */
+input[type="date"] {
+    color: #555;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--primary-teal);
+    box-shadow: 0 0 0 3px rgba(0, 201, 183, 0.15);
+}
+
+label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+    display: none;
+    /* Hiding explicit labels as design uses placeholders effectively, but keeping in HTML for accessibility/fallback if I wanted. Actually let's hide them to match clean look. */
+}
+
+
+/* Photo Section */
+.photo-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.photo-labels {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 20px;
+    color: #777;
+}
+
+.photo-labels h3 {
+    font-weight: 400;
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.or-divider {
+    font-weight: 500;
+    color: #999;
+    margin: 20px 0;
+    position: relative;
+    padding: 10px;
+}
+
+
+.photo-actions {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.file-upload-box {
+    border: 2px dashed #aaa;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: white;
+    position: relative;
+}
+
+.file-upload-box:hover {
+    border-color: var(--primary-teal);
+    background-color: var(--light-teal);
+}
+
+.file-upload-box.drag-over {
+    border-color: var(--primary-teal);
+    background-color: rgba(0, 201, 183, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 2rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.upload-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    justify-items: center;
+}
+
+.avatar-option {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+    background-color: #f0f0f0;
+    /* Placeholder bg */
+}
+
+.avatar-option:hover {
+    transform: scale(1.1);
+}
+
+.avatar-option.selected {
+    border-color: var(--primary-teal);
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 201, 183, 0.3);
+}
+
+/* Action Buttons */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+}
+
+.next-btn {
+    background-color: var(--primary-teal);
+    color: white;
+    border: none;
+    padding: 12px 60px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.next-btn:hover {
+    background-color: var(--hover-teal);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 201, 183, 0.3);
+}
+
+.next-btn i {
+    font-size: 0.9em;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    opacity: 0;
+    /* Initial state handled by animation */
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .photo-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .photo-labels {
+        width: 100%;
+        text-align: center;
+        flex-direction: row;
+        /* Horizontal labels on mobile? or stack? */
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .or-divider {
+        margin: 0 20px;
+    }
+
+    .photo-actions {
+        width: 100%;
+    }
+
+    .img {
+        display: none;
+        /* Hide big decorative image on mobile if it overlaps too much */
+    }
+}
+
+.required {
+    color: #ff4757;
+    margin-left: 2px;
+}
+
+/* File Preview Styles */
+.selected-file-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 201, 183, 0.1);
+    padding: 10px 15px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--primary-teal);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.file-info i {
+    color: var(--primary-teal);
+    font-size: 1.2rem;
+}
+
+.file-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    color: #333;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.remove-file {
+    color: #ff4757;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+}
+
+.remove-file:hover {
+    background-color: rgba(255, 71, 87, 0.1);
+}
+
+.file-upload-box.has-file {
+    border-style: solid;
+    background-color: #f0fdfa;
+}

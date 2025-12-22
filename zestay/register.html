@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/register.css">
+</head>
+
+<body>
+
+    <!-- Background Shapes (Same as designated in ques.html) -->
+    <div class="img">
+        <img src="https://media.discordapp.net/attachments/1447539234528428034/1449842493595058369/design_register.png?ex=69405e8b&is=693f0d0b&hm=830d3a5921d62cfc678a5d80d14598319036bce6c52ea93aa89f85d5908da142&=&format=webp&quality=lossless&width=943&height=943"
+            alt="Decoration">
+    </div>
+    <div class="bg-shape top-right-circle-outline"></div>
+    <div class="bg-shape top-right-circle-solid"></div>
+    <div class="bg-shape right-small-circle-1"></div>
+    <div class="bg-shape right-small-circle-2"></div>
+
+    <div class="container">
+        <header class="page-header fade-in-up">
+            <h1>REGISTER</h1>
+        </header>
+
+        <form class="register-form" id="registerForm">
+            <div class="form-grid fade-in-up" style="animation-delay: 0.1s;">
+                <!-- Column 1 -->
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Name" required>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="form-group">
+                    <label for="dob">DOB:</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+
+                <!-- Column 1 -->
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Email" required>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="form-group">
+                    <label for="occupation">Occupation:</label>
+                    <input type="text" id="occupation" name="occupation" placeholder="Occupation">
+                </div>
+
+                <!-- Column 1 -->
+                <div class="form-group">
+                    <label for="gender">Gender: <span class="required">*</span></label>
+                    <select id="gender" name="gender" required>
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="form-group">
+                    <label for="hobbies">Hobbies:</label>
+                    <select id="hobbies" name="hobbies">
+                        <option value="" disabled selected>Select Hobby</option>
+                        <option value="reading">Reading</option>
+                        <option value="traveling">Traveling</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="sports">Sports</option>
+                        <option value="music">Music</option>
+                        <option value="cooking">Cooking</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Profile Photo Section -->
+            <div class="photo-section fade-in-up" style="animation-delay: 0.2s;">
+                <div class="photo-labels">
+                    <h3>Upload a photo</h3>
+                    <div class="or-divider">OR</div>
+                    <h3>Select an avatar</h3>
+                </div>
+
+                <div class="photo-actions">
+                    <!-- File Upload -->
+                    <div class="file-upload-box" id="dropZone">
+                        <input type="file" id="profilePic" name="profilePic" accept="image/*" class="file-input" hidden>
+                        <div class="upload-content">
+                            <i class="fa-regular fa-image upload-icon"></i>
+                            <p>Click or drop to upload your profile photo (jpg or png)</p>
+                        </div>
+                        <div id="filePreview" class="file-preview hidden"></div>
+                    </div>
+
+                    <!-- Avatars -->
+                    <div class="avatar-grid" id="avatarGrid">
+                        <!-- Avatars will be handled by JS or static here. Using placeholders for now -->
+                        <!-- Using some generic avatar images or placeholders -->
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" alt="Avatar 1"
+                            class="avatar-option" data-value="Devjith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" alt="Avatar 2"
+                            class="avatar-option" data-value="Aditya">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh" alt="Avatar 3"
+                            class="avatar-option" data-value="Anirudh">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi" alt="Avatar 4"
+                            class="avatar-option" data-value="Tanvi">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra" alt="Avatar 5"
+                            class="avatar-option" data-value="Rudra">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith" alt="Avatar 6"
+                            class="avatar-option" data-value="Advaith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel" alt="Avatar 7"
+                            class="avatar-option" data-value="Pixel">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova" alt="Avatar 8"
+                            class="avatar-option" data-value="Nova">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions fade-in-up" style="animation-delay: 0.3s;">
+              
+                <button type="submit" class="next-btn">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="src/js/register.js"></script>
+</body>
+
+</html>
