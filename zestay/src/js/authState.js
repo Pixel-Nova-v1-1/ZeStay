@@ -2,32 +2,32 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
-// Pages where authState SHOULD NOT auto-redirect
+// Pages that should NOT auto-redirect
 const PUBLIC_PAGES = [
   "/",
-  "/index.html",
+  "/landing.html",
   "/regimob.html"
 ];
 
 onAuthStateChanged(auth, async (user) => {
-  const currentPath = window.location.pathname;
+  const path = window.location.pathname;
 
   // 🚫 Do nothing on public pages
-  if (PUBLIC_PAGES.includes(currentPath)) {
+  if (PUBLIC_PAGES.includes(path)) {
     return;
   }
 
-  // 🚫 Not logged in → send to landing
+  // 🚫 Not logged in → landing
   if (!user) {
-    window.location.replace("/index.html");
+    window.location.replace("/landing.html");
     return;
   }
 
   const userRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
+  const snap = await getDoc(userRef);
 
-  // 🔹 First-time user
-  if (!userSnap.exists()) {
+  // 🔹 New user → create profile
+  if (!snap.exists()) {
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email,
@@ -35,20 +35,20 @@ onAuthStateChanged(auth, async (user) => {
       createdAt: serverTimestamp()
     });
 
-    window.location.replace("/ques.html");
+    window.location.replace("/questions.html");
     return;
   }
 
-  // 🔹 Existing user
-  const data = userSnap.data();
+  const data = snap.data();
 
+  // 🔹 Route based on onboarding
   if (data.onboardingComplete) {
-    if (!currentPath.includes("why")) {
-      window.location.replace("/why.html");
+    if (!path.includes("listings")) {
+      window.location.replace("/listings.html");
     }
   } else {
-    if (!currentPath.includes("ques")) {
-      window.location.replace("/ques.html");
+    if (!path.includes("questions")) {
+      window.location.replace("/questions.html");
     }
   }
 });
