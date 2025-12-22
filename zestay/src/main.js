@@ -2,6 +2,7 @@ import "./js/index.js";
 import "./js/regimob.js";
 import "./js/otp.js";
 import "./js/authState.js";
+import "./js/chat.js";
 
 
 console.log("Main JS loaded");
