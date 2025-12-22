@@ -35,7 +35,39 @@
     gap: 25px;
 }
 
-.btn-post {
+.nav-actions a {
+    text-decoration: none;
+    color: #666;
+    font-size: 16px;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+.nav-actions a:hover {
+    color: #00C4B4;
+}
+
+#auth-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.btn-profile {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.btn-profile:hover {
+    color: #00C4B4;
+}
+
+.nav-actions .btn-post {
     background-color: #00C4B4;
     color: white;
     padding: 10px 20px;
@@ -48,7 +80,7 @@
     transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
 }
 
-.btn-post:hover {
+.nav-actions .btn-post:hover {
     background-color: #00Aaa0;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 196, 180, 0.3);
