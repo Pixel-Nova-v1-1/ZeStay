@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Authentication</title>
 
-    <link rel="stylesheet" href="src/css//src/css/regimob.css" />
+    <link rel="stylesheet" href="/src/css/regimob.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
@@ -24,7 +24,6 @@
                 <h2 class="app-name">App Name</h2>
 
                 <div class="form-container">
-                    <!-- 🔽 Dynamic heading -->
                     <h1 class="title" id="authTitle">Continue with Email</h1>
                     <p class="subtitle" id="authSubtitle">
                         We’ll send you a secure login link
@@ -44,9 +43,9 @@
     </div>
 
     <!-- Vite entry -->
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="/src/main.js"></script>
 
-    <!-- 🔽 Small inline script for UI text only -->
+    <!-- UI text only -->
     <script>
         const params = new URLSearchParams(window.location.search);
         const mode = params.get("mode");
@@ -63,5 +62,4 @@
         }
     </script>
 </body>
-
 </html>
