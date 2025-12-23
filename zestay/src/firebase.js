@@ -4,9 +4,7 @@ import { getAuth } from "firebase/auth";
 // CHANGED: Added specific imports for connection settings
 import {
   getFirestore,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager
+  initializeFirestore
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -33,9 +31,6 @@ export const auth = getAuth(app);
 // This fixes the "Failed to get document because the client is offline" error
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
 });
 
 export const storage = getStorage(app);

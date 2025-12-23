@@ -1,4 +1,18 @@
+import { auth, db } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { nhost } from "../nhost";
+
 document.addEventListener('DOMContentLoaded', () => {
+    let currentUser = null;
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if (!user) {
+            // Optional: Redirect to login or show warning
+            console.log("User not logged in");
+        }
+    });
+
 
 
     const toggleGroups = document.querySelectorAll('.toggle-group');
@@ -200,92 +214,116 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     forms.forEach(form => {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            if (!currentUser) {
+                alert("Please login to post.");
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
 
-            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
 
+            try {
+                const formData = new FormData(form);
+                const data = {};
 
-            formData.delete('roomPhotos');
-            storedFiles.forEach(file => {
-                formData.append('roomPhotos', file);
-            });
+                // Collect Toggle Groups
+                const toggles = form.querySelectorAll('.toggle-group');
+                toggles.forEach(group => {
+                    const activeBtn = group.querySelector('.toggle-btn.active');
+                    if (activeBtn) {
+                        data[group.dataset.group] = activeBtn.dataset.value;
+                    }
+                });
 
+                // Collect Chips
+                const chips = [];
+                const activeChips = form.querySelectorAll('.chip.active');
+                activeChips.forEach(chip => chips.push(chip.innerText));
+                data.highlights = chips;
 
+                // Collect Amenities
+                const activeAmenities = [];
+                const activeAmenityIcons = form.querySelectorAll('.amenity-icon.active');
+                activeAmenityIcons.forEach(icon => {
+                    activeAmenities.push(icon.nextElementSibling.innerText);
+                });
+                data.amenities = activeAmenities;
 
-            const toggles = form.querySelectorAll('.toggle-group');
-            toggles.forEach(group => {
-                const activeBtn = group.querySelector('.toggle-btn.active');
-                if (activeBtn) {
-                    formData.append(group.dataset.group, activeBtn.dataset.value);
+                // Collect Standard Inputs
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'roomPhotos') {
+                        data[key] = value;
+                    }
                 }
-            });
 
+                // Determine Collection and Upload Photos
+                const parentModal = form.closest('.modal-overlay');
+                let collectionName = 'requirements'; // Default
+                let imageUrls = [];
 
-            const chips = [];
-            const activeChips = document.querySelectorAll('.chip.active');
-            activeChips.forEach(chip => chips.push(chip.innerText));
-            formData.append('highlights_preferences', chips.join(', '));
+                if (parentModal.id === 'roomModal') {
+                    collectionName = 'flats';
+                    
+                    // Upload Photos to Nhost
+                    if (storedFiles.length > 0) {
+                        for (const file of storedFiles) {
+                            try {
+                                const { fileMetadata, error } = await nhost.storage.upload({
+                                    file,
+                                    bucketId: 'default' // Ensure you have a bucket named 'default' or change this
+                                });
 
+                                if (error) {
+                                    console.error("Nhost Upload Error:", error);
+                                    throw new Error("Failed to upload image to Nhost");
+                                }
 
-            const activeAmenities = [];
-            const activeAmenityIcons = document.querySelectorAll('.amenity-icon.active');
-            activeAmenityIcons.forEach(icon => {
-                activeAmenities.push(icon.nextElementSibling.innerText);
-            });
-            formData.append('amenities', activeAmenities.join(', '));
-
-
-            console.log("--- Form Data Prepared for Backend ---");
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
-            }
-            console.log("Photos:", storedFiles);
-
-
-            /* 
-               --- BACKEND INTEGRATION NOTE ---
-               Replace the localStorage logic below with an API call.
-               Example:
-               
-               fetch('/api/listings', {
-                   method: 'POST',
-                   body: formData // formData contains all fields including files
-               })
-               .then(response => response.json())
-               .then(data => {
-                   // Handle success
-               })
-               .catch(error => console.error('Error:', error));
-            */
-            const newListing = {};
-            for (let [key, value] of formData.entries()) {
-                if (newListing[key]) {
-                    newListing[key] = newListing[key] + ', ' + value;
-                } else {
-                    newListing[key] = value;
+                                // Construct Public URL
+                                const url = nhost.storage.getPublicUrl({ fileId: fileMetadata.id });
+                                imageUrls.push(url);
+                            } catch (err) {
+                                console.error("Image upload failed:", err);
+                                // Continue or break? Let's continue but log error
+                            }
+                        }
+                    }
+                    data.photos = imageUrls;
                 }
-            }
-            newListing.photos = storedFiles.map(f => f.name);
-            newListing.timestamp = new Date().toISOString();
 
-            const existingListings = JSON.parse(localStorage.getItem('userListings') || '[]');
-            existingListings.push(newListing);
-            localStorage.setItem('userListings', JSON.stringify(existingListings));
+                data.userId = currentUser.uid;
+                data.userEmail = currentUser.email;
+                data.createdAt = serverTimestamp();
+                
+                // Add to Firestore
+                await addDoc(collection(db, collectionName), data);
 
-            alert('Requirement/Room Details Submitted Successfully! check console for data.');
-            const parentModal = form.closest('.modal-overlay');
-            if (parentModal) {
-                parentModal.classList.remove('active');
-                document.body.style.overflow = '';
-            }
+                alert('Submitted Successfully!');
+                
+                if (parentModal) {
+                    parentModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
 
+                // Reset Form
+                form.reset();
+                storedFiles = [];
+                if (uploadArea) {
+                    const uploadText = uploadArea.querySelector('p');
+                    if (uploadText) uploadText.innerHTML = 'Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span>';
+                }
 
-            storedFiles = [];
-            if (uploadArea) {
-                const uploadText = uploadArea.querySelector('p');
-                if (uploadText) uploadText.innerHTML = 'Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span>';
+            } catch (error) {
+                console.error("Error submitting form:", error);
+                alert("Error submitting form: " + error.message);
+            } finally {
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
             }
         });
     });

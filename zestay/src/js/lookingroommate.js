@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -44,14 +44,58 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 1. Populate Data ---
-    function loadData() {
-        // Typically checks URL params here
+    async function loadData() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        // if (id) { fetch ... } else { use mockData }
+        const type = urlParams.get('type');
 
-        // For now, use mockData directly
-        const data = mockData;
+        let data = mockData;
+
+        if (id && type === 'flat') {
+            try {
+                const docRef = doc(db, "flats", id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const flatData = docSnap.data();
+                    
+                    // Map Firestore data to UI structure
+                    data = {
+                        name: "Flat Owner", 
+                        avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
+                        location: flatData.location || "Location not specified",
+                        gender: flatData.gender || "Any", 
+                        rent: flatData.rent || "N/A",
+                        occupancy: flatData.occupancy || "Any",
+                        lookingFor: flatData.gender || "Any",
+                        description: flatData.description || "No description provided.",
+                        images: flatData.photos || [],
+                        preferences: [], 
+                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })), 
+                        highlights: flatData.highlights || []
+                    };
+
+                    // Fetch Owner Name if userId exists
+                    if (flatData.userId) {
+                        try {
+                            const userDoc = await getDoc(doc(db, "users", flatData.userId));
+                            if (userDoc.exists()) {
+                                const userData = userDoc.data();
+                                data.name = userData.name || "Flat Owner";
+                                data.avatar = userData.photoUrl || data.avatar;
+                            }
+                        } catch (e) {
+                            console.log("Could not fetch owner details");
+                        }
+                    }
+
+                } else {
+                    console.log("No such flat document!");
+                }
+            } catch (error) {
+                console.error("Error getting flat details:", error);
+            }
+        }
 
         // Profile
         document.getElementById('profileName').textContent = data.name;
@@ -66,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayDescription').textContent = data.description;
 
         // Images
-        currentImages = data.images;
+        currentImages = data.images.length > 0 ? data.images : ['public/images/house-removebg-preview.png'];
         updateSlider(0);
 
         // Preferences
@@ -81,6 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             });
+        } else {
+             prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
         }
 
         // Amenities
@@ -88,9 +134,18 @@ document.addEventListener('DOMContentLoaded', () => {
         amenitiesContainer.innerHTML = '';
         if (data.amenities && data.amenities.length > 0) {
             data.amenities.forEach(am => {
+                let iconClass = am.icon || 'fa-check';
+                const lowerLabel = am.label.toLowerCase();
+                if (lowerLabel.includes('wifi')) iconClass = 'fa-wifi';
+                else if (lowerLabel.includes('wash')) iconClass = 'fa-shirt';
+                else if (lowerLabel.includes('ac') || lowerLabel.includes('air')) iconClass = 'fa-wind';
+                else if (lowerLabel.includes('park')) iconClass = 'fa-car';
+                else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
+                else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
+                
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">
-                        <div class="amenity-icon"><i class="fa-solid ${am.icon}"></i></div>
+                        <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
                         <span class="item-label">${am.label}</span>
                     </div>
                 `;
@@ -225,16 +280,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Backend Integration Placeholder
-    function submitReport(reason) {
-        // TODO: Backend integration point
-        console.log("Report Submitted:", {
-            listingId: "CURRENT_LISTING_ID", // Replace with actual ID
-            reason: reason,
-            timestamp: new Date().toISOString(),
-            user: auth.currentUser ? auth.currentUser.uid : 'Anonymous'
-        });
+    async function submitReport(reason) {
+        if (!auth.currentUser) {
+            alert("Please login to report.");
+            return;
+        }
 
-        alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const type = urlParams.get('type'); // 'flat' or undefined (roommate)
+
+        if (!id) {
+            alert("Cannot report: No listing ID found.");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "reports"), {
+                reportedEntityId: id,
+                reportedEntityType: type === 'flat' ? 'flat' : 'roommate_listing',
+                reason: reason,
+                reportedBy: auth.currentUser.uid,
+                reportedByEmail: auth.currentUser.email,
+                timestamp: serverTimestamp(),
+                status: 'pending'
+            });
+
+            alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+        } catch (error) {
+            console.error("Error submitting report:", error);
+            alert("Failed to submit report. Please try again.");
+        }
     }
 
 });

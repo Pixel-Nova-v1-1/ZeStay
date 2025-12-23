@@ -335,7 +335,8 @@ async function renderReports() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Reports...</h2></div>';
     
     try {
-        const q = query(collection(db, "reports"), orderBy("timestamp", "desc"), limit(20));
+        // Removed orderBy to prevent index issues for now
+        const q = query(collection(db, "reports"), limit(20));
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
@@ -350,6 +351,8 @@ async function renderReports() {
                 <thead>
                     <tr>
                         <th>Reason</th>
+                        <th>Type</th>
+                        <th>Entity ID</th>
                         <th>Reported By</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -363,7 +366,9 @@ async function renderReports() {
             html += `
                 <tr>
                     <td>${report.reason || 'No reason'}</td>
-                    <td>${report.reportedBy || 'Anonymous'}</td>
+                    <td>${report.reportedEntityType || 'N/A'}</td>
+                    <td>${report.reportedEntityId || 'N/A'}</td>
+                    <td>${report.reportedByEmail || report.reportedBy || 'Anonymous'}</td>
                     <td>${report.status || 'Pending'}</td>
                     <td>
                         <button onclick="window.resolveReport('${doc.id}')" class="btn btn-success">Resolve</button>
@@ -376,13 +381,8 @@ async function renderReports() {
         contentArea.innerHTML = html;
 
     } catch (error) {
-        // If index error, fallback to no ordering
-        if (error.code === 'failed-precondition') {
-             const qFallback = query(collection(db, "reports"), limit(20));
-             // ... (simplified fallback logic could go here, but for now just show error)
-        }
         console.error("Error fetching reports:", error);
-        contentArea.innerHTML = `<div class="recent-activity"><h2>Reports</h2><p>No reports found (or collection does not exist yet).</p></div>`;
+        contentArea.innerHTML = `<div class="recent-activity"><h2>Error Loading Reports</h2><p>${error.message}</p></div>`;
     }
 }
 

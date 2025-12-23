@@ -4,7 +4,7 @@ import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
-    let flatsData = []; // Keeping empty for now as we don't have flats collection
+    let flatsData = []; 
 
     let currentType = 'Roommates';
     let currentFilter = 'Any';
@@ -97,11 +97,49 @@ document.addEventListener('DOMContentLoaded', () => {
             users.sort((a, b) => b.matchScore - a.matchScore);
             allUsers = users;
             
-            init();
+            if (currentType === 'Roommates') {
+                init();
+            }
 
         } catch (error) {
             console.error("Error fetching matches:", error);
             container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading matches.</p>';
+        }
+    }
+
+    async function fetchFlats() {
+        if (flatsData.length > 0) {
+            if (currentType === 'Flats') init();
+            return;
+        }
+
+        container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Loading flats...</p>';
+
+        try {
+            const querySnapshot = await getDocs(collection(db, "flats"));
+            const flats = [];
+            querySnapshot.forEach((doc) => {
+                flats.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Sort by newest first
+            flats.sort((a, b) => {
+                if (a.createdAt && b.createdAt) {
+                    return b.createdAt.seconds - a.createdAt.seconds;
+                }
+                return 0;
+            });
+
+            flatsData = flats;
+            
+            if (currentType === 'Flats') {
+                init();
+            }
+        } catch (error) {
+            console.error("Error fetching flats:", error);
+            if (currentType === 'Flats') {
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading flats.</p>';
+            }
         }
     }
 
@@ -198,8 +236,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
                 </div>
             </div>`;
+        } else if (type === 'Flats') {
+            const image = (item.photos && item.photos.length > 0) ? item.photos[0] : 'public/images/house-removebg-preview.png';
+            const location = item.location || 'Location not specified';
+            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
+            const occupancy = item.occupancy || 'Any';
+            
+            return `
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+                <div class="card-content">
+                    <div class="card-avatar" style="border-radius: 10px; width: 100px; height: 100px; flex-shrink: 0;">
+                       <img src="${image}" alt="Flat Image" style="border-radius: 10px; object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <div class="card-details">
+                        <h3>Flat/Room</h3>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                        
+                        <div class="card-info-grid">
+                            <div class="info-item">
+                                <span class="label">Rent</span>
+                                <span class="value">${rent}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Occupancy</span>
+                                <span class="value">${occupancy}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="match-score">New!</span>
+                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
+                </div>
+            </div>`;
         } else {
-            // Flats - Placeholder
+            // Fallback
              return ``;
         }
     }
@@ -283,7 +354,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentType = type;
 
             console.log('Switched to:', currentType);
-            init();
+            
+            if (currentType === 'Flats') {
+                fetchFlats();
+            } else {
+                init();
+            }
         });
     });
 
@@ -362,8 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (type === 'Roommates') {
                     window.location.href = `lookingroom.html?id=${id}`;
                 } else {
-                    // Flats not implemented yet
-                    // window.location.href = `lookingroommate.html?id=${id}&type=flat`;
+                    window.location.href = `lookingroommate.html?id=${id}&type=flat`;
                 }
             }
         });
