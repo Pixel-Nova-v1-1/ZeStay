@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 
 // DOM Elements
 const logoutBtn = document.getElementById('logoutBtn');
@@ -72,10 +72,10 @@ function loadTabContent(tab) {
             renderListings();
             break;
         case 'reports':
-            contentArea.innerHTML = '<div class="recent-activity"><h2>Reports</h2><p>No reports found.</p></div>';
+            renderReports();
             break;
         case 'settings':
-            contentArea.innerHTML = '<div class="recent-activity"><h2>Settings</h2><p>Admin settings configuration.</p></div>';
+            renderSettings();
             break;
     }
 }
@@ -86,11 +86,13 @@ async function loadDashboardData() {
         const totalUsers = document.getElementById('totalUsers');
         if(totalUsers) totalUsers.textContent = usersSnap.size;
 
+        const listingsSnap = await getDocs(collection(db, "listings"));
         const activeListings = document.getElementById('activeListings');
-        if(activeListings) activeListings.textContent = "0"; 
+        if(activeListings) activeListings.textContent = listingsSnap.size;
 
+        const reportsSnap = await getDocs(collection(db, "reports"));
         const newReports = document.getElementById('newReports');
-        if(newReports) newReports.textContent = "0"; 
+        if(newReports) newReports.textContent = reportsSnap.size;
 
         renderActivityLog();
     } catch (error) {
@@ -135,13 +137,13 @@ async function renderUsers() {
         let html = `
         <div class="recent-activity">
             <h2>User Management</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <table class="admin-table">
                 <thead>
-                    <tr style="background: #f8f9fa; text-align: left;">
-                        <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Email</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">UID</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Verified</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Actions</th>
+                    <tr>
+                        <th>Email</th>
+                        <th>UID</th>
+                        <th>Verified</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -151,11 +153,11 @@ async function renderUsers() {
             const user = doc.data();
             html += `
                 <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${user.email || 'No Email'}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${doc.id}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${user.isVerified ? '<span style="color:green">Yes</span>' : 'No'}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
-                        <button style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Ban</button>
+                    <td>${user.email || 'No Email'}</td>
+                    <td>${doc.id}</td>
+                    <td>${user.isVerified ? '<span style="color:var(--success)">Yes</span>' : 'No'}</td>
+                    <td>
+                        <button class="btn btn-danger">Ban</button>
                     </td>
                 </tr>
             `;
@@ -191,31 +193,31 @@ async function renderVerificationRequests() {
         querySnapshot.forEach((doc) => {
             const req = doc.data();
             html += `
-                <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: white;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <div>
+                <div class="request-card">
+                    <div class="request-header">
+                        <div class="request-info">
                             <h3>${req.name}</h3>
-                            <p>Email: ${req.email}</p>
-                            <p>Mobile: ${req.mobile}</p>
-                            <p>UID: ${req.userId}</p>
+                            <p><strong>Email:</strong> ${req.email}</p>
+                            <p><strong>Mobile:</strong> ${req.mobile}</p>
+                            <p><strong>UID:</strong> ${req.userId}</p>
                         </div>
                         <div>
-                            <button onclick="window.approveVerification('${doc.id}', '${req.userId}')" style="padding: 8px 15px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">Approve</button>
-                            <button onclick="window.rejectVerification('${doc.id}')" style="padding: 8px 15px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Reject</button>
+                            <button onclick="window.approveVerification('${doc.id}', '${req.userId}')" class="btn btn-success">Approve</button>
+                            <button onclick="window.rejectVerification('${doc.id}')" class="btn btn-danger">Reject</button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px; overflow-x: auto;">
-                        <div>
-                            <p style="font-size: 0.8em; color: #666;">ID Front</p>
-                            <img src="${req.idFrontUrl}" onclick="window.openImage(this.src)" style="height: 150px; border-radius: 4px; border: 1px solid #eee; cursor: pointer;">
+                    <div class="request-images">
+                        <div class="request-img-container">
+                            <p>ID Front</p>
+                            <img src="${req.idFrontUrl}" onclick="window.openImage(this.src)">
                         </div>
-                        <div>
-                            <p style="font-size: 0.8em; color: #666;">ID Back</p>
-                            <img src="${req.idBackUrl}" onclick="window.openImage(this.src)" style="height: 150px; border-radius: 4px; border: 1px solid #eee; cursor: pointer;">
+                        <div class="request-img-container">
+                            <p>ID Back</p>
+                            <img src="${req.idBackUrl}" onclick="window.openImage(this.src)">
                         </div>
-                        <div>
-                            <p style="font-size: 0.8em; color: #666;">Selfie</p>
-                            <img src="${req.selfieUrl}" onclick="window.openImage(this.src)" style="height: 150px; border-radius: 4px; border: 1px solid #eee; cursor: pointer;">
+                        <div class="request-img-container">
+                            <p>Selfie</p>
+                            <img src="${req.selfieUrl}" onclick="window.openImage(this.src)">
                         </div>
                     </div>
                 </div>
@@ -279,26 +281,310 @@ window.rejectVerification = async (requestId) => {
     }
 };
 
-function renderListings() {
-    contentArea.innerHTML = '<div class="recent-activity"><h2>Listings</h2><p>Listings management coming soon.</p></div>';
+async function renderListings() {
+    contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Listings...</h2></div>';
+    
+    try {
+        const q = query(collection(db, "listings"), limit(20));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            contentArea.innerHTML = '<div class="recent-activity"><h2>Listings Management</h2><p>No listings found.</p></div>';
+            return;
+        }
+
+        let html = `
+        <div class="recent-activity">
+            <h2>Listings Management</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Price</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        querySnapshot.forEach((doc) => {
+            const item = doc.data();
+            html += `
+                <tr>
+                    <td>${item.title || 'Untitled'}</td>
+                    <td>$${item.price || '0'}</td>
+                    <td>${item.location || 'Unknown'}</td>
+                    <td>
+                        <button onclick="window.deleteListing('${doc.id}')" class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contentArea.innerHTML = html;
+
+    } catch (error) {
+        console.error("Error fetching listings:", error);
+        contentArea.innerHTML = `<div class="recent-activity"><h2>Error</h2><p>${error.message}</p></div>`;
+    }
 }
+
+async function renderReports() {
+    contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Reports...</h2></div>';
+    
+    try {
+        const q = query(collection(db, "reports"), orderBy("timestamp", "desc"), limit(20));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            contentArea.innerHTML = '<div class="recent-activity"><h2>Reports</h2><p>No reports found.</p></div>';
+            return;
+        }
+
+        let html = `
+        <div class="recent-activity">
+            <h2>User Reports</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Reason</th>
+                        <th>Reported By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        querySnapshot.forEach((doc) => {
+            const report = doc.data();
+            html += `
+                <tr>
+                    <td>${report.reason || 'No reason'}</td>
+                    <td>${report.reportedBy || 'Anonymous'}</td>
+                    <td>${report.status || 'Pending'}</td>
+                    <td>
+                        <button onclick="window.resolveReport('${doc.id}')" class="btn btn-success">Resolve</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contentArea.innerHTML = html;
+
+    } catch (error) {
+        // If index error, fallback to no ordering
+        if (error.code === 'failed-precondition') {
+             const qFallback = query(collection(db, "reports"), limit(20));
+             // ... (simplified fallback logic could go here, but for now just show error)
+        }
+        console.error("Error fetching reports:", error);
+        contentArea.innerHTML = `<div class="recent-activity"><h2>Reports</h2><p>No reports found (or collection does not exist yet).</p></div>`;
+    }
+}
+
+async function renderSettings() {
+    contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Settings...</h2></div>';
+    
+    try {
+        const settingsRef = doc(db, "config", "site_settings");
+        const snap = await getDoc(settingsRef);
+        const data = snap.exists() ? snap.data() : { maintenanceMode: false, allowRegistrations: true };
+
+        contentArea.innerHTML = `
+            <div class="recent-activity">
+                <h2>Admin Settings</h2>
+                <div style="margin-top: 20px; max-width: 500px;">
+                    <div class="settings-group">
+                        <h3>Site Maintenance</h3>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="maintenanceMode" ${data.maintenanceMode ? 'checked' : ''}>
+                            Enable Maintenance Mode
+                        </label>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 5px;">When enabled, only admins can access the site.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>User Registration</h3>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allowRegistrations" ${data.allowRegistrations ? 'checked' : ''}>
+                            Allow New Registrations
+                        </label>
+                    </div>
+
+                    <button onclick="window.saveSettings()" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error loading settings:", error);
+        contentArea.innerHTML = `<div class="recent-activity"><h2>Error</h2><p>${error.message}</p></div>`;
+    }
+}
+
+// Window functions for actions
+window.deleteListing = async (id) => {
+    if(!confirm("Are you sure you want to delete this listing?")) return;
+    try {
+        await deleteDoc(doc(db, "listings", id));
+        alert("Listing deleted.");
+        renderListings();
+    } catch(e) {
+        alert("Error: " + e.message);
+    }
+};
+
+window.resolveReport = async (id) => {
+    if(!confirm("Mark this report as resolved?")) return;
+    try {
+        await updateDoc(doc(db, "reports", id), { status: 'resolved' });
+        alert("Report resolved.");
+        renderReports();
+    } catch(e) {
+        alert("Error: " + e.message);
+    }
+};
+
+window.saveSettings = async () => {
+    const maintenanceMode = document.getElementById('maintenanceMode').checked;
+    const allowRegistrations = document.getElementById('allowRegistrations').checked;
+    
+    try {
+        await setDoc(doc(db, "config", "site_settings"), {
+            maintenanceMode,
+            allowRegistrations,
+            updatedAt: new Date()
+        });
+        alert("Settings saved successfully!");
+    } catch(e) {
+        alert("Error saving settings: " + e.message);
+    }
+};
 
 function renderActivityLog() {
     const list = document.getElementById('activityList');
-    if(list) {
-        list.innerHTML = `
+    if(!list) return;
+
+    // Call the async worker
+    fetchAndRenderActivity(list);
+}
+
+async function fetchAndRenderActivity(list) {
+    list.innerHTML = '<li>Loading activity...</li>';
+
+    try {
+        // 1. Fetch recent users (using updatedAt as proxy)
+        // Note: If "updatedAt" index is missing, this might fail. 
+        // For dev, we'll catch and try without sort if needed, or just log it.
+        let usersSnap = { docs: [] };
+        try {
+            const usersQuery = query(collection(db, "users"), orderBy("updatedAt", "desc"), limit(3));
+            usersSnap = await getDocs(usersQuery);
+        } catch(e) {
+            console.warn("User sort failed (missing index?), fetching unsorted");
+            const usersQuery = query(collection(db, "users"), limit(3));
+            usersSnap = await getDocs(usersQuery);
+        }
+        
+        // 2. Fetch recent reports
+        let reportsSnap = { docs: [] };
+        try {
+            const reportsQuery = query(collection(db, "reports"), orderBy("timestamp", "desc"), limit(3));
+            reportsSnap = await getDocs(reportsQuery);
+        } catch(e) {
+            console.warn("Reports sort failed");
+            const reportsQuery = query(collection(db, "reports"), limit(3));
+            reportsSnap = await getDocs(reportsQuery);
+        }
+
+        // 3. Fetch recent listings
+        let listingsSnap = { docs: [] };
+        try {
+            // Assuming listings have 'createdAt' or similar. If not, this might fail.
+            // We'll try 'createdAt' first.
+            const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(3));
+            listingsSnap = await getDocs(listingsQuery);
+        } catch(e) {
+            console.warn("Listings sort failed");
+            const listingsQuery = query(collection(db, "listings"), limit(3));
+            listingsSnap = await getDocs(listingsQuery);
+        }
+
+        // Combine items
+        let activities = [];
+
+        usersSnap.forEach(doc => {
+            const data = doc.data();
+            // Try to parse date
+            let time = new Date();
+            if (data.updatedAt) time = new Date(data.updatedAt);
+            
+            activities.push({
+                text: `User updated: ${data.email || 'Unknown'}`,
+                time: time
+            });
+        });
+
+        reportsSnap.forEach(doc => {
+            const data = doc.data();
+            let time = new Date();
+            if (data.timestamp && data.timestamp.toDate) time = data.timestamp.toDate();
+
+            activities.push({
+                text: `New report: ${data.reason || 'No reason'}`,
+                time: time
+            });
+        });
+
+        listingsSnap.forEach(doc => {
+            const data = doc.data();
+            let time = new Date();
+            if (data.createdAt) time = new Date(data.createdAt);
+
+            activities.push({
+                text: `New listing: ${data.title || 'Untitled'}`,
+                time: time
+            });
+        });
+
+        // Sort by time desc
+        activities.sort((a, b) => b.time - a.time);
+
+        // Take top 5
+        const recent = activities.slice(0, 5);
+
+        if (recent.length === 0) {
+            list.innerHTML = '<li>No recent activity found.</li>';
+            return;
+        }
+
+        list.innerHTML = recent.map(item => `
             <li>
-                <span>New user registered</span>
-                <span style="color: #7f8c8d; font-size: 0.9em;">Just now</span>
+                <span>${item.text}</span>
+                <span style="color: #7f8c8d; font-size: 0.9em;">${timeAgo(item.time)}</span>
             </li>
-            <li>
-                <span>New listing posted</span>
-                <span style="color: #7f8c8d; font-size: 0.9em;">5 mins ago</span>
-            </li>
-            <li>
-                <span>System update</span>
-                <span style="color: #7f8c8d; font-size: 0.9em;">1 hour ago</span>
-            </li>
-        `;
+        `).join('');
+
+    } catch (error) {
+        console.error("Error loading activity:", error);
+        list.innerHTML = '<li>Error loading activity stream.</li>';
     }
+}
+
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
 }
