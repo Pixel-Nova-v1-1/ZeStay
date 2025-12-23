@@ -1,14 +1,35 @@
+import { auth, db, storage } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 document.addEventListener('DOMContentLoaded', () => {
     // Modal Elements
     const modal = document.getElementById('verificationModal');
     const btnVerify = document.querySelector('.btn-verify');
     const btnClose = document.querySelector('.modal-close-btn');
     const form = document.getElementById('verificationForm');
+    let currentUser = null;
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            // Pre-fill email if available
+            const emailInput = document.getElementById('v-email');
+            if (emailInput) emailInput.value = user.email;
+        }
+    });
 
     // Open Modal
     if (btnVerify) {
         btnVerify.addEventListener('click', (e) => {
             e.preventDefault();
+            if (!currentUser) {
+                alert("Please log in to request verification.");
+                window.location.href = 'landing.html';
+                return;
+            }
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent scrolling
         });
@@ -112,56 +133,105 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFileUpload('drop-zone-back', 'id-back');
     setupFileUpload('drop-zone-selfie', 'selfie');
 
+    // Helper to compress image and convert to Base64
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1024;
+                    const MAX_HEIGHT = 1024;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Compress to JPEG with 0.8 quality for better clarity
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     // Form Submission
     if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (!currentUser) {
+                alert("You must be logged in.");
+                return;
+            }
 
             // 1. Validation: Check if files are selected
             const idFront = document.getElementById('id-front').files[0];
             const idBack = document.getElementById('id-back').files[0];
             const selfie = document.getElementById('selfie').files[0];
 
-            if (!idFront) {
-                alert('Please upload the Front Side of your ID.');
-                return;
-            }
-            if (!idBack) {
-                alert('Please upload the Back Side of your ID.');
-                return;
-            }
-            if (!selfie) {
-                alert('Please upload your Selfie.');
+            if (!idFront || !idBack || !selfie) {
+                alert('Please upload all required documents.');
                 return;
             }
 
-            // Backend Integration Placeholder
-            const formData = new FormData();
-            formData.append('name', document.getElementById('v-name').value);
-            formData.append('mobile', document.getElementById('v-mobile').value);
-            formData.append('email', document.getElementById('v-email').value);
-            formData.append('idFront', idFront);
-            formData.append('idBack', idBack);
-            formData.append('selfie', selfie);
-
-            // Simulation
             const btnSubmit = form.querySelector('.btn-submit');
             const originalText = btnSubmit.textContent;
-            btnSubmit.textContent = 'Verifying...';
+            btnSubmit.textContent = 'Processing...';
             btnSubmit.disabled = true;
 
-            setTimeout(() => {
-                // Success!
-                alert('Verification Successful! You are now verified.');
+            try {
+                // 2. Compress Images to Base64 (Bypasses CORS and Storage buckets)
+                const idFrontBase64 = await compressImage(idFront);
+                const idBackBase64 = await compressImage(idBack);
+                const selfieBase64 = await compressImage(selfie);
 
-                // Set Verified Status
-                localStorage.setItem('isVerified', 'true');
+                // 3. Save Request to Firestore
+                await addDoc(collection(db, "verification_requests"), {
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    name: document.getElementById('v-name').value,
+                    mobile: document.getElementById('v-mobile').value,
+                    email: document.getElementById('v-email').value,
+                    idFrontUrl: idFrontBase64,
+                    idBackUrl: idBackBase64,
+                    selfieUrl: selfieBase64,
+                    status: 'pending',
+                    submittedAt: serverTimestamp()
+                });
 
-                // Redirect to Landing Page to show badge and enable chat
-                window.location.href = 'index.html';
-            }, 1500);
+                alert('Verification request submitted successfully! An admin will review your details.');
+                closeModal();
+                form.reset();
+                // Reset file previews
+                document.querySelectorAll('.file-preview').forEach(el => el.innerHTML = '');
+                document.querySelectorAll('.upload-placeholder').forEach(el => el.style.display = 'block');
 
-            console.log('Form Data Ready for Backend:', Object.fromEntries(formData));
+            } catch (error) {
+                console.error("Error submitting verification:", error);
+                alert("Error submitting verification request: " + error.message);
+            } finally {
+                btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
+            }
         });
     }
 });
