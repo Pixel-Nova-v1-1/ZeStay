@@ -1,90 +1,99 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { auth, db } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 
+const preferencesData = [
+    { id: 'night-owl', label: 'Night Owl', image: 'public/images/nightowl.png' },
+    { id: 'early-bird', label: 'Early Bird', image: 'public/images/earlybird.png' },
+    { id: 'music-lover', label: 'Music Lover', image: 'public/images/music.png' },
+    { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'public/images/quiet.png' },
+    { id: 'pet-lover', label: 'Pet Lover', image: 'public/images/petlover.png' },
+    { id: 'studious', label: 'Studious', image: 'public/images/studious.png' },
+    { id: 'sporty', label: 'Sporty', image: 'public/images/sporty.png' },
+    { id: 'guest-friendly', label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
+    { id: 'wanderer', label: 'Wanderer', image: 'public/images/wanderer.png' },
+    { id: 'clean-centric', label: 'Clean centric', image: 'public/images/cleaner.png' },
+    { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
+    { id: 'non-smoker', label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
+];
 
-    const preferencesData = [
-        { id: 'night-owl', label: 'Night Owl', image: 'public/images/nightowl.png' },
-        { id: 'early-bird', label: 'Early Bird', image: 'public/images/earlybird.png' },
-        { id: 'music-lover', label: 'Music Lover', image: 'public/images/music.png' },
-        { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'public/images/quiet.png' },
-        { id: 'pet-lover', label: 'Pet Lover', image: 'public/images/petlover.png' },
-        { id: 'studious', label: 'Studious', image: 'public/images/studious.png' },
-        { id: 'sporty', label: 'Sporty', image: 'public/images/sporty.png' },
-        { id: 'guest-friendly', label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
-        { id: 'wanderer', label: 'Wanderer', image: 'public/images/wanderer.png' },
-        { id: 'clean-centric', label: 'Clean centric', image: 'public/images/cleaner.png' },
-        { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
-        { id: 'non-smoker', label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
-    ];
+const selectedPreferences = new Set();
 
+document.addEventListener("DOMContentLoaded", () => {
+    const grid = document.getElementById("preferenceGrid");
+    const nextBtn = document.getElementById("nextBtn");
 
-    const nonAlcoholicValues = preferencesData.find(p => p.id === 'non-alcoholic');
-    // if (nonAlcoholicValues) nonAlcoholicValues.icon = 'fa-solid fa-ban'; // General ban or specific icon if available locally
-
-    const grid = document.getElementById('preferenceGrid');
-    const selectedPreferences = new Set();
-    const MIN_SELECTION = 5;
-
-
-    preferencesData.forEach(pref => {
-        const item = document.createElement('div');
-        item.classList.add('pref-item');
-        item.setAttribute('data-id', pref.id);
-
-
-
-        item.innerHTML = `
-            <div class="icon-circle">
-                <img src="${pref.image}" alt="${pref.label}">
-            </div>
-            <span class="pref-label">${pref.label}</span>
-        `;
-
-        item.addEventListener('click', () => toggleSelection(item, pref.id));
-        grid.appendChild(item);
-    });
-
-
-    function toggleSelection(element, id) {
-        if (selectedPreferences.has(id)) {
-            selectedPreferences.delete(id);
-            element.classList.remove('selected');
-        } else {
-            selectedPreferences.add(id);
-            element.classList.add('selected');
-        }
-    }
-
-
-    window.submitPreferences = function () {
-        if (selectedPreferences.size < MIN_SELECTION) {
-            alert(`Please select at least ${MIN_SELECTION} preferences to proceed.`);
-
-
-            const subtitle = document.querySelector('.subtitle');
-            subtitle.style.color = '#e74c3c';
-            setTimeout(() => subtitle.style.color = '', 1000);
+    // 1. Check Auth
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = "regimob.html?mode=login";
             return;
         }
 
-        // Save to localStorage or pass to backend
-        const preferencesArray = Array.from(selectedPreferences);
+        // Optional: Load existing preferences
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().preferences) {
+            docSnap.data().preferences.forEach(p => selectedPreferences.add(p));
+        }
+        renderPreferences();
+    });
 
-        // Simulating Backend Ready object
-        const userData = {
-            preferences: preferencesArray,
-            timestamp: new Date().toISOString()
-        };
+    // 2. Render Options
+    function renderPreferences() {
+        grid.innerHTML = "";
+        preferencesData.forEach(pref => {
+            const card = document.createElement("div");
+            card.className = `pref-item ${selectedPreferences.has(pref.id) ? "selected" : ""}`;
 
-        console.log('Preferences Data Ready for Backend:', userData);
-        localStorage.setItem('userPreferences', JSON.stringify(userData));
+            // Updated to use images
+            card.innerHTML = `
+        <div class="icon-circle">
+            <img src="${pref.image}" alt="${pref.label}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        </div>
+        <span class="pref-label">${pref.label}</span>
+      `;
 
+            card.addEventListener("click", () => togglePreference(pref.id, card));
+            grid.appendChild(card);
+        });
+    }
 
-        document.body.style.transition = 'opacity 0.5s ease';
-        document.body.style.opacity = '0';
+    // 3. Toggle Selection
+    function togglePreference(id, card) {
+        if (selectedPreferences.has(id)) {
+            selectedPreferences.delete(id);
+            card.classList.remove("selected");
+        } else {
+            selectedPreferences.add(id);
+            card.classList.add("selected");
+        }
+    }
 
-        setTimeout(() => {
-            window.location.href = 'ques.html';
-        }, 500);
+    // 4. Submit
+    window.submitPreferences = async () => {
+        if (selectedPreferences.size < 5) {
+            alert(`Please select at least 5 preferences. You have selected ${selectedPreferences.size}.`);
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = "Saving... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+        try {
+            await updateDoc(doc(db, "users", user.uid), {
+                preferences: Array.from(selectedPreferences)
+            });
+            window.location.href = "ques.html";
+        } catch (error) {
+            console.error("Error saving preferences:", error);
+            alert("Failed to save preferences.");
+        } finally {
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";
+        }
     };
-
 });

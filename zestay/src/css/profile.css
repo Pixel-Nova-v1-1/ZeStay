@@ -255,11 +255,12 @@ body {
 }
 
 .preferences-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 30px;
     justify-content: center;
     max-width: 800px;
+    margin: 0 auto;
 }
 
 .pref-item-display {
@@ -631,8 +632,12 @@ body {
     }
 }
 
-/* Make avatar clickable */
+/* Make avatar clickable and fit properly */
 .profile-avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
     cursor: pointer !important;
     transition: transform 0.2s;
 }
