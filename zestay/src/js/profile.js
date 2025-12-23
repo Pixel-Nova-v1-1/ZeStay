@@ -114,6 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Populate Fields
                 profileNameEl.textContent = data.name || "User";
 
+                // Verification Badge
+                const verificationBadge = document.getElementById('verificationBadge');
+                if (verificationBadge) {
+                    if (data.isVerified) {
+                        verificationBadge.style.display = 'inline-flex';
+                    } else {
+                        verificationBadge.style.display = 'none';
+                    }
+                }
+
                 // Update Avatar
                 if (profileAvatarEl) {
                     profileAvatarEl.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
