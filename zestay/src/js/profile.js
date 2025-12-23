@@ -1,25 +1,27 @@
+import { auth, db } from "../firebase";
+import { nhost } from "../nhost";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
-
     const profileNameEl = document.getElementById('profileName');
-
     const profileAvatarEl = document.getElementById('profileAvatar');
     const preferencesGrid = document.getElementById('userPreferencesGrid');
     const listingsContainer = document.getElementById('userListingsContainer');
     const tabs = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-
     const logoutBtn = document.getElementById('logoutBtn');
-
-
     const editProfileBtn = document.getElementById('editProfileBtn');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const inputs = document.querySelectorAll('.profile-details-form input');
     const genderPillDisplay = document.getElementById('display-gender');
+    const avatarUploadInput = document.getElementById('avatarUploadInput');
+
     let isEditing = false;
+    let currentUser = null;
 
-
+    // Preference Map (Upstream version with images)
     const preferenceMap = {
         'night-owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
         'early-bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
@@ -35,247 +37,411 @@ document.addEventListener('DOMContentLoaded', () => {
         'non-smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
     };
 
-
-    const avatarUploadInput = document.getElementById('avatarUploadInput');
-
-    function loadUserProfile() {
-        const storedProfile = localStorage.getItem('userProfile');
-
-        if (storedProfile) {
-            const data = JSON.parse(storedProfile);
-            /* 
-               --- BACKEND INTEGRATION NOTE ---
-               Replace the localStorage fetching below with API calls.
-               
-               // Load User Profile
-               fetch('/api/user/profile')
-                   .then(res => res.json())
-                   .then(data => {
-                       profileNameEl.textContent = data.name;
-                       // ... other fields
-                   });
-                   **for devjith
-            */
-            if (data.name) {
-                let nameHtml = data.name;
-                if (localStorage.getItem('isVerified') === 'true') {
-                    // Blue Verified Badge (FontAwesome Stack) - Slightly larger for profile page
-                    nameHtml += `
-                    <span class="fa-stack" style="font-size: 10px; margin-left: 8px; vertical-align: middle;">
-                        <i class="fa-solid fa-certificate fa-stack-2x" style="color: #2196F3;"></i>
-                        <i class="fa-solid fa-check fa-stack-1x" style="color: white;"></i>
-                    </span>`;
-                }
-                profileNameEl.innerHTML = nameHtml;
-                document.getElementById('display-name').value = data.name; /* New Field */
-            }
-            if (data.email) {
-                // profileEmailEl.textContent = data.email; // Removed
-                document.getElementById('display-email').value = data.email; /* New Field */
-            }
-            if (data.occupation) {
-                document.getElementById('display-occupation').value = data.occupation; /* New Field */
-            }
-            if (data.gender) {
-                const genderContainer = document.getElementById('display-gender');
-                // clear first or reconstruct
-                genderContainer.innerHTML = `
-                    <span class="gender-option ${data.gender === 'Male' ? 'active' : ''}">Male</span>
-                    <span class="gender-option ${data.gender === 'Female' ? 'active' : ''}">Female</span>
-                `;
-            }
-
-            if (data.profileOption === 'upload' && data.uploadedAvatar) {
-
-                profileAvatarEl.src = data.uploadedAvatar;
-            } else if (data.profileOption === 'avatar' && data.avatarId) {
-                if (!data.avatarId.startsWith('http')) {
-                    profileAvatarEl.src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
-                } else {
-                    profileAvatarEl.src = data.avatarId;
-                }
-            } else {
-
-                profileAvatarEl.src = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
-            }
-
+    // 1. Auth Check & Load Data
+    console.log("Checking auth state...");
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            console.log("User logged in:", user.uid);
+            currentUser = user;
+            await loadUserProfile(user.uid);
         } else {
+            console.log("No user logged in, redirecting...");
+            window.location.href = "regimob.html?mode=login";
+        }
+    });
 
-            profileNameEl.textContent = "Guest User";
+    async function loadUserProfile(uid) {
+        try {
+            console.log("Loading user profile for:", uid);
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
 
+            if (docSnap.exists()) {
+                console.log("User data found:", docSnap.data());
+                const data = docSnap.data();
+
+                // Populate Fields
+                profileNameEl.textContent = data.name || "User";
+
+                // Update Avatar
+                if (profileAvatarEl) {
+                    profileAvatarEl.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
+                }
+
+                // Update Navbar Profile Icon
+                const navProfileBtn = document.querySelector('.btn-profile');
+                if (navProfileBtn) {
+                    const navImg = document.createElement('img');
+                    navImg.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
+                    navImg.style.width = '35px';
+                    navImg.style.height = '35px';
+                    navImg.style.borderRadius = '50%';
+                    navImg.style.objectFit = 'cover';
+                    navProfileBtn.innerHTML = '';
+                    navProfileBtn.appendChild(navImg);
+                }
+
+                document.getElementById('display-name').value = data.name || "";
+                document.getElementById('display-email').value = data.email || "";
+                document.getElementById('display-occupation').value = data.occupation || "";
+
+                // Load Preferences
+                if (data.preferences) {
+                    loadPreferences(data.preferences);
+                }
+
+                isEditing = true;
+                editProfileBtn.style.display = 'none';
+                saveProfileBtn.style.display = 'block';
+                inputs.forEach(input => {
+                    if (input.id !== 'display-email') { // Email usually read-only
+                        input.removeAttribute('readonly');
+                        input.style.backgroundColor = '#fff';
+                        input.style.borderColor = '#1abc9c';
+                    }
+                });
+                genderPillDisplay.classList.add('editing');
+            }
+        } catch (error) {
+            console.error("Error loading profile:", error);
         }
     }
 
-
+    // 2. Avatar Upload
     if (avatarUploadInput) {
-        avatarUploadInput.addEventListener('change', function (e) {
+        avatarUploadInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file || !currentUser) return;
 
-            const reader = new FileReader();
+            // Visual Feedback: Show spinner/opacity
+            const avatarWrapper = document.querySelector('.profile-avatar-wrapper');
+            const originalSrc = profileAvatarEl.src;
 
-            reader.onload = function (event) {
-                const base64String = event.target.result;
+            // Ensure wrapper is relative for absolute positioning of spinner
+            avatarWrapper.style.position = 'relative';
 
-                profileAvatarEl.src = base64String;
+            // Create spinner overlay if it doesn't exist
+            let spinner = avatarWrapper.querySelector('.upload-spinner');
+            if (!spinner) {
+                spinner = document.createElement('div');
+                spinner.className = 'upload-spinner';
+                spinner.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                spinner.style.position = 'absolute';
+                spinner.style.top = '0';
+                spinner.style.left = '0';
+                spinner.style.width = '100%';
+                spinner.style.height = '100%';
+                spinner.style.background = 'rgba(0,0,0,0.5)';
+                spinner.style.color = 'white';
+                spinner.style.display = 'flex';
+                spinner.style.alignItems = 'center';
+                spinner.style.justifyContent = 'center';
+                spinner.style.borderRadius = '50%';
+                spinner.style.fontSize = '2rem';
+                spinner.style.zIndex = '10'; // Ensure it's on top
+                avatarWrapper.appendChild(spinner);
+            }
+            spinner.style.display = 'flex';
+
+            try {
+                console.log("Starting upload for user:", currentUser.uid);
+
+                // Create a timeout promise (15 seconds)
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Upload timed out. Please check your connection.")), 15000)
+                );
+
+                // The actual upload task
+                const uploadTask = async () => {
+                    console.log("Uploading to Nhost (Manual Fetch)...");
+
+                    // Rename file to use Firebase UID
+                    const fileExtension = file.name.split('.').pop();
+                    const newFileName = `${currentUser.uid}.${fileExtension}`;
+                    const renamedFile = new File([file], newFileName, { type: file.type });
 
 
-                const storedProfile = localStorage.getItem('userProfile');
-                let data = {};
-                if (storedProfile) {
-                    data = JSON.parse(storedProfile);
-                }
+                    // Manual Fetch Upload to bypass SDK "file[]" issue
+                    const formData = new FormData();
+                    // Append bucket-id FIRST (some servers are picky about order)
+                    formData.append("bucket-id", "default");
 
+                    // DEBUG: Log file details
+                    console.log("Original File:", file.name, file.size, file.type);
+                    console.log("Renamed File:", renamedFile.name, renamedFile.size, renamedFile.type);
 
-                data.profileOption = 'upload';
-                data.uploadedAvatar = base64String;
+                    // Use "file[]" as confirmed by Test 3
+                    formData.append("file[]", renamedFile);
 
-                localStorage.setItem('userProfile', JSON.stringify(data));
-            };
+                    // Log FormData entries for debugging
+                    for (var pair of formData.entries()) {
+                        console.log('FormData Entry: ' + pair[0] + ', ' + pair[1]);
+                    }
 
-            reader.readAsDataURL(file);
+                    // Construct URL manually since nhost.storage.url is undefined
+                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+
+                    console.log("Upload URL:", uploadUrl);
+
+                    const res = await fetch(uploadUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        console.error("Upload failed with status:", res.status);
+                        console.error("Server response:", errorText);
+                        throw new Error(`Upload failed: ${res.status} ${errorText}`);
+                    }
+
+                    const responseData = await res.json();
+                    const fileMetadata = responseData.processedFiles?.[0] || responseData;
+
+                    console.log("Upload successful, metadata:", fileMetadata);
+
+                    // Manual Public URL construction
+                    const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
+                    console.log("Download URL:", downloadURL);
+
+                    // --- Delete Old File Logic ---
+                    // Fetch current doc to get old URL
+                    try {
+                        const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
+                        if (userDocSnap.exists()) {
+                            const oldUrl = userDocSnap.data().photoUrl;
+                            if (oldUrl && oldUrl.includes(subdomain) && oldUrl !== downloadURL) {
+                                console.log("Deleting old file:", oldUrl);
+                                const oldFileId = oldUrl.split('/').pop();
+                                const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
+                                await fetch(deleteUrl, { method: 'DELETE' });
+                                console.log("Old file deleted.");
+                            }
+                        }
+                    } catch (delErr) {
+                        console.warn("Failed to delete old file:", delErr);
+                    }
+
+                    // Update Firestore
+                    console.log("Updating Firestore...");
+                    await updateDoc(doc(db, "users", currentUser.uid), {
+                        photoUrl: downloadURL,
+                        profileOption: 'upload'
+                    });
+                    return downloadURL;
+                };
+
+                // Race them
+                const downloadURL = await Promise.race([uploadTask(), timeoutPromise]);
+
+                // Update UI
+                profileAvatarEl.src = downloadURL;
+                console.log("Profile updated successfully");
+
+            } catch (error) {
+                console.error("Error uploading avatar:", error);
+                alert("Failed to upload avatar: " + error.message);
+                profileAvatarEl.src = originalSrc; // Revert on error
+            } finally {
+                spinner.style.display = 'none';
+                // Reset input so same file can be selected again if needed
+                avatarUploadInput.value = '';
+            }
         });
     }
 
-    function loadPreferences() {
-        const storedPrefs = localStorage.getItem('userPreferences');
+    // 3. Edit/Save Profile Logic
+    if (editProfileBtn && saveProfileBtn) {
+        editProfileBtn.addEventListener('click', () => {
+            isEditing = true;
+            editProfileBtn.style.display = 'none';
+            saveProfileBtn.style.display = 'block';
+            inputs.forEach(input => {
+                if (input.id !== 'display-email') { // Email usually read-only
+                    input.removeAttribute('readonly');
+                    input.style.backgroundColor = '#fff';
+                    input.style.borderColor = '#1abc9c';
+                }
+            });
+            genderPillDisplay.classList.add('editing');
+        });
+
+        saveProfileBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+
+            saveProfileBtn.innerHTML = "Saving... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            const newName = document.getElementById('display-name').value;
+            const newOccupation = document.getElementById('display-occupation').value;
+            const activeGenderEl = genderPillDisplay.querySelector('.active');
+            const newGender = activeGenderEl ? activeGenderEl.textContent : 'Male';
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    name: newName,
+                    occupation: newOccupation,
+                    gender: newGender
+                });
+
+                profileNameEl.textContent = newName;
+                alert("Profile updated!");
+
+                // Reset UI
+                isEditing = false;
+                editProfileBtn.style.display = 'block';
+                saveProfileBtn.style.display = 'none';
+                saveProfileBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
+
+                inputs.forEach(input => {
+                    input.setAttribute('readonly', true);
+                    input.style.backgroundColor = '#f1f2f6';
+                    input.style.borderColor = 'transparent';
+                });
+                genderPillDisplay.classList.remove('editing');
+
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                alert("Failed to save profile.");
+                saveProfileBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
+            }
+        });
+    }
+
+    // Gender Selection
+    if (genderPillDisplay) {
+        genderPillDisplay.addEventListener('click', (e) => {
+            if (!isEditing) return;
+            if (e.target.classList.contains('gender-option')) {
+                const options = genderPillDisplay.querySelectorAll('.gender-option');
+                options.forEach(opt => opt.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+    }
+
+    // 4. Preferences Logic
+    function loadPreferences(prefIds) {
         preferencesGrid.innerHTML = '';
 
-        if (storedPrefs) {
-            const data = JSON.parse(storedPrefs);
-            const prefIds = data.preferences || [];
+        // Render ALL options from preferenceMap
+        Object.keys(preferenceMap).forEach(key => {
+            const map = preferenceMap[key];
+            const isSelected = prefIds.includes(key);
 
-            if (prefIds.length > 0) {
-                prefIds.forEach(id => {
-                    const map = preferenceMap[id];
-                    if (map) {
-                        const div = document.createElement('div');
-                        div.className = 'pref-item-display';
-                        div.innerHTML = `
-                            <div class="pref-icon-circle teal">
-                                <img src="${map.image}" alt="${map.label}">
-                            </div>
-                            <span class="pref-label">${map.label}</span>
-                         `;
-                        preferencesGrid.appendChild(div);
-                    }
-                });
-            } else {
-                preferencesGrid.innerHTML = '<p class="empty-state">No preferences selected.</p>';
+            const div = document.createElement('div');
+            div.className = `pref-item ${isSelected ? 'selected' : ''}`;
+            div.style.pointerEvents = 'none';
+
+            // Updated to use images
+            div.innerHTML = `
+                <div class="icon-circle">
+                     <img src="${map.image}" alt="${map.label}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <span class="pref-label">${map.label}</span>
+             `;
+            preferencesGrid.appendChild(div);
+        });
+    }
+
+    // --- Preferences Edit/Save Logic ---
+    const editPrefsBtn = document.getElementById('editPrefsBtn');
+    const savePrefsBtn = document.getElementById('savePrefsBtn');
+    const editPreferencesGrid = document.getElementById('editPreferencesGrid');
+
+    if (editPrefsBtn && savePrefsBtn && editPreferencesGrid) {
+        editPrefsBtn.addEventListener('click', async () => {
+            // 1. Toggle UI
+            editPrefsBtn.style.display = 'none';
+            savePrefsBtn.style.display = 'block';
+            preferencesGrid.style.display = 'none';
+            editPreferencesGrid.style.display = 'grid';
+            editPreferencesGrid.innerHTML = '';
+
+            // 2. Fetch current prefs to mark selected
+            let currentPrefs = [];
+            if (currentUser) {
+                const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+                if (docSnap.exists()) {
+                    currentPrefs = docSnap.data().preferences || [];
+                }
             }
-        } else {
-            preferencesGrid.innerHTML = '<p class="empty-state">No preferences found. Please complete the questionnaire.</p>';
-        }
-    }
 
-    function loadListings() {
-        const storedListings = localStorage.getItem('userListings');
+            // 3. Populate Edit Grid
+            Object.keys(preferenceMap).forEach(key => {
+                const map = preferenceMap[key];
+                const isSelected = currentPrefs.includes(key);
 
-        listingsContainer.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = `pref-item ${isSelected ? 'selected' : ''}`;
+                div.dataset.id = key;
 
-        if (storedListings) {
-            const listings = JSON.parse(storedListings);
+                // Updated to use images
+                div.innerHTML = `
+                    <div class="icon-circle">
+                         <img src="${map.image}" alt="${map.label}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <span class="pref-label">${map.label}</span>
+                 `;
 
-            if (listings.length > 0) {
-                listings.forEach(item => {
-                    const rent = item.rent || item['Approx Rent'] || '₹ 5,000';
-                    const location = item.location || item['Location'] || 'Unknown Location';
-                    const lookingFor = item.gender || item.lookingFor || 'Any';
-                    const matchScore = 'New';
-                    const distance = '0 km';
-
-                    const image = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&w=400&q=80';
-
-                    let interestsHTML = '';
-                    if (item.highlights_preferences) {
-                        const interests = item.highlights_preferences.split(', ').slice(0, 3); // Show max 3
-                        interestsHTML = interests.map(interest => `<span style="background: #e0f2f1; color: #009688; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; margin-right: 5px;">${interest}</span>`).join('');
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = 'listing-card';
-                    card.innerHTML = `
-                        <div class="card-content">
-                            <div class="card-top">
-                                <div class="listing-avatar">
-                                    <img src="${image}" alt="Listing">
-                                </div>
-                                <div class="listing-info">
-                                    <h3>${profileNameEl.textContent || 'My Listing'}</h3>
-                                    <p class="listing-location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
-                                    
-                                    <div class="info-row">
-                                        <div class="info-col">
-                                            <span class="label">Rent</span>
-                                            <span class="value">₹ ${rent}</span>
-                                        </div>
-                                        <div class="info-col">
-                                            <span class="label">Looking for</span>
-                                            <span class="value" style="text-transform: capitalize;">${lookingFor}</span>
-                                        </div>
-                                    </div>
-                                     <div style="margin-top: 10px; display: flex; flex-wrap: wrap;">
-                                        ${interestsHTML}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-bottom">
-                            <div class="match-tag">
-                                <span>${matchScore}</span>
-                            </div>
-                            <span style="font-size: 13px; color: #555;">${distance} away</span>
-                            <div class="phone-icon"><i class="fa-solid fa-phone"></i></div>
-                        </div>
-                    `;
-                    listingsContainer.appendChild(card);
+                // Toggle Selection on Click
+                div.addEventListener('click', () => {
+                    div.classList.toggle('selected');
                 });
-            } else {
-                listingsContainer.innerHTML = '<p class="empty-state">No listings found.</p>';
+
+                editPreferencesGrid.appendChild(div);
+            });
+        });
+
+        savePrefsBtn.addEventListener('click', async () => {
+            const selectedItems = editPreferencesGrid.querySelectorAll('.pref-item.selected');
+            const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
+
+            if (selectedIds.length < 5) {
+                alert(`Please select at least 5 preferences. You have selected ${selectedIds.length}.`);
+                return;
             }
-        } else {
-            listingsContainer.innerHTML = '<p class="empty-state">You haven\'t posted any listings yet.</p>';
-        }
+
+            if (!currentUser) return;
+
+            savePrefsBtn.innerHTML = "Saving... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    preferences: selectedIds
+                });
+
+                // Refresh View
+                loadPreferences(selectedIds);
+
+                // Reset UI
+                editPrefsBtn.style.display = 'block';
+                savePrefsBtn.style.display = 'none';
+                savePrefsBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
+
+                preferencesGrid.style.display = 'grid';
+                editPreferencesGrid.style.display = 'none';
+
+                alert("Preferences updated!");
+
+            } catch (error) {
+                console.error("Error saving preferences:", error);
+                alert("Failed to save preferences.");
+                savePrefsBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
+            }
+        });
     }
 
-
-    function loadNotifications() {
-        const notificationsContainer = document.getElementById('notificationsContainer');
-        /* 
-           --- BACKEND INTEGRATION NOTE ---
-           Replace the logic below with an API call to fetch notifications.
-           
-           fetch('/api/user/notifications')
-               .then(res => res.json())
-               .then(data => {
-                   if (data.length > 0) {
-                       notificationsContainer.innerHTML = ''; // Clear empty state
-                       
-                       data.forEach(notif => {
-                           // Example Render Logic:
-                           // const item = document.createElement('div');
-                           // item.className = `notification-item ${notif.isRead ? '' : 'unread'}`;
-                           // item.innerHTML = `
-                           //    <div class="notif-icon-circle"><i class="fa-regular fa-user"></i></div>
-                           //    <div class="notif-content">
-                           //        <h4>${notif.senderName}</h4>
-                           //        <p>${notif.message}</p>
-                           //        <span class="notif-date">${notif.date}</span>
-                           //    </div>
-                           //    <div class="notif-time">${notif.time}</div>
-                           //    ${!notif.isRead ? '<div class="notif-dot"></div>' : ''}
-                           // `;
-                           // notificationsContainer.appendChild(item);
-                       });
-                   }
-               });
-        */
-
-        // For now, we keep the default content from HTML (Empty State)
-        // because there are no backend notifications yet.
-        //****for devjith 
+    // 5. Logout
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        });
     }
 
+    // Tabs
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
@@ -286,210 +452,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 5. Logout ---
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            // Logout Logic
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('isVerified'); // Clear verification status
-            window.location.href = 'index.html';
-        });
-    }
-
-
-
-    if (editProfileBtn && saveProfileBtn) {
-        // Edit Button Click
-        editProfileBtn.addEventListener('click', () => {
-            isEditing = true;
-            // Toggle UI
-            editProfileBtn.style.display = 'none';
-            saveProfileBtn.style.display = 'block'; // Or inline-flex if needed, styling handles it
-
-            // Enable inputs
-            inputs.forEach(input => {
-                input.removeAttribute('readonly');
-                input.style.backgroundColor = '#fff'; // Visual cue
-                input.style.borderColor = '#1abc9c';
-            });
-
-            // Enable Gender Selection Visuals
-            genderPillDisplay.classList.add('editing');
-        });
-
-        // Save Button Click
-        saveProfileBtn.addEventListener('click', () => {
-            isEditing = false;
-
-            // 1. Gather Data
-            const newName = document.getElementById('display-name').value;
-            const newOccupation = document.getElementById('display-occupation').value;
-            const newEmail = document.getElementById('display-email').value;
-            // Gender is handled by active class check below
-            const activeGenderEl = genderPillDisplay.querySelector('.active');
-            const newGender = activeGenderEl ? activeGenderEl.textContent : 'Male'; // Default fallback
-
-            // 2. Update LocalStorage
-            const storedProfile = localStorage.getItem('userProfile');
-            let data = storedProfile ? JSON.parse(storedProfile) : {};
-
-            data.name = newName;
-            data.occupation = newOccupation;
-            data.email = newEmail;
-            data.gender = newGender;
-
-            localStorage.setItem('userProfile', JSON.stringify(data));
-
-            // 3. Update UI to Read-Only
-            editProfileBtn.style.display = 'block'; // or inline-flex
-            saveProfileBtn.style.display = 'none';
-
-            inputs.forEach(input => {
-                input.setAttribute('readonly', true);
-                input.style.backgroundColor = '#f1f2f6';
-                input.style.borderColor = 'transparent';
-            });
-
-            genderPillDisplay.classList.remove('editing');
-
-            // Update Header Name immediately
-            profileNameEl.textContent = newName;
-
-            alert('Profile Updated Successfully!');
-        });
-    }
-
-    // Gender Selection Logic (Delegation)
-    if (genderPillDisplay) {
-        genderPillDisplay.addEventListener('click', (e) => {
-            if (!isEditing) return; // Only allow change if editing
-
-            if (e.target.classList.contains('gender-option')) {
-                // Remove active from all
-                const options = genderPillDisplay.querySelectorAll('.gender-option');
-                options.forEach(opt => opt.classList.remove('active'));
-
-                // Add active to clicked
-                e.target.classList.add('active');
-            }
-        });
-    }
-
-
-    // --- Preferences Edit/Save Logic ---
-    const editPrefsBtn = document.getElementById('editPrefsBtn');
-    const savePrefsBtn = document.getElementById('savePrefsBtn');
-    const userPreferencesGrid = document.getElementById('userPreferencesGrid');
-    const editPreferencesGrid = document.getElementById('editPreferencesGrid');
-
-    if (editPrefsBtn && savePrefsBtn && editPreferencesGrid) {
-
-        editPrefsBtn.addEventListener('click', () => {
-            // 1. Toggle Buttons
-            editPrefsBtn.style.display = 'none';
-            savePrefsBtn.style.display = 'block'; // or inline-flex
-
-            // 2. Toggle Grids
-            userPreferencesGrid.style.display = 'none';
-            editPreferencesGrid.style.display = 'grid'; // Ensure grid layout
-            editPreferencesGrid.innerHTML = ''; // Clear previous
-
-            // 3. Get Current Prefs
-            const storedPrefs = localStorage.getItem('userPreferences');
-            let currentPrefIds = [];
-            if (storedPrefs) {
-                const data = JSON.parse(storedPrefs);
-                currentPrefIds = data.preferences || [];
-            }
-
-            // 4. Populate Edit Grid with ALL Options
-            Object.keys(preferenceMap).forEach(key => {
-                const map = preferenceMap[key];
-                const isSelected = currentPrefIds.includes(key);
-
-                const div = document.createElement('div');
-                div.className = `pref-item ${isSelected ? 'selected' : ''}`;
-                div.dataset.id = key;
-                div.innerHTML = `
-                    <div class="icon-circle">
-                         <img src="${map.image}" alt="${map.label}">
-                    </div>
-                    <span class="pref-label">${map.label}</span>
-                 `;
-
-                // Selection Click Handler
-                div.addEventListener('click', () => {
-                    div.classList.toggle('selected');
-                });
-
-                editPreferencesGrid.appendChild(div);
-            });
-        });
-
-        savePrefsBtn.addEventListener('click', () => {
-            // 1. Gather Selected IDs
-            const selectedItems = editPreferencesGrid.querySelectorAll('.pref-item.selected');
-            const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
-
-            // Validation (Optional: currently "at least 5" mentioned in HTML, enforcing here?)
-            if (selectedIds.length < 5) {
-                alert('Please select at least 5 preferences.');
-                return;
-            }
-
-            // 2. Update LocalStorage
-            const storedPrefs = localStorage.getItem('userPreferences');
-            let data = storedPrefs ? JSON.parse(storedPrefs) : {};
-            data.preferences = selectedIds;
-            localStorage.setItem('userPreferences', JSON.stringify(data));
-
-            // 3. Refresh Display Grid
-            loadPreferences();
-
-            // 4. Toggle UI Back
-            editPrefsBtn.style.display = 'block'; // or inline-flex
-            savePrefsBtn.style.display = 'none';
-
-            userPreferencesGrid.style.display = ''; // Restore display (let CSS handle it)
-            editPreferencesGrid.style.display = 'none';
-
-            alert('Preferences Updated Successfully!');
-        });
-    }
-
-
     // --- Lightbox Logic ---
-    const lightbox = document.getElementById('avatarLightbox');
+    // Fixed ID to match HTML
+    const lightboxModal = document.getElementById('avatarLightbox');
     const lightboxImg = document.getElementById('lightboxImg');
-    const closeBtn = document.querySelector('.close-lightbox');
+    const closeLightbox = document.querySelector('.close-lightbox');
 
-    if (profileAvatarEl && lightbox && lightboxImg) {
+    if (profileAvatarEl && lightboxModal && lightboxImg) {
         profileAvatarEl.addEventListener('click', () => {
-            lightbox.style.display = "flex";
-            lightbox.style.display = "block";
+            lightboxModal.style.display = "flex"; // Changed to flex for centering if css supports it, or block
             lightboxImg.src = profileAvatarEl.src;
         });
     }
 
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            lightbox.style.display = "none";
+    if (closeLightbox) {
+        closeLightbox.addEventListener('click', () => {
+            lightboxModal.style.display = "none";
         });
     }
 
-    if (lightbox) {
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) {
-                lightbox.style.display = "none";
-            }
-        });
-    }
-
-
-    // Initialize
-    loadUserProfile();
-    loadPreferences();
-    loadListings();
-    loadNotifications();
-
+    // Close on outside click
+    window.addEventListener('click', (event) => {
+        if (event.target == lightboxModal) {
+            lightboxModal.style.display = "none";
+        }
+    });
 });

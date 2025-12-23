@@ -34,9 +34,41 @@
                         <input type="email" id="emailInput" placeholder="you@example.com" />
                     </div>
 
-                    <button id="sendLinkBtn" class="btn-otp">
-                        Send Login Link
+                    <div class="input-group">
+                        <span class="icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="passwordInput" placeholder="Password" />
+                        <span class="toggle-password" id="togglePasswordBtn"
+                            style="cursor: pointer; margin-left: 10px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+
+                    <div class="input-group" id="confirmPasswordGroup" style="display: none;">
+                        <span class="icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="confirmPasswordInput" placeholder="Confirm Password" />
+                    </div>
+
+                    <button id="authActionBtn" class="btn-otp">
+                        Continue
                     </button>
+                </div>
+
+                <div id="verificationSection" style="display: none; text-align: center;">
+                    <div class="icon-circle"
+                        style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size: 32px; color: #2e7d32;"></i>
+                    </div>
+                    <h2 class="title" style="margin-bottom: 10px;">Check your inbox</h2>
+                    <p class="subtitle" style="margin-bottom: 30px;">
+                        We sent a verification link to your email. Please click the link to verify your account.
+                    </p>
+                    <button id="resendBtn" class="btn-otp"
+                        style="background-color: transparent; color: #2e7d32; border: 1px solid #2e7d32; margin-top: 10px;">
+                        Resend Link
+                    </button>
+                    <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                        Waiting for verification... <i class="fa-solid fa-spinner fa-spin"></i>
+                    </p>
                 </div>
             </div>
         </div>
@@ -62,4 +94,5 @@
         }
     </script>
 </body>
+
 </html>

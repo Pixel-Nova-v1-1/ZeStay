@@ -1,215 +1,194 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('profilePic');
-    const avatarGrid = document.getElementById('avatarGrid');
-    const avatarOptions = document.querySelectorAll('.avatar-option');
-    const form = document.getElementById('registerForm');
+import { auth, db } from "../firebase";
+import { nhost } from "../nhost";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
-    let selectedAvatar = null;
-    let storedFile = null; // Store single file
+document.addEventListener("DOMContentLoaded", () => {
+    const registerForm = document.getElementById("registerForm");
+    const emailInput = document.getElementById("email");
+    const profilePicInput = document.getElementById("profilePic");
+    const filePreview = document.getElementById("filePreview");
+    const dropZone = document.getElementById("dropZone");
+    const avatarOptions = document.querySelectorAll(".avatar-option");
+    let selectedAvatarUrl = null;
+    let selectedFile = null;
 
-    // --- File Upload Logic ---
+    // 1. Check Auth State & Pre-fill Email
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            emailInput.value = user.email;
 
-    // UI Update Function
-    const updateUploadUI = () => {
-        const uploadContent = dropZone.querySelector('.upload-content');
-
-        if (storedFile) {
-            // Show Preview with Remove Button
-            uploadContent.innerHTML = `
-                <div class="selected-file-preview">
-                    <div class="file-info">
-                        <i class="fa-regular fa-image"></i>
-                        <span class="file-name">${storedFile.name}</span>
-                    </div>
-                    <i class="fa-solid fa-xmark remove-file" title="Remove file"></i>
-                </div>
-            `;
-            dropZone.classList.add('has-file');
-        } else {
-            // Show Default Upload Prompt
-            uploadContent.innerHTML = `
-                <i class="fa-regular fa-image upload-icon"></i>
-                <p>Click or drop to upload your profile photo (jpg or png)</p>
-            `;
-            dropZone.classList.remove('has-file');
-        }
-    };
-
-    // Click on DropZone
-    dropZone.addEventListener('click', (e) => {
-        // Check if remove button was clicked
-        if (e.target.classList.contains('remove-file') || e.target.closest('.remove-file')) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Remove file
-            storedFile = null;
-            fileInput.value = ''; // Clear input
-            updateUploadUI();
-            return;
-        }
-
-        // Otherwise trigger file input (if no file is currently selected OR if we want to allow replacing)
-        // If has file, maybe we just want to remove? Let's allow replacing by clicking the box area, but remove by clicking X.
-        fileInput.click();
-    });
-
-    fileInput.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent bubbling to dropZone click
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        handleFileSelect(e.target.files[0]);
-    });
-
-    // Drag and Drop events
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.add('drag-over');
-        }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.remove('drag-over');
-        }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFileSelect(files[0]);
-    });
-
-    function handleFileSelect(file) {
-        if (!file) return;
-
-        // Basic validation
-        if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file (JPG, PNG).');
-            return;
-        }
-
-        // Clear avatar selection if a file is uploaded
-        clearAvatarSelection();
-
-        storedFile = file;
-        updateUploadUI();
-    }
-
-
-    // --- Avatar Selection Logic ---
-    avatarOptions.forEach(avatar => {
-        avatar.addEventListener('click', () => {
-            // Toggle selection
-            if (avatar.classList.contains('selected')) {
-                avatar.classList.remove('selected');
-                selectedAvatar = null;
-            } else {
-                clearAvatarSelection(); // Deselect others
-
-                // Clear file upload selection
-                storedFile = null;
-                fileInput.value = '';
-                updateUploadUI();
-
-                avatar.classList.add('selected');
-                selectedAvatar = avatar.getAttribute('data-value');
+            // Check if user already has data
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                // Optional: Pre-fill other fields if editing
+                const data = docSnap.data();
+                document.getElementById("name").value = data.name || "";
+                document.getElementById("dob").value = data.dob || "";
+                document.getElementById("occupation").value = data.occupation || "";
+                document.getElementById("gender").value = data.gender || "";
+                document.getElementById("hobbies").value = data.hobbies || "";
             }
+        } else {
+            alert("You must be logged in to access this page.");
+            window.location.href = "regimob.html?mode=login";
+        }
+    });
+
+    // 2. Handle Avatar Selection
+    avatarOptions.forEach(img => {
+        img.addEventListener("click", () => {
+            // Deselect others
+            avatarOptions.forEach(opt => opt.classList.remove("selected"));
+            filePreview.classList.add("hidden");
+            selectedFile = null; // Clear file if avatar selected
+
+            // Select this
+            img.classList.add("selected");
+            selectedAvatarUrl = img.src;
         });
     });
 
-    function clearAvatarSelection() {
-        avatarOptions.forEach(opt => opt.classList.remove('selected'));
-        selectedAvatar = null;
-    }
-
-
-    // --- Form Submission Logic ---
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // 1. Validate Required Text Fields
-        const name = form.querySelector('[name="name"]').value;
-        const email = form.querySelector('[name="email"]').value;
-        const dob = form.querySelector('[name="dob"]').value;
-        const gender = form.querySelector('[name="gender"]').value;
-
-        if (!name || !email || !dob || !gender) {
-            alert("Please fill in all compulsory fields (Name, Email, DOB, Gender).");
-            return;
-        }
-
-        // 2. Validate Photo/Avatar Reference
-        if (!storedFile && !selectedAvatar) {
-            alert("Please upload a photo or select an avatar to proceed.");
-            return;
-        }
-
-        const formData = new FormData(form);
-        const data = {};
-        for (let [key, value] of formData.entries()) {
-            data[key] = value;
-        }
-
-        // Helper to finalize registration
-        const finalizeRegistration = (base64Avatar) => {
-            // Handle Photo/Avatar Logic for Backend/Storage
-            if (storedFile) {
-                data['profileOption'] = 'upload';
-                data['profileFileName'] = storedFile.name;
-                data['uploadedAvatar'] = base64Avatar; // Save Base64
-            } else if (selectedAvatar) {
-                data['profileOption'] = 'avatar';
-                data['avatarId'] = selectedAvatar;
-            } else {
-                data['profileOption'] = 'none';
-            }
-
-            console.log('--- Register Form Submitted ---', data);
-
-            // Save to LocalStorage
-            const profileData = {
-                name: data.name,
-                email: data.email,
-                occupation: data.occupation,
-                gender: data.gender,
-                dob: data.dob,
-                profileOption: data.profileOption,
-                avatarId: data.avatarId,
-                profileFileName: data.profileFileName,
-                uploadedAvatar: data.uploadedAvatar // Persist Base64
-            };
-            localStorage.setItem('userProfile', JSON.stringify(profileData));
-            localStorage.setItem('isLoggedIn', 'true');
-            // Explicitly set new account as Unverified
-            localStorage.setItem('isVerified', 'false');
-
-            // Alert and Redirect
-            alert('Registration Successful! Redirecting to My Preferences...');
-            window.location.href = 'preference.html';
-        };
-
-        // Check if we need to read file
-        if (storedFile) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                finalizeRegistration(event.target.result);
-            };
-            reader.readAsDataURL(storedFile);
-        } else {
-            finalizeRegistration(null);
+    // 3. Handle File Upload Preview
+    profilePicInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleFileSelect(file);
         }
     });
 
+    dropZone.addEventListener("click", () => profilePicInput.click());
+
+    async function handleFileSelect(file) {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        // Capture previous URL for deletion
+        const previousUrl = selectedAvatarUrl;
+
+        // UI updates
+        avatarOptions.forEach(opt => opt.classList.remove("selected"));
+        filePreview.classList.remove("hidden");
+        filePreview.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i></div>`;
+
+        try {
+            console.log("Starting immediate image upload to Nhost (Manual Fetch)...");
+
+            // Rename file to use Firebase UID
+            const fileExtension = file.name.split('.').pop();
+            const newFileName = `${user.uid}.${fileExtension}`;
+            const renamedFile = new File([file], newFileName, { type: file.type });
+
+            // Manual Fetch Upload
+            const formData = new FormData();
+            formData.append("bucket-id", "default");
+            formData.append("file[]", renamedFile);
+
+            const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+            const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+            const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+
+            console.log("Upload URL:", uploadUrl);
+
+            const res = await fetch(uploadUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Upload failed with status:", res.status);
+                throw new Error(`Upload failed: ${res.status} ${errorText}`);
+            }
+
+            const responseData = await res.json();
+            const fileMetadata = responseData.processedFiles?.[0] || responseData;
+
+            console.log("Upload successful, metadata:", fileMetadata);
+
+            const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
+            console.log("Image URL:", downloadURL);
+
+            // --- Delete Old File Logic ---
+            if (previousUrl && previousUrl.includes(subdomain) && previousUrl !== downloadURL) {
+                try {
+                    console.log("Deleting old file:", previousUrl);
+                    const oldFileId = previousUrl.split('/').pop();
+                    const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
+                    await fetch(deleteUrl, { method: 'DELETE' });
+                    console.log("Old file deleted.");
+                } catch (delErr) {
+                    console.warn("Failed to delete old file:", delErr);
+                }
+            }
+
+            selectedAvatarUrl = downloadURL;
+            selectedFile = null;
+
+            // Show preview
+            filePreview.innerHTML = '';
+            filePreview.style.backgroundImage = `url(${downloadURL})`;
+            filePreview.style.backgroundSize = 'cover';
+            filePreview.style.backgroundPosition = 'center';
+
+            // Update user profile immediately (using setDoc to ensure doc exists)
+            await setDoc(doc(db, "users", user.uid), {
+                photoUrl: downloadURL,
+                profileOption: 'upload'
+            }, { merge: true });
+
+        } catch (error) {
+            console.error("Image upload failed:", error);
+            alert("Failed to upload image. Please try again.");
+            filePreview.classList.add("hidden");
+            filePreview.style.backgroundImage = '';
+        }
+    }
+
+    // 4. Handle Form Submit
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const submitBtn = registerForm.querySelector("button[type='submit']");
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Saving... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+        try {
+            // Use selectedAvatarUrl (which is now the uploaded URL or selected avatar)
+            let finalPhotoUrl = selectedAvatarUrl || "https://api.dicebear.com/9.x/avataaars/svg?seed=User"; // Default
+
+            // Collect Data
+            const formData = {
+                name: document.getElementById("name").value,
+                dob: document.getElementById("dob").value,
+                email: user.email,
+                occupation: document.getElementById("occupation").value,
+                gender: document.getElementById("gender").value,
+                hobbies: document.getElementById("hobbies").value,
+                photoUrl: finalPhotoUrl,
+                profileOption: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? 'upload' : 'avatar',
+                uid: user.uid,
+                updatedAt: new Date().toISOString()
+            };
+
+            console.log("Saving to Firestore...", formData);
+            // Save to Firestore
+            await setDoc(doc(db, "users", user.uid), formData, { merge: true });
+            console.log("Saved to Firestore.");
+
+            // Redirect to Preferences
+            window.location.href = "preference.html";
+
+        } catch (error) {
+            console.error("Error saving profile:", error);
+            alert("Failed to save profile. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";
+        }
+    });
 });
