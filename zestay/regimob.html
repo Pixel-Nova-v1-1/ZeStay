@@ -24,9 +24,9 @@
                 <h2 class="app-name">App Name</h2>
 
                 <div class="form-container">
-                    <h1 class="title" id="authTitle">Continue with Email</h1>
+                    <h1 class="title" id="authTitle">Welcome Back</h1>
                     <p class="subtitle" id="authSubtitle">
-                        We’ll send you a secure login link
+                        Enter your credentials to access your account
                     </p>
 
                     <div class="input-group">
@@ -34,32 +34,62 @@
                         <input type="email" id="emailInput" placeholder="you@example.com" />
                     </div>
 
-                    <button id="sendLinkBtn" class="btn-otp">
-                        Send Login Link
+                    <div class="input-group" style="margin-top: 15px;">
+                        <span class="icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="passwordInput" placeholder="Password" />
+                    </div>
+
+                    <button id="submitBtn" class="btn-otp">
+                        Login
                     </button>
+                    
+                    <p style="margin-top: 20px; font-size: 0.9rem; text-align: center;">
+                        <a id="toggleModeBtn" href="#" style="color: #666; text-decoration: underline;">
+                            Need an account? Sign Up
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Vite entry -->
     <script type="module" src="/src/main.js"></script>
 
-    <!-- UI text only -->
     <script>
         const params = new URLSearchParams(window.location.search);
-        const mode = params.get("mode");
+        let mode = params.get("mode"); // 'register' or 'login'
 
         const title = document.getElementById("authTitle");
-        const subtitle = document.getElementById("authSubtitle");
+        const btn = document.getElementById("submitBtn");
+        const toggleBtn = document.getElementById("toggleModeBtn");
 
-        if (mode === "register") {
-            title.textContent = "Create your account";
-            subtitle.textContent = "We’ll send you a link to complete registration";
-        } else {
-            title.textContent = "Welcome back";
-            subtitle.textContent = "We’ll send you a secure login link";
+        function updateUI() {
+            if (mode === "register") {
+                title.textContent = "Create Account";
+                btn.textContent = "Sign Up";
+                toggleBtn.textContent = "Already have an account? Login";
+            } else {
+                title.textContent = "Welcome Back";
+                btn.textContent = "Login";
+                toggleBtn.textContent = "Need an account? Sign Up";
+            }
         }
+
+        // Initial load
+        updateUI();
+
+        // Handle Toggle Click (Optional UX improvement)
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            mode = (mode === "register") ? "login" : "register";
+            
+            // Update URL without reloading
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('mode', mode);
+            window.history.pushState({}, '', newUrl);
+            
+            updateUI();
+        });
     </script>
 </body>
 </html>

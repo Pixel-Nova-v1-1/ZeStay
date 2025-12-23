@@ -1,33 +1,70 @@
+import { auth, db } from "../firebase.js"; // NOTICE: No 'storage' import
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('profilePic');
-    const avatarGrid = document.getElementById('avatarGrid');
     const avatarOptions = document.querySelectorAll('.avatar-option');
     const form = document.getElementById('registerForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     let selectedAvatar = null;
-    let storedFile = null; // Store single file
+    let storedBase64Image = null; // We will store the image text here
+    let currentUser = null;
 
-    // --- File Upload Logic ---
+    // --- 0. AUTH CHECK ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            const emailField = form.querySelector('[name="email"]');
+            if (emailField) emailField.value = user.email;
+        } else {
+            window.location.replace("/landing.html");
+        }
+    });
 
-    // UI Update Function
-    const updateUploadUI = () => {
+    // --- 1. HELPER: COMPRESS IMAGE TO TEXT (BASE64) ---
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Resize to max 500px width (plenty for profile pic)
+                    const MAX_WIDTH = 500;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Compress to JPEG at 0.7 quality
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(dataUrl);
+                };
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    // --- 2. UI LOGIC ---
+    const updateUploadUI = (fileName) => {
         const uploadContent = dropZone.querySelector('.upload-content');
-
-        if (storedFile) {
-            // Show Preview with Remove Button
+        if (fileName) {
             uploadContent.innerHTML = `
-                <div class="selected-file-preview">
-                    <div class="file-info">
-                        <i class="fa-regular fa-image"></i>
-                        <span class="file-name">${storedFile.name}</span>
-                    </div>
-                    <i class="fa-solid fa-xmark remove-file" title="Remove file"></i>
+                <div class="selected-file-preview" style="display:flex; align-items:center; gap:10px; justify-content:center;">
+                    <i class="fa-regular fa-image" style="color:#6C63FF;"></i>
+                    <span class="file-name" style="font-weight:500;">${fileName}</span>
+                    <i class="fa-solid fa-xmark remove-file" style="margin-left:10px;"></i>
                 </div>
             `;
             dropZone.classList.add('has-file');
         } else {
-            // Show Default Upload Prompt
             uploadContent.innerHTML = `
                 <i class="fa-regular fa-image upload-icon"></i>
                 <p>Click or drop to upload your profile photo (jpg or png)</p>
@@ -36,95 +73,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Click on DropZone
     dropZone.addEventListener('click', (e) => {
-        // Check if remove button was clicked
-        if (e.target.classList.contains('remove-file') || e.target.closest('.remove-file')) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Remove file
-            storedFile = null;
-            fileInput.value = ''; // Clear input
-            updateUploadUI();
+        if (e.target.closest('.remove-file')) {
+            e.preventDefault(); e.stopPropagation();
+            storedBase64Image = null;
+            fileInput.value = '';
+            updateUploadUI(null);
             return;
         }
-
-        // Otherwise trigger file input (if no file is currently selected OR if we want to allow replacing)
-        // If has file, maybe we just want to remove? Let's allow replacing by clicking the box area, but remove by clicking X.
-        fileInput.click();
+        if (e.target !== fileInput) fileInput.click();
     });
 
-    fileInput.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent bubbling to dropZone click
-    });
+    fileInput.addEventListener('change', async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image.');
+                return;
+            }
+            
+            // Clear avatar selection
+            clearAvatarSelection();
 
-    fileInput.addEventListener('change', (e) => {
-        handleFileSelect(e.target.files[0]);
-    });
-
-    // Drag and Drop events
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.add('drag-over');
-        }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.remove('drag-over');
-        }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFileSelect(files[0]);
-    });
-
-    function handleFileSelect(file) {
-        if (!file) return;
-
-        // Basic validation
-        if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file (JPG, PNG).');
-            return;
+            // Process the file immediately
+            try {
+                storedBase64Image = await compressImage(file);
+                updateUploadUI(file.name);
+                console.log("Image ready to save.");
+            } catch (err) {
+                console.error("Compression error", err);
+                alert("Error reading file.");
+            }
         }
+    });
 
-        // Clear avatar selection if a file is uploaded
-        clearAvatarSelection();
-
-        storedFile = file;
-        updateUploadUI();
-    }
-
-
-    // --- Avatar Selection Logic ---
     avatarOptions.forEach(avatar => {
-        avatar.addEventListener('click', () => {
-            // Toggle selection
-            if (avatar.classList.contains('selected')) {
-                avatar.classList.remove('selected');
+        avatar.addEventListener('click', function() {
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
                 selectedAvatar = null;
             } else {
-                clearAvatarSelection(); // Deselect others
-
-                // Clear file upload selection
-                storedFile = null;
+                storedBase64Image = null;
                 fileInput.value = '';
-                updateUploadUI();
+                updateUploadUI(null);
 
-                avatar.classList.add('selected');
-                selectedAvatar = avatar.getAttribute('data-value');
+                clearAvatarSelection();
+                this.classList.add('selected');
+                selectedAvatar = this.getAttribute('data-value');
             }
         });
     });
@@ -134,82 +129,63 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedAvatar = null;
     }
 
-
-    // --- Form Submission Logic ---
-    form.addEventListener('submit', (e) => {
+    // --- 3. SUBMIT LOGIC ---
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) return;
 
-        // 1. Validate Required Text Fields
         const name = form.querySelector('[name="name"]').value;
-        const email = form.querySelector('[name="email"]').value;
         const dob = form.querySelector('[name="dob"]').value;
         const gender = form.querySelector('[name="gender"]').value;
+        const occupation = form.querySelector('[name="occupation"]').value;
+        const hobbies = form.querySelector('[name="hobbies"]').value;
 
-        if (!name || !email || !dob || !gender) {
-            alert("Please fill in all compulsory fields (Name, Email, DOB, Gender).");
+        if (!name || !dob || !gender) {
+            alert("Please fill in required fields.");
             return;
         }
 
-        // 2. Validate Photo/Avatar Reference
-        if (!storedFile && !selectedAvatar) {
-            alert("Please upload a photo or select an avatar to proceed.");
+        if (!storedBase64Image && !selectedAvatar) {
+            alert("Please choose a photo or avatar.");
             return;
         }
 
-        const formData = new FormData(form);
-        const data = {};
-        for (let [key, value] of formData.entries()) {
-            data[key] = value;
-        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
 
-        // Helper to finalize registration
-        const finalizeRegistration = (base64Avatar) => {
-            // Handle Photo/Avatar Logic for Backend/Storage
-            if (storedFile) {
-                data['profileOption'] = 'upload';
-                data['profileFileName'] = storedFile.name;
-                data['uploadedAvatar'] = base64Avatar; // Save Base64
-            } else if (selectedAvatar) {
-                data['profileOption'] = 'avatar';
-                data['avatarId'] = selectedAvatar;
-            } else {
-                data['profileOption'] = 'none';
+        try {
+            let finalPhoto = "";
+
+            // A. User Uploaded File (Use the text string we created earlier)
+            if (storedBase64Image) {
+                finalPhoto = storedBase64Image;
+            } 
+            // B. User Selected Avatar (Use the URL)
+            else if (selectedAvatar) {
+                finalPhoto = `https://api.dicebear.com/9.x/avataaars/svg?seed=${selectedAvatar}`;
             }
 
-            console.log('--- Register Form Submitted ---', data);
+            // C. Save to Firestore (Database Only)
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, {
+                name: name,
+                dob: dob,
+                gender: gender,
+                occupation: occupation || "",
+                hobbies: hobbies || "",
+                photoURL: finalPhoto, // Saves image as text!
+                profileCompleted: true,
+                updatedAt: serverTimestamp()
+            });
 
-            // Save to LocalStorage
-            const profileData = {
-                name: data.name,
-                email: data.email,
-                occupation: data.occupation,
-                gender: data.gender,
-                dob: data.dob,
-                profileOption: data.profileOption,
-                avatarId: data.avatarId,
-                profileFileName: data.profileFileName,
-                uploadedAvatar: data.uploadedAvatar // Persist Base64
-            };
-            localStorage.setItem('userProfile', JSON.stringify(profileData));
-            localStorage.setItem('isLoggedIn', 'true');
-            // Explicitly set new account as Unverified
-            localStorage.setItem('isVerified', 'false');
+            console.log("Success!");
+            window.location.replace("/preference.html");
 
-            // Alert and Redirect
-            alert('Registration Successful! Redirecting to My Preferences...');
-            window.location.href = 'preference.html';
-        };
-
-        // Check if we need to read file
-        if (storedFile) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                finalizeRegistration(event.target.result);
-            };
-            reader.readAsDataURL(storedFile);
-        } else {
-            finalizeRegistration(null);
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Save failed: " + error.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Next";
         }
     });
-
 });
