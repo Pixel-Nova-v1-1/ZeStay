@@ -46,11 +46,21 @@
                     <div class="input-group" id="confirmPasswordGroup" style="display: none;">
                         <span class="icon"><i class="fa-solid fa-lock"></i></span>
                         <input type="password" id="confirmPasswordInput" placeholder="Confirm Password" />
+                        <span class="toggle-password" id="toggleConfirmPasswordBtn"
+                            style="cursor: pointer; margin-left: 10px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
                     </div>
 
                     <button id="authActionBtn" class="btn-otp">
                         Continue
                     </button>
+
+                    <p id="authToggleText"
+                        style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; max-width: 400px;">
+                        Don't have an account? <a href="#" id="authToggleLink"
+                            style="color: #2e7d32; text-decoration: none; font-weight: 600;">Register</a>
+                    </p>
                 </div>
 
                 <div id="verificationSection" style="display: none; text-align: center;">

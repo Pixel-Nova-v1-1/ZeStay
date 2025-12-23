@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logoutBtn');
     const editProfileBtn = document.getElementById('editProfileBtn');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
-    const inputs = document.querySelectorAll('.profile-details-form input');
+    const inputs = document.querySelectorAll('.profile-details-form input, .profile-details-form select');
     const genderPillDisplay = document.getElementById('display-gender');
     const avatarUploadInput = document.getElementById('avatarUploadInput');
 
@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-name').value = data.name || "";
                 document.getElementById('display-email').value = data.email || "";
                 document.getElementById('display-occupation').value = data.occupation || "";
+                document.getElementById('display-dob').value = data.dob || "";
+                document.getElementById('display-hobbies').value = data.hobbies || "";
 
                 // Set Gender
                 if (data.gender) {
@@ -157,7 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 editProfileBtn.style.display = 'block';
                 saveProfileBtn.style.display = 'none';
                 inputs.forEach(input => {
-                    input.setAttribute('readonly', true);
+                    if (input.tagName === 'SELECT') {
+                        input.disabled = true;
+                    } else {
+                        input.setAttribute('readonly', true);
+                    }
                     input.style.backgroundColor = '#f1f2f6';
                     input.style.borderColor = 'transparent';
                 });
@@ -419,7 +425,11 @@ document.addEventListener('DOMContentLoaded', () => {
             saveProfileBtn.style.display = 'block';
             inputs.forEach(input => {
                 if (input.id !== 'display-email') { // Email usually read-only
-                    input.removeAttribute('readonly');
+                    if (input.tagName === 'SELECT') {
+                        input.disabled = false;
+                    } else {
+                        input.removeAttribute('readonly');
+                    }
                     input.style.backgroundColor = '#fff';
                     input.style.borderColor = '#1abc9c';
                 }
@@ -441,7 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 await updateDoc(doc(db, "users", currentUser.uid), {
                     name: newName,
                     occupation: newOccupation,
-                    gender: newGender
+                    gender: newGender,
+                    dob: document.getElementById('display-dob').value,
+                    hobbies: document.getElementById('display-hobbies').value
                 });
 
                 profileNameEl.textContent = newName;
@@ -454,7 +466,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveProfileBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
 
                 inputs.forEach(input => {
-                    input.setAttribute('readonly', true);
+                    if (input.tagName === 'SELECT') {
+                        input.disabled = true;
+                    } else {
+                        input.setAttribute('readonly', true);
+                    }
                     input.style.backgroundColor = '#f1f2f6';
                     input.style.borderColor = 'transparent';
                 });
