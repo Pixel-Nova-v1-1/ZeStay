@@ -259,72 +259,41 @@ h1 {
 }
 
 .listing-card {
-    background-color: #DCFCE7;
-    border-radius: 25px;
-    /* overflow: hidden; */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #7dd3fc;
+    background-color: #F4FBF9; /* Subtle mint/teal tint */
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #dbece9;
     animation: fadeInUp 0.5s ease backwards;
+    /* overflow: hidden; Removed to allow tooltip */
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .listing-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
-}
-
-
-
-.interests-tooltip {
-
-    opacity: 0;
-    visibility: hidden;
-    position: absolute;
-    bottom: 120%;
-    left: -20px;
-    background-color: #d6f9f6;
-    border-radius: 20px;
-    padding: 20px;
-    width: 250px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    z-index: 20;
-    text-align: center;
-    transform: translateY(10px);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.interests-tooltip::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 40px;
-    margin-left: -10px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: #d6f9f6 transparent transparent transparent;
-}
-
-.match-wrapper:hover .interests-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    border-color: #bce3de;
+    z-index: 50;
 }
 
 .card-content {
     display: flex;
     padding: 25px;
-    gap: 20px;
+    gap: 25px;
+    align-items: flex-start;
 }
 
 .card-avatar {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
-    border-radius: 20px;
-    background-color: white;
-
+    border-radius: 50%;
+    background-color: #ffffff;
     overflow: hidden;
-    border: 3px solid #666;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .card-avatar img {
@@ -335,75 +304,117 @@ h1 {
 
 .card-details {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .card-details h3 {
-    font-size: 22px;
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: #000;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+    letter-spacing: -0.5px;
 }
 
 .location {
     font-size: 14px;
-    color: #555;
-    margin-bottom: 20px;
+    color: #666;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+}
+
+.location i {
+    color: #00C4B4;
 }
 
 .card-info-grid {
     display: flex;
-    gap: 50px;
+    gap: 40px;
+    margin-top: auto;
 }
 
 .info-item {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .info-item .label {
-    font-size: 13px;
-    color: #666;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    font-weight: 600;
 }
 
 .info-item .value {
-    font-size: 16px;
-    font-weight: 500;
-    color: #000;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
 }
 
-
 .card-footer {
-    background-color: #D1FAE5;
-
-    padding: 10px 25px;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
+    background-color: #ffffff;
+    padding: 15px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #a7f3d0;
+    border-top: 1px solid #dbece9;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.match-wrapper {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
 .match-score {
-    font-weight: 500;
-    color: #065f46;
+    font-weight: 600;
+    color: #059669;
+    background-color: #d1fae5;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 
+.match-score::before {
+    content: '\f004'; /* FontAwesome Heart */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 12px;
 }
 
 .btn-contact {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background-color: #888;
+    background: linear-gradient(135deg, #00C4B4, #00a89a);
     color: white;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 196, 180, 0.3);
+}
+
+.btn-contact:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 196, 180, 0.4);
+}
+
+.btn-contact i {
+    font-size: 16px;
 }
 
 
@@ -579,46 +590,48 @@ h1 {
 }
 
 
-.match-wrapper {
-    position: relative;
-    cursor: pointer;
-    margin-right: auto;
-}
-
 .interests-tooltip {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
     position: absolute;
-    bottom: 120%;
-    left: -50px;
-    background-color: #d6f9f6;
-    border-radius: 20px;
-    padding: 20px;
-    width: 250px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 15px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 20;
     text-align: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid #f0f0f0;
 }
 
 .interests-tooltip::after {
     content: "";
     position: absolute;
     top: 100%;
-    left: 70px;
-    margin-left: -10px;
-    border-width: 10px;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
     border-style: solid;
-    border-color: #d6f9f6 transparent transparent transparent;
+    border-color: #ffffff transparent transparent transparent;
 }
 
 .match-wrapper:hover .interests-tooltip {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
 .tooltip-title {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 15px;
-    color: #000;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .interests-grid {
@@ -629,16 +642,18 @@ h1 {
 }
 
 .interest-tag {
-    background-color: #90e0ef;
-    color: #444;
+    background-color: #e0f2fe;
+    color: #0284c7;
     padding: 6px 12px;
-    border-radius: 15px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
+    border: 1px solid #bae6fd;
 }
 
 .view-more {
-    color: #555;
-    cursor: pointer;
+    color: #666;
+    background: transparent;
+    border: 1px dashed #ccc;
 }

@@ -1,51 +1,15 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
-    //yain array are just dummy info for better understanding
-    const roommatesData = [
-        {
-            name: 'Tanvi', location: 'Navi Mumbai', rent: '₹ 5,000', lookingFor: 'Female', match: '77%', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Felix',
-            interests: ['Night Owl', 'Studious', 'Fitness Freak', 'Music Lover', 'Gamer']
-        },
-        {
-            name: 'Anirudh', location: 'Mumbai', rent: '₹ 7,000', lookingFor: 'Male', match: '89%', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka',
-            interests: ['Early Bird', 'Vegan', 'Pet Lover', 'Reader']
-        },
-        {
-            name: 'Aditya', location: 'Pune', rent: '₹ 6,000', lookingFor: 'Female', match: '92%', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Jasmine',
-            interests: ['Artist', 'Gamer', 'Movie Buff', 'Foodie']
-        },
-        {
-            name: 'Devjith', location: 'Delhi', rent: '₹ 8,500', lookingFor: 'Male', match: '65%', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Robert',
-            interests: ['Sports', 'Techie', 'Traveler']
-        }
-    ];
-    //yain array are just dummy info for better understanding
-    const flatsData = [
-        {
-            name: 'Tanvi', location: 'Bandra West, Mumbai', rent: '₹ 25,000', lookingFor: 'Any', distance: '1.5 km away from you', match: '95%', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-            interests: ['Night Owl', 'Studious', 'Fitness Freak', 'Music Lover', 'Gamer']
-        },
-        {
-            name: 'Anirudh', location: 'Andheri East, Mumbai', rent: '₹ 15,000', lookingFor: 'Male', distance: '2.1 km away from you', match: '69%', image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-            interests: ['Early Bird', 'Vegan', 'Pet Lover', 'Reader']
-        },
-        {
-            name: 'Aditya', location: 'Thane, Mumbai', rent: '₹ 18,000', lookingFor: 'Female', distance: '5.0 km away from you', match: '88%', image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-            interests: ['Artist', 'Gamer', 'Movie Buff', 'Foodie']
-        },
-        {
-            name: 'Devjith', location: 'Vashi, Navi Mumbai', rent: '₹ 6,000', lookingFor: 'Female', distance: '0.8 km away from you', match: '70%', image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-            interests: ['Sports', 'Techie', 'Traveler']
-        }
-    ];
+    let allUsers = [];
+    let flatsData = []; // Keeping empty for now as we don't have flats collection
 
     let currentType = 'Roommates';
     let currentFilter = 'Any';
     let currentIndex = 0;
-    const itemsPerPage = 2;
+    const itemsPerPage = 10; // Increased for better UX
 
     const container = document.querySelector('.listings-container');
     const moreBtn = document.querySelector('.bhagwan');
@@ -56,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Global User State
     let currentUser = null;
+    let currentUserData = null;
 
     // --- Auth Logic (Firebase) ---
     onAuthStateChanged(auth, async (user) => {
@@ -69,25 +34,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfile) userProfile.style.display = 'flex';
 
-            if (matchProfileBtn) {
-                try {
-                    const docRef = doc(db, "users", user.uid);
-                    const docSnap = await getDoc(docRef);
+            try {
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
 
-                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        imgSrc = data.photoUrl || imgSrc;
-                    }
+                let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                if (docSnap.exists()) {
+                    currentUserData = docSnap.data();
+                    imgSrc = currentUserData.photoUrl || imgSrc;
+                    
+                    // Fetch matches after getting current user data
+                    await fetchMatches();
+                }
 
+                if (matchProfileBtn) {
                     matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">`;
-
                     matchProfileBtn.onclick = () => {
                         window.location.href = 'profile.html';
                     };
-                } catch (error) {
-                    console.error("Error fetching user profile:", error);
                 }
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
             }
 
             if (logoutBtn) {
@@ -99,52 +66,130 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userProfile) userProfile.style.display = 'none';
+            // If not logged in, maybe show some demo data or redirect? 
+            // For now, let's just show empty or ask to login
+            container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Please login to see matches.</p>';
         }
     });
 
+    async function fetchMatches() {
+        if (!currentUser || !currentUserData) return;
+
+        container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Finding your best matches...</p>';
+
+        try {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            const users = [];
+
+            querySnapshot.forEach((doc) => {
+                if (doc.id !== currentUser.uid) {
+                    const otherUser = doc.data();
+                    const score = calculateMatchScore(currentUserData, otherUser);
+                    users.push({
+                        id: doc.id,
+                        ...otherUser,
+                        matchScore: score
+                    });
+                }
+            });
+
+            // Sort by match score descending
+            users.sort((a, b) => b.matchScore - a.matchScore);
+            allUsers = users;
+            
+            init();
+
+        } catch (error) {
+            console.error("Error fetching matches:", error);
+            container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading matches.</p>';
+        }
+    }
+
+    function calculateMatchScore(user1, user2) {
+        // 1. Personality Score (50%)
+        // Max difference approx 20 (5 questions * 4 max diff). 
+        // Let's say max diff is 20. 
+        const s1 = user1.personalityScore || 0;
+        const s2 = user2.personalityScore || 0;
+        const diff = Math.abs(s1 - s2);
+        // Normalize: 0 diff = 100%, 20 diff = 0%
+        // 100 - (diff * 5)
+        let personalityMatch = Math.max(0, 100 - (diff * 5));
+
+        // 2. Preferences Match (50%)
+        const p1 = user1.preferences || [];
+        const p2 = user2.preferences || [];
+        
+        if (p1.length === 0) return Math.round(personalityMatch); // If no prefs, rely on personality
+
+        const shared = p1.filter(p => p2.includes(p));
+        const prefMatch = (shared.length / Math.max(p1.length, 1)) * 100;
+
+        // Weighted Average
+        const finalScore = (personalityMatch * 0.5) + (prefMatch * 0.5);
+        return Math.round(finalScore);
+    }
 
     function getCardHTML(item, type, index = 0) {
         const delay = index * 0.1;
         const style = `style="animation-delay: ${delay}s"`;
-        // Store type and index in data attributes for delegation
-        const dataAttrs = `data-index="${index}" data-type="${type}"`;
+        // Store type and ID in data attributes for delegation
+        const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
 
         if (type === 'Roommates') {
 
             let interestsHTML = '';
-            if (item.interests) {
-                interestsHTML = item.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('');
-
-                interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
+            // Use preferences as interests
+            const interests = item.preferences || [];
+            // Also add hobbies if available (assuming comma separated string or array)
+            let hobbies = [];
+            if (item.hobbies) {
+                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
+                 else hobbies = item.hobbies.split(',').map(s => s.trim());
             }
+            
+            // Combine and take top 5
+            const allInterests = [...interests, ...hobbies].slice(0, 5);
+
+            if (allInterests.length > 0) {
+                interestsHTML = allInterests.map(interest => `<span class="interest-tag">${interest.replace(/-/g, ' ')}</span>`).join('');
+                if (allInterests.length >= 5) {
+                     interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
+                }
+            }
+
+            const avatar = item.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.name;
+            const location = item.location || 'Location not specified';
+            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
+            const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
 
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-avatar">
-                       <img src="${item.avatar}" alt="Avatar">
+                       <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.name}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
+                        <h3>${item.name || 'User'}</h3>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
                             <div class="info-item">
                                 <span class="label">Rent</span>
-                                <span class="value">${item.rent}</span>
+                                <span class="value">${rent}</span>
                             </div>
                             <div class="info-item">
-                                <span class="label">Looking for</span>
-                                <span class="value">${item.lookingFor}</span>
+                                <span class="label">Gender</span>
+                                <span class="value">${item.gender || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="card-footer">
                     <div class="match-wrapper">
-                        <span class="match-score">${item.match} match!</span>
+                        <span class="match-score">${item.matchScore}% match!</span>
                         <div class="interests-tooltip">
-                            <div class="tooltip-title">Common Intrest</div>
+                            <div class="tooltip-title">Common Interests</div>
                             <div class="interests-grid">
                                 ${interestsHTML}
                             </div>
@@ -154,73 +199,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
         } else {
-
-
-            let interestsHTML = '';
-            if (item.interests) {
-                interestsHTML = item.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('');
-                interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
-            }
-
-
-            let matchHTML = '';
-            if (item.match) {
-                matchHTML = `
-                <div class="match-wrapper" style="margin-left: auto; margin-right: 10px;">
-                    <span class="match-score">${item.match} match</span>
-                    <div class="interests-tooltip">
-                        <div class="tooltip-title">Common Intrest</div>
-                        <div class="interests-grid">
-                            ${interestsHTML}
-                        </div>
-                    </div>
-                </div>`;
-            }
-
-            return `
-            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
-                <div class="card-content">
-                    <div class="card-avatar" style="border-radius: 10px; border: none;">
-                       <img src="${item.image}" alt="Flat Image" style="border-radius: 10px;">
-                    </div>
-                    <div class="card-details">
-                        <h3>${item.name}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
-                        
-                        <div class="card-info-grid">
-                            <div class="info-item">
-                                <span class="label">Rent</span>
-                                <span class="value">${item.rent}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Looking for</span>
-                                <span class="value">${item.lookingFor}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span style="font-size: 13px; color: #555;">${item.distance}</span>
-                    ${matchHTML}
-                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
-                </div>
-            </div>`;
+            // Flats - Placeholder
+             return ``;
         }
     }
 
     function getFilteredData() {
-        const data = currentType === 'Roommates' ? roommatesData : flatsData;
+        const data = currentType === 'Roommates' ? allUsers : flatsData;
         let filtered = data;
 
-        // 1. Filter by Dropdown (Gender/Looking For)
+        // 1. Filter by Dropdown (Gender)
+        // The dropdown has "Male", "Female", "Any"
         if (currentFilter.toLowerCase() !== 'any') {
-            filtered = filtered.filter(item => item.lookingFor.toLowerCase() === currentFilter.toLowerCase());
+            filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
         }
 
         // 2. Filter by Location (Search Input)
         if (searchInput && searchInput.value.trim() !== '') {
             const searchTerm = searchInput.value.toLowerCase().trim();
-            filtered = filtered.filter(item => item.location.toLowerCase().includes(searchTerm));
+            filtered = filtered.filter(item => (item.location || '').toLowerCase().includes(searchTerm));
         }
 
         return filtered;
@@ -230,18 +227,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const filteredData = getFilteredData();
 
         if (filteredData.length === 0) {
-            container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
+            if (currentType === 'Flats') {
+                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No flats available yet.</p>';
+            } else {
+                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
+            }
             return;
         }
 
         let html = '';
-        for (let i = 0; i < itemsPerPage; i++) {
-            const item = filteredData[(currentIndex + i) % filteredData.length];
+        // Simple pagination
+        const end = Math.min(currentIndex + itemsPerPage, filteredData.length);
+        
+        for (let i = currentIndex; i < end; i++) {
+            const item = filteredData[i];
             html += getCardHTML(item, currentType, i);
         }
 
-        container.insertAdjacentHTML('beforeend', html);
-        currentIndex += itemsPerPage;
+        if (currentIndex === 0) {
+             container.innerHTML = html;
+        } else {
+             container.insertAdjacentHTML('beforeend', html);
+        }
+        
+        currentIndex = end;
+        
+        // Hide more button if no more items
+        if (moreBtn) {
+            if (currentIndex >= filteredData.length) {
+                moreBtn.style.display = 'none';
+            } else {
+                moreBtn.style.display = 'block';
+            }
+        }
     }
 
     function init() {
@@ -249,6 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentIndex = 0;
         renderItems();
     }
+
+
 
 
     // --- Toggle Options Logic ---
@@ -331,24 +351,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check Auth
                 if (!currentUser) {
                     // Not logged in -> Redirect to Login
-                    // Pass current URL as redirect target if needed, but for now simple redirect
                     window.location.href = 'regimob.html?mode=login';
                     return;
                 }
 
                 // Logged in -> Navigate to details
-                const index = card.dataset.index;
+                const id = card.dataset.id;
                 const type = card.dataset.type;
 
                 if (type === 'Roommates') {
-                    window.location.href = `lookingroom.html?id=${index}`;
+                    window.location.href = `lookingroom.html?id=${id}`;
                 } else {
-                    window.location.href = `lookingroommate.html?id=${index}&type=flat`;
+                    // Flats not implemented yet
+                    // window.location.href = `lookingroommate.html?id=${id}&type=flat`;
                 }
             }
         });
     }
 
-    init();
+    // Initial init is called in fetchMatches or if user not logged in
+    // But we can call it here too just in case, though it might be empty initially
+    // init(); 
 
 });

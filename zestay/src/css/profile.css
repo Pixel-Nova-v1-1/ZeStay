@@ -154,13 +154,6 @@ body {
     align-items: center;
     justify-content: center;
 }
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #333 transparent transparent transparent;
-}
 
 .verification-badge-wrapper:hover .tooltip-text {
     visibility: visible;
@@ -335,10 +328,6 @@ body {
 
 .tab-btn.active::after {
     display: none;
-}
-    gap: 8px;
-    transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .tab-btn i {
