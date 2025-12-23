@@ -18,7 +18,7 @@ body {
     min-height: 100vh;
 }
 
-/* Background Shapes (Copied and adapted from Ques.css) */
+/* Background Shapes */
 .bg-shape {
     position: absolute;
     z-index: -1;
@@ -77,7 +77,6 @@ body {
     border-radius: 50%;
 }
 
-
 /* Layout */
 .container {
     max-width: 900px;
@@ -111,11 +110,9 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    /* Or row depending on design? Design shows label inside or placeholder? Image shows inputs with Placeholder texts like "Name:", but labels are standard. I'll use placeholders as labels inside input style if I can, or top labels. Image has inputs with borders and "Name:" inside. Let's make it look like the image. */
-    /* Actually image shows "Name:" inside the input box style. I'll use placeholders. */
 }
 
-/* Custom Input Styling to match design */
+/* Custom Input Styling */
 input[type="text"],
 input[type="email"],
 input[type="date"],
@@ -131,10 +128,8 @@ select {
     transition: border-color 0.3s, box-shadow 0.3s;
     background: white;
     box-sizing: border-box;
-    /* Ensure padding doesn't affect width */
 }
 
-/* Remove default date placeholder logic if needed, or style it */
 input[type="date"] {
     color: #555;
 }
@@ -145,14 +140,20 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(0, 201, 183, 0.15);
 }
 
+/* Read-Only Input Styling (For Email) */
+input[readonly] {
+    background-color: #f9f9f9;
+    color: #888;
+    cursor: default;
+    border-color: #ddd;
+}
+
 label {
     margin-bottom: 8px;
     font-weight: 500;
     color: #555;
     display: none;
-    /* Hiding explicit labels as design uses placeholders effectively, but keeping in HTML for accessibility/fallback if I wanted. Actually let's hide them to match clean look. */
 }
-
 
 /* Photo Section */
 .photo-section {
@@ -187,7 +188,6 @@ label {
     padding: 10px;
 }
 
-
 .photo-actions {
     flex: 1.5;
     display: flex;
@@ -195,6 +195,7 @@ label {
     gap: 30px;
 }
 
+/* File Upload Box */
 .file-upload-box {
     border: 2px dashed #aaa;
     border-radius: 15px;
@@ -275,13 +276,13 @@ label {
     border: 3px solid transparent;
     transition: transform 0.2s, border-color 0.2s;
     background-color: #f0f0f0;
-    /* Placeholder bg */
 }
 
 .avatar-option:hover {
     transform: scale(1.1);
 }
 
+/* Selected Avatar State */
 .avatar-option.selected {
     border-color: var(--primary-teal);
     transform: scale(1.1);
@@ -320,6 +321,16 @@ label {
     font-size: 0.9em;
 }
 
+/* Disabled Button State (Processing) */
+button:disabled,
+.next-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -335,10 +346,8 @@ label {
 
 .fade-in-up {
     opacity: 0;
-    /* Initial state handled by animation */
     animation: fadeInUp 0.8s ease-out forwards;
 }
-
 
 /* Media Queries */
 @media (max-width: 768px) {
@@ -360,7 +369,6 @@ label {
         width: 100%;
         text-align: center;
         flex-direction: row;
-        /* Horizontal labels on mobile? or stack? */
         justify-content: space-around;
         align-items: center;
     }
@@ -375,7 +383,6 @@ label {
 
     .img {
         display: none;
-        /* Hide big decorative image on mobile if it overlaps too much */
     }
 }
 

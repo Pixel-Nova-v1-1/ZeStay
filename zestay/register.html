@@ -14,10 +14,7 @@
 
 <body>
 
-    <!-- Background Shapes (Same as designated in ques.html) -->
     <div class="img">
-        <img src="https://media.discordapp.net/attachments/1447539234528428034/1449842493595058369/design_register.png?ex=69405e8b&is=693f0d0b&hm=830d3a5921d62cfc678a5d80d14598319036bce6c52ea93aa89f85d5908da142&=&format=webp&quality=lossless&width=943&height=943"
-            alt="Decoration">
     </div>
     <div class="bg-shape top-right-circle-outline"></div>
     <div class="bg-shape top-right-circle-solid"></div>
@@ -31,32 +28,27 @@
 
         <form class="register-form" id="registerForm">
             <div class="form-grid fade-in-up" style="animation-delay: 0.1s;">
-                <!-- Column 1 -->
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" id="name" name="name" placeholder="Name" required>
                 </div>
 
-                <!-- Column 2 -->
                 <div class="form-group">
                     <label for="dob">DOB:</label>
                     <input type="date" id="dob" name="dob" required>
                 </div>
 
-                <!-- Column 1 -->
                 <div class="form-group">
                     <label for="email">Email:</label>
                     <input type="email" id="email" name="email" placeholder="Email" required readonly
                         style="background-color: #f0f0f0; cursor: not-allowed;">
                 </div>
 
-                <!-- Column 2 -->
                 <div class="form-group">
                     <label for="occupation">Occupation:</label>
                     <input type="text" id="occupation" name="occupation" placeholder="Occupation">
                 </div>
 
-                <!-- Column 1 -->
                 <div class="form-group">
                     <label for="gender">Gender: <span class="required">*</span></label>
                     <select id="gender" name="gender" required>
@@ -68,7 +60,6 @@
                     </select>
                 </div>
 
-                <!-- Column 2 -->
                 <div class="form-group">
                     <label for="hobbies">Hobbies:</label>
                     <select id="hobbies" name="hobbies">
@@ -83,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Profile Photo Section -->
             <div class="photo-section fade-in-up" style="animation-delay: 0.2s;">
                 <div class="photo-labels">
                     <h3>Upload a photo</h3>
@@ -92,7 +82,6 @@
                 </div>
 
                 <div class="photo-actions">
-                    <!-- File Upload -->
                     <div class="file-upload-box" id="dropZone">
                         <input type="file" id="profilePic" name="profilePic" accept="image/*" class="file-input" hidden>
                         <div class="upload-content">
@@ -102,10 +91,7 @@
                         <div id="filePreview" class="file-preview hidden"></div>
                     </div>
 
-                    <!-- Avatars -->
                     <div class="avatar-grid" id="avatarGrid">
-                        <!-- Avatars will be handled by JS or static here. Using placeholders for now -->
-                        <!-- Using some generic avatar images or placeholders -->
                         <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" alt="Avatar 1"
                             class="avatar-option" data-value="Devjith">
                         <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" alt="Avatar 2"
@@ -127,7 +113,6 @@
             </div>
 
             <div class="form-actions fade-in-up" style="animation-delay: 0.3s;">
-
                 <button type="submit" class="next-btn">
                     Next <i class="fa-solid fa-chevron-right"></i>
                 </button>
