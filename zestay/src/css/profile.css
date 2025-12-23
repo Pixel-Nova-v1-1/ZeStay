@@ -1,68 +1,171 @@
 :root {
-    --primary-teal: #1abc9c;
-    --primary-teal-hover: #16a085;
+    --primary-teal: #00C4B4;
+    --primary-teal-hover: #00a89a;
     --bg-light: #f8f9fa;
     --text-dark: #2c3e50;
     --text-muted: #7f8c8d;
-    --card-bg-mint: #d1f2eb;
-
+    --card-bg-mint: #e0f7f6;
     --card-bg-notifications: #f1f2f6;
 }
 
 body {
-    background-color: #fff !important;
+    background-color: #fcfcfc !important;
+    font-family: 'Poppins', sans-serif;
 }
 
 .profile-container {
     max-width: 1000px;
-    margin: 80px auto 40px;
-
-    padding: 20px;
+    margin: 100px auto 40px;
+    padding: 0 20px;
 }
-
-
 
 .profile-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     animation: fadeInDown 0.8s ease;
     position: relative;
-    padding-top: 60px;
-    margin-top: 0;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding-bottom: 30px;
 }
 
+/* Banner Background */
 .profile-header::before {
     content: '';
-    position: absolute;
-    top: -80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100vw;
-    max-width: 1000px;
-    height: 180px;
-    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%), url('https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
-    background-size: cover;
-    background-position: center;
+    display: block;
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #00C4B4 0%, #009e91 100%);
     border-radius: 20px 20px 0 0;
-    z-index: -1;
-    opacity: 0.9;
+    margin-bottom: -60px; /* Pull avatar up */
+}
+
+.avatar-upload-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 0; /* Reset */
 }
 
 .profile-avatar-wrapper {
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 5px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    border: 4px solid white;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 5px solid white;
     background: white;
     z-index: 2;
     position: relative;
+    transition: transform 0.3s ease;
 }
 
+.profile-avatar-wrapper:hover {
+    transform: scale(1.02);
+}
+
+/* Verification Badge */
+.verification-badge-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    color: var(--primary-teal);
+    font-size: 0.7em;
+    vertical-align: middle;
+    cursor: help;
+}
+
+.verification-badge-wrapper .tooltip-text {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.verification-badge-wrapper .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.verification-badge-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.upload-icon-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 5px;
+    width: 36px;
+    height: 36px;
+    background-color: var(--text-dark);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    z-index: 3;
+    transition: all 0.2s;
+}
+
+.upload-icon-btn:hover {
+    background-color: var(--primary-teal);
+    transform: scale(1.1);
+}
+
+.profile-info {
+    text-align: center;
+    padding: 0 20px;
+}
+
+.profile-info h1 {
+    margin-top: 5px;
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.verification-badge-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
 
 .avatar-upload-container {
     position: relative;
@@ -127,20 +230,20 @@ body {
 }
 
 .profile-input {
-    background: #f1f2f6;
-    border: 1px solid transparent;
-    border-radius: 20px;
-    padding: 12px 20px;
+    background: #fff;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 15px 20px;
     font-size: 1em;
     color: #333;
     outline: none;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .profile-input:focus {
     border-color: var(--primary-teal);
-    background: #fff;
-    border: 1px solid var(--primary-teal);
+    box-shadow: 0 4px 10px rgba(0, 196, 180, 0.1);
 }
 
 .gender-pill-display {
@@ -175,26 +278,64 @@ body {
 .profile-tabs {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 15px;
     margin-bottom: 40px;
     border-bottom: none;
     padding-bottom: 0;
+    flex-wrap: wrap;
 }
 
 .tab-btn {
     background: #fff;
-    border: 2px solid var(--primary-teal);
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 500;
-    color: var(--text-dark);
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #666;
     cursor: pointer;
-    width: 100px;
-    height: 100px;
+    padding: 15px 25px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    width: auto;
+    height: auto;
+    min-width: 160px;
+}
+
+.tab-btn i {
+    font-size: 1.2em;
+    margin: 0;
+    color: #aaa;
+    transition: color 0.3s;
+}
+
+.tab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    color: var(--primary-teal);
+}
+
+.tab-btn:hover i {
+    color: var(--primary-teal);
+}
+
+.tab-btn.active {
+    background: var(--primary-teal);
+    color: white;
+    box-shadow: 0 8px 20px rgba(0, 196, 180, 0.3);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active i {
+    color: white;
+}
+
+.tab-btn.active::after {
+    display: none;
+}
     gap: 8px;
     transition: all 0.3s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
