@@ -115,67 +115,63 @@ if (landingSearchBtn && landingSearchInput) {
    AUTH UI PLACEHOLDER
    ========================================================= */
 
-document.addEventListener('DOMContentLoaded', checkLoginStatus);
+/* =========================================================
+   AUTH UI LOGIC (Firebase)
+   ========================================================= */
+import { auth, db } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
-function checkLoginStatus() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+document.addEventListener('DOMContentLoaded', () => {
+    onAuthStateChanged(auth, async (user) => {
+        const authButtons = document.getElementById('auth-buttons');
+        const userProfile = document.getElementById('user-profile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const landingProfileBtn = document.getElementById('landingProfileBtn');
 
-    const authButtons = document.getElementById('auth-buttons');
-    const userProfile = document.getElementById('user-profile');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const landingProfileBtn = document.getElementById('landingProfileBtn');
+        if (user) {
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
 
-    if (isLoggedIn) {
-        if (authButtons) authButtons.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'flex';
+            if (landingProfileBtn) {
+                // Fetch user data for photoUrl
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
 
-        if (landingProfileBtn) {
-            const storedProfile = localStorage.getItem('userProfile');
-            if (storedProfile) {
-                const data = JSON.parse(storedProfile);
-                let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        imgSrc = data.photoUrl || imgSrc;
+                    }
 
-                if (data.profileOption === 'upload' && data.uploadedAvatar) {
-                    imgSrc = data.uploadedAvatar;
-                } else if (data.profileOption === 'avatar' && data.avatarId) {
-                    imgSrc = data.avatarId.startsWith('http')
-                        ? data.avatarId
-                        : `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
+                    landingProfileBtn.style.position = 'relative';
+                    landingProfileBtn.innerHTML = `
+                        <img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">
+                    `;
+
+                    landingProfileBtn.onclick = () => {
+                        window.location.href = 'profile.html';
+                    };
+
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
                 }
-
-                let badgeHtml = '';
-                if (localStorage.getItem('isVerified') === 'true') {
-                    badgeHtml = `
-                        <span class="fa-stack" style="font-size:8px; position:absolute; bottom:0; right:-5px;">
-                            <i class="fa-solid fa-certificate fa-stack-2x" style="color:#2196F3;"></i>
-                            <i class="fa-solid fa-check fa-stack-1x" style="color:white;"></i>
-                        </span>`;
-                }
-
-                landingProfileBtn.style.position = 'relative';
-                landingProfileBtn.innerHTML = `
-                    <img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">
-                    ${badgeHtml}
-                `;
             }
 
-            landingProfileBtn.addEventListener('click', () => {
-                window.location.href = 'profile.html';
-            });
-        }
-    } else {
-        if (authButtons) authButtons.style.display = 'flex';
-        if (userProfile) userProfile.style.display = 'none';
-    }
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await signOut(auth);
+                    window.location.reload();
+                };
+            }
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('isVerified');
-            window.location.reload();
-        });
-    }
-}
+        } else {
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userProfile) userProfile.style.display = 'none';
+        }
+    });
+});
 
 /* =========================================================
    BACKEND PLACEHOLDERS

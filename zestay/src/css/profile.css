@@ -751,3 +751,171 @@ body {
         transform: scale(1);
     }
 }
+
+/* --- Profile Upload Modal Styles --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+    text-align: center;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+}
+
+.upload-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-btn.primary {
+    background-color: var(--primary-teal);
+    color: white;
+}
+
+.modal-btn.secondary {
+    background-color: #e0f2f1;
+    color: var(--primary-teal);
+}
+
+.modal-btn.danger {
+    background-color: #ffebee;
+    color: #e74c3c;
+}
+
+/* Avatar Selection Area */
+.avatar-selection-area {
+    text-align: left;
+}
+
+.modal-header-back {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-btn:hover {
+    color: var(--primary-teal);
+}
+
+.modal-header-back h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    flex-grow: 1;
+    text-align: center;
+    padding-right: 40px;
+    /* Balance back button */
+}
+
+.avatar-grid-modal {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    justify-items: center;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.avatar-option-modal {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+    background-color: #f8f9fa;
+}
+
+.avatar-option-modal:hover {
+    transform: scale(1.1);
+    border-color: rgba(26, 188, 156, 0.5);
+}
+
+.avatar-option-modal.selected {
+    border-color: var(--primary-teal);
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);
+}

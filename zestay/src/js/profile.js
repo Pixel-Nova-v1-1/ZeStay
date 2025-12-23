@@ -18,11 +18,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const genderPillDisplay = document.getElementById('display-gender');
     const avatarUploadInput = document.getElementById('avatarUploadInput');
 
+    // Modal Elements
+    const openUploadModalBtn = document.getElementById('openUploadModalBtn');
+    const profileUploadModal = document.getElementById('profileUploadModal');
+    const closeModal = document.querySelector('.close-modal');
+    const btnUploadPhoto = document.getElementById('btnUploadPhoto');
+    const btnChooseAvatar = document.getElementById('btnChooseAvatar');
+    const btnRemovePhoto = document.getElementById('btnRemovePhoto');
+    const uploadOptions = document.getElementById('uploadOptions');
+    const avatarSelectionArea = document.getElementById('avatarSelectionArea');
+    const btnBackToOptions = document.getElementById('btnBackToOptions');
+    const avatarOptionsModal = document.querySelectorAll('.avatar-option-modal');
+
     let isEditing = false;
     let currentUser = null;
 
-    // Preference Map (Upstream version with images)
+    // Preference Map (Upstream version with images + Legacy Support)
     const preferenceMap = {
+        // New Keys (Hyphens)
         'night-owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
         'early-bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
         'music-lover': { label: 'Music Lover', image: 'public/images/music.png' },
@@ -34,8 +47,46 @@ document.addEventListener('DOMContentLoaded', () => {
         'wanderer': { label: 'Wanderer', image: 'public/images/wanderer.png' },
         'clean-centric': { label: 'Clean centric', image: 'public/images/cleaner.png' },
         'non-alcoholic': { label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
-        'non-smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
+        'non-smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' },
+
+        // Legacy Keys (Underscores) - Mapping to same images
+        'night_owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
+        'early_bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
+        'music_lover': { label: 'Music Lover', image: 'public/images/music.png' },
+        'quiet_seeker': { label: 'Quiet Seeker', image: 'public/images/quiet.png' },
+        'pet_lover': { label: 'Pet Lover', image: 'public/images/petlover.png' },
+        'guest_friendly': { label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
+        'clean_centric': { label: 'Clean centric', image: 'public/images/cleaner.png' },
+        'non_alcoholic': { label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
+        'non_smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
     };
+
+    // Canonical List for Rendering (to avoid duplicates)
+    const preferenceOptions = [
+        'night-owl', 'early-bird', 'music-lover', 'quiet-seeker',
+        'pet-lover', 'studious', 'sporty', 'guest-friendly',
+        'wanderer', 'clean-centric', 'non-alcoholic', 'non-smoker'
+    ];
+
+    // Helper: Delete old Nhost file
+    async function deleteOldNhostFile(oldUrl) {
+        if (!oldUrl) return;
+
+        const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+        const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+
+        if (oldUrl.includes(subdomain)) {
+            try {
+                console.log("Deleting old file:", oldUrl);
+                const oldFileId = oldUrl.split('/').pop();
+                const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
+                await fetch(deleteUrl, { method: 'DELETE' });
+                console.log("Old file deleted successfully.");
+            } catch (err) {
+                console.warn("Failed to delete old file:", err);
+            }
+        }
+    }
 
     // 1. Auth Check & Load Data
     console.log("Checking auth state...");
@@ -85,29 +136,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-email').value = data.email || "";
                 document.getElementById('display-occupation').value = data.occupation || "";
 
+                // Set Gender
+                if (data.gender) {
+                    const genderOptions = genderPillDisplay.querySelectorAll('.gender-option');
+                    genderOptions.forEach(opt => {
+                        if (opt.textContent.trim() === data.gender) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
                 // Load Preferences
                 if (data.preferences) {
                     loadPreferences(data.preferences);
                 }
 
-                isEditing = true;
-                editProfileBtn.style.display = 'none';
-                saveProfileBtn.style.display = 'block';
+                isEditing = false;
+                editProfileBtn.style.display = 'block';
+                saveProfileBtn.style.display = 'none';
                 inputs.forEach(input => {
-                    if (input.id !== 'display-email') { // Email usually read-only
-                        input.removeAttribute('readonly');
-                        input.style.backgroundColor = '#fff';
-                        input.style.borderColor = '#1abc9c';
-                    }
+                    input.setAttribute('readonly', true);
+                    input.style.backgroundColor = '#f1f2f6';
+                    input.style.borderColor = 'transparent';
                 });
-                genderPillDisplay.classList.add('editing');
+                genderPillDisplay.classList.remove('editing');
             }
         } catch (error) {
             console.error("Error loading profile:", error);
         }
     }
 
-    // 2. Avatar Upload
+    // 2. Profile Picture Modal Logic
+
+    // Open Modal
+    if (openUploadModalBtn) {
+        openUploadModalBtn.addEventListener('click', () => {
+            profileUploadModal.style.display = 'flex';
+            // Reset view
+            uploadOptions.style.display = 'flex';
+            avatarSelectionArea.style.display = 'none';
+        });
+    }
+
+    // Close Modal
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            profileUploadModal.style.display = 'none';
+        });
+    }
+
+    // Close on outside click
+    window.addEventListener('click', (event) => {
+        if (event.target == profileUploadModal) {
+            profileUploadModal.style.display = 'none';
+        }
+        // Also close lightbox if open
+        const lightboxModal = document.getElementById('avatarLightbox');
+        if (event.target == lightboxModal) {
+            lightboxModal.style.display = 'none';
+        }
+    });
+
+    // Option 1: Upload Photo
+    if (btnUploadPhoto) {
+        btnUploadPhoto.addEventListener('click', () => {
+            avatarUploadInput.click();
+        });
+    }
+
+    // Handle File Selection (Existing Logic Adapted)
     if (avatarUploadInput) {
         avatarUploadInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -142,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 avatarWrapper.appendChild(spinner);
             }
             spinner.style.display = 'flex';
+            profileUploadModal.style.display = 'none'; // Close modal immediately
 
             try {
                 console.log("Starting upload for user:", currentUser.uid);
@@ -166,24 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Append bucket-id FIRST (some servers are picky about order)
                     formData.append("bucket-id", "default");
 
-                    // DEBUG: Log file details
-                    console.log("Original File:", file.name, file.size, file.type);
-                    console.log("Renamed File:", renamedFile.name, renamedFile.size, renamedFile.type);
-
                     // Use "file[]" as confirmed by Test 3
                     formData.append("file[]", renamedFile);
-
-                    // Log FormData entries for debugging
-                    for (var pair of formData.entries()) {
-                        console.log('FormData Entry: ' + pair[0] + ', ' + pair[1]);
-                    }
 
                     // Construct URL manually since nhost.storage.url is undefined
                     const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
                     const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
                     const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-
-                    console.log("Upload URL:", uploadUrl);
 
                     const res = await fetch(uploadUrl, {
                         method: 'POST',
@@ -192,32 +281,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!res.ok) {
                         const errorText = await res.text();
-                        console.error("Upload failed with status:", res.status);
-                        console.error("Server response:", errorText);
                         throw new Error(`Upload failed: ${res.status} ${errorText}`);
                     }
 
                     const responseData = await res.json();
                     const fileMetadata = responseData.processedFiles?.[0] || responseData;
 
-                    console.log("Upload successful, metadata:", fileMetadata);
-
                     // Manual Public URL construction
                     const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
                     console.log("Download URL:", downloadURL);
 
                     // --- Delete Old File Logic ---
-                    // Fetch current doc to get old URL
                     try {
                         const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
                         if (userDocSnap.exists()) {
                             const oldUrl = userDocSnap.data().photoUrl;
-                            if (oldUrl && oldUrl.includes(subdomain) && oldUrl !== downloadURL) {
-                                console.log("Deleting old file:", oldUrl);
-                                const oldFileId = oldUrl.split('/').pop();
-                                const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
-                                await fetch(deleteUrl, { method: 'DELETE' });
-                                console.log("Old file deleted.");
+                            if (oldUrl && oldUrl !== downloadURL) {
+                                await deleteOldNhostFile(oldUrl);
                             }
                         }
                     } catch (delErr) {
@@ -225,7 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     // Update Firestore
-                    console.log("Updating Firestore...");
                     await updateDoc(doc(db, "users", currentUser.uid), {
                         photoUrl: downloadURL,
                         profileOption: 'upload'
@@ -246,11 +325,91 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileAvatarEl.src = originalSrc; // Revert on error
             } finally {
                 spinner.style.display = 'none';
-                // Reset input so same file can be selected again if needed
                 avatarUploadInput.value = '';
             }
         });
     }
+
+    // Option 2: Remove Photo
+    if (btnRemovePhoto) {
+        btnRemovePhoto.addEventListener('click', async () => {
+            if (!currentUser) return;
+            if (!confirm("Are you sure you want to remove your profile photo?")) return;
+
+            const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser.displayName || 'User'}`;
+
+            try {
+                // Delete old file from Nhost if exists
+                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDocSnap.exists()) {
+                    const oldUrl = userDocSnap.data().photoUrl;
+                    await deleteOldNhostFile(oldUrl);
+                }
+
+                // Update Firestore
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    photoUrl: defaultAvatar,
+                    profileOption: 'default'
+                });
+
+                // Update UI
+                profileAvatarEl.src = defaultAvatar;
+                profileUploadModal.style.display = 'none';
+                alert("Profile photo removed.");
+
+            } catch (error) {
+                console.error("Error removing photo:", error);
+                alert("Failed to remove photo.");
+            }
+        });
+    }
+
+    // Option 3: Choose Avatar
+    if (btnChooseAvatar) {
+        btnChooseAvatar.addEventListener('click', () => {
+            uploadOptions.style.display = 'none';
+            avatarSelectionArea.style.display = 'block';
+        });
+    }
+
+    if (btnBackToOptions) {
+        btnBackToOptions.addEventListener('click', () => {
+            avatarSelectionArea.style.display = 'none';
+            uploadOptions.style.display = 'flex';
+        });
+    }
+
+    // Avatar Selection Logic
+    avatarOptionsModal.forEach(img => {
+        img.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const selectedUrl = img.dataset.url;
+
+            try {
+                // Delete old file from Nhost if exists
+                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDocSnap.exists()) {
+                    const oldUrl = userDocSnap.data().photoUrl;
+                    await deleteOldNhostFile(oldUrl);
+                }
+
+                // Update Firestore
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    photoUrl: selectedUrl,
+                    profileOption: 'avatar'
+                });
+
+                // Update UI
+                profileAvatarEl.src = selectedUrl;
+                profileUploadModal.style.display = 'none';
+
+            } catch (error) {
+                console.error("Error updating avatar:", error);
+                alert("Failed to update avatar.");
+            }
+        });
+    });
+
 
     // 3. Edit/Save Profile Logic
     if (editProfileBtn && saveProfileBtn) {
@@ -325,10 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadPreferences(prefIds) {
         preferencesGrid.innerHTML = '';
 
-        // Render ALL options from preferenceMap
-        Object.keys(preferenceMap).forEach(key => {
+        // Render ONLY canonical options from preferenceOptions
+        preferenceOptions.forEach(key => {
             const map = preferenceMap[key];
-            const isSelected = prefIds.includes(key);
+            // Check if user has this preference (checking both hyphen and underscore versions)
+            const legacyKey = key.replace(/-/g, '_');
+            const isSelected = prefIds.includes(key) || prefIds.includes(legacyKey);
 
             const div = document.createElement('div');
             div.className = `pref-item ${isSelected ? 'selected' : ''}`;
@@ -369,9 +530,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 3. Populate Edit Grid
-            Object.keys(preferenceMap).forEach(key => {
+            preferenceOptions.forEach(key => {
                 const map = preferenceMap[key];
-                const isSelected = currentPrefs.includes(key);
+                // Check selection (support legacy)
+                const legacyKey = key.replace(/-/g, '_');
+                const isSelected = currentPrefs.includes(key) || currentPrefs.includes(legacyKey);
 
                 const div = document.createElement('div');
                 div.className = `pref-item ${isSelected ? 'selected' : ''}`;
@@ -452,15 +615,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Lightbox Logic ---
-    // Fixed ID to match HTML
+    // --- Lightbox Logic (Updated to work with new Modal) ---
+    // The lightbox is now separate. Clicking the avatar image itself (inside the wrapper) should trigger the lightbox.
+    // But wait, the wrapper now contains the camera icon button which is absolute.
+    // The image itself should still be clickable for lightbox.
+
     const lightboxModal = document.getElementById('avatarLightbox');
     const lightboxImg = document.getElementById('lightboxImg');
     const closeLightbox = document.querySelector('.close-lightbox');
 
     if (profileAvatarEl && lightboxModal && lightboxImg) {
         profileAvatarEl.addEventListener('click', () => {
-            lightboxModal.style.display = "flex"; // Changed to flex for centering if css supports it, or block
+            lightboxModal.style.display = "flex";
             lightboxImg.src = profileAvatarEl.src;
         });
     }
@@ -470,11 +636,4 @@ document.addEventListener('DOMContentLoaded', () => {
             lightboxModal.style.display = "none";
         });
     }
-
-    // Close on outside click
-    window.addEventListener('click', (event) => {
-        if (event.target == lightboxModal) {
-            lightboxModal.style.display = "none";
-        }
-    });
 });

@@ -1,3 +1,7 @@
+import { auth, db } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+
 document.addEventListener('DOMContentLoaded', () => {
     //yain array are just dummy info for better understanding
     const roommatesData = [
@@ -48,12 +52,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleOptions = document.querySelectorAll('.toggle-option');
     const dropdownButton = document.querySelector('.filter-dropdown');
     const dropdownItems = document.querySelectorAll('.dropdown-content a');
-    const searchInput = document.getElementById('matchSearchInput'); // New ID selection
+    const searchInput = document.getElementById('matchSearchInput');
+
+    // Global User State
+    let currentUser = null;
+
+    // --- Auth Logic (Firebase) ---
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        const authButtons = document.getElementById('auth-buttons');
+        const userProfile = document.getElementById('user-profile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const matchProfileBtn = document.getElementById('matchProfileBtn');
+
+        if (user) {
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
+
+            if (matchProfileBtn) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+
+                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        imgSrc = data.photoUrl || imgSrc;
+                    }
+
+                    matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">`;
+
+                    matchProfileBtn.onclick = () => {
+                        window.location.href = 'profile.html';
+                    };
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                }
+            }
+
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await signOut(auth);
+                    window.location.reload();
+                };
+            }
+        } else {
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userProfile) userProfile.style.display = 'none';
+        }
+    });
 
 
     function getCardHTML(item, type, index = 0) {
         const delay = index * 0.1;
         const style = `style="animation-delay: ${delay}s"`;
+        // Store type and index in data attributes for delegation
+        const dataAttrs = `data-index="${index}" data-type="${type}"`;
 
         if (type === 'Roommates') {
 
@@ -65,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <div class="listing-card" ${style} onclick="window.location.href='lookingroom.html?id=${index}'" style="cursor: pointer;">
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-avatar">
                        <img src="${item.avatar}" alt="Avatar">
@@ -124,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <div class="listing-card" ${style} onclick="window.location.href='lookingroommate.html?id=${index}&type=flat'" style="cursor: pointer;">
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-avatar" style="border-radius: 10px; border: none;">
                        <img src="${item.image}" alt="Flat Image" style="border-radius: 10px;">
@@ -269,56 +323,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-
-    // --- Auth Sync Logic ---
-    function checkLoginStatus() {
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const authButtons = document.getElementById('auth-buttons');
-        const userProfile = document.getElementById('user-profile');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const matchProfileBtn = document.getElementById('matchProfileBtn');
-
-        if (isLoggedIn) {
-            if (authButtons) authButtons.style.display = 'none';
-            if (userProfile) userProfile.style.display = 'flex';
-
-            if (matchProfileBtn) {
-                const storedProfile = localStorage.getItem('userProfile');
-                if (storedProfile) {
-                    const data = JSON.parse(storedProfile);
-                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
-
-                    if (data.profileOption === 'upload' && data.uploadedAvatar) {
-                        imgSrc = data.uploadedAvatar;
-                    } else if (data.profileOption === 'avatar' && data.avatarId) {
-                        imgSrc = data.avatarId.startsWith('http')
-                            ? data.avatarId
-                            : `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
-                    }
-
-                    matchProfileBtn.innerHTML = `<img src="${imgSrc}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:2px solid white;">`;
+    // --- Access Control (Event Delegation) ---
+    if (container) {
+        container.addEventListener('click', (e) => {
+            const card = e.target.closest('.listing-card');
+            if (card) {
+                // Check Auth
+                if (!currentUser) {
+                    // Not logged in -> Redirect to Login
+                    // Pass current URL as redirect target if needed, but for now simple redirect
+                    window.location.href = 'regimob.html?mode=login';
+                    return;
                 }
 
-                matchProfileBtn.onclick = () => {
-                    window.location.href = 'profile.html';
-                };
+                // Logged in -> Navigate to details
+                const index = card.dataset.index;
+                const type = card.dataset.type;
+
+                if (type === 'Roommates') {
+                    window.location.href = `lookingroom.html?id=${index}`;
+                } else {
+                    window.location.href = `lookingroommate.html?id=${index}&type=flat`;
+                }
             }
-        } else {
-            if (authButtons) authButtons.style.display = 'flex';
-            if (userProfile) userProfile.style.display = 'none';
-        }
-
-        if (logoutBtn) {
-            logoutBtn.onclick = () => {
-                localStorage.removeItem('isLoggedIn');
-                localStorage.removeItem('isVerified');
-                window.location.reload();
-            };
-        }
+        });
     }
-
-    checkLoginStatus();
 
     init();
 
