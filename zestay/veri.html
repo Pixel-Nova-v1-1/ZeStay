@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/veri.css">
+    <link rel="stylesheet" href="src/css/chat.css">
 </head>
 
 <body>
@@ -25,8 +26,8 @@
             </div>
 
             <div class="image-section">
-                <img src="https://media.discordapp.net/attachments/1447539234528428034/1450038638875512863/verification_page.png?ex=6947acb7&is=69465b37&hm=ef8db8b7ee5b9713be4828c48d5e1e83a7810e13085f9047b42c7c2b58f6f631&=&format=webp&quality=lossless&width=438&height=438"
-                    alt="Secure Living Illustration">
+                <a href="https://ibb.co/YBcQqYHN"><img src="https://i.ibb.co/Xx7LvNcW/verification-page.webp"
+                        alt="verification-page" border="0"></a>
             </div>
         </main>
         <div id="verificationModal" class="modal-overlay">
@@ -109,7 +110,40 @@
             </div>
         </div>
     </div>
+
+    <!-- ================= CHAT WIDGET ================= -->
+    <div id="chatWidget" class="chat-widget closed">
+        <div class="chat-header">
+            <button id="chatBackBtn" class="chat-back-btn hidden">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden">
+            <div class="chat-header-info">
+                <h3 id="chatTitle">Messages</h3>
+                <span id="chatStatus" class="chat-status"></span>
+            </div>
+            <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
+        </div>
+
+        <div id="chatListBody" class="chat-body list-view"></div>
+        <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
+
+        <div id="chatFooter" class="chat-footer hidden">
+            <button class="chat-attach-btn"><i class="fa-solid fa-paperclip"></i></button>
+            <input type="text" id="chatInput" placeholder="Message...">
+            <button id="chatSendBtn" class="chat-send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <button id="chatToggleBtn" class="chat-toggle-btn">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span class="chat-badge">4</span>
+    </button>
+
     <script src="src/js/veri.js"></script>
+    <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>
