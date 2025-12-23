@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhost Upload Test Suite</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #logs { background: #f0f0f0; padding: 10px; border: 1px solid #ccc; height: 400px; overflow-y: scroll; white-space: pre-wrap; margin-top: 20px;}
+        .error { color: red; }
+        .success { color: green; }
+        button { margin: 5px; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Nhost Upload Debugger</h1>
+    <p>Select a file and try the different upload methods below.</p>
+    
+    <input type="file" id="fileInput">
+    <br><br>
+    <button onclick="testUpload('standard')">Test 1: Standard (key="file")</button>
+    <button onclick="testUpload('no-bucket')">Test 2: No Bucket ID (key="file")</button>
+    <button onclick="testUpload('array')">Test 3: Array Key (key="file[]")</button>
+
+    <h3>Logs:</h3>
+    <div id="logs"></div>
+
+    <script type="module">
+        const logDiv = document.getElementById('logs');
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if (type === 'error') div.className = 'error';
+            if (type === 'success') div.className = 'success';
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(msg);
+        }
+
+        window.testUpload = async (mode) => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                log("No file selected!", "error");
+                return;
+            }
+
+            log(`--- Starting Test: ${mode} ---`);
+            log(`File: ${file.name} (${file.size} bytes, ${file.type})`);
+
+            try {
+                const subdomain = "ksjzlfxzphvcavnuqlhw";
+                const region = "ap-south-1";
+                const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+
+                log(`Target URL: ${uploadUrl}`);
+
+                const formData = new FormData();
+
+                if (mode === 'standard') {
+                    formData.append("bucket-id", "default");
+                    formData.append("file", file);
+                } else if (mode === 'no-bucket') {
+                    formData.append("file", file);
+                } else if (mode === 'array') {
+                    formData.append("bucket-id", "default");
+                    formData.append("file[]", file);
+                }
+
+                // Log entries
+                for (var pair of formData.entries()) {
+                    log(`FormData: ${pair[0]} = [${pair[1] instanceof File ? 'File Object' : pair[1]}]`);
+                }
+
+                const res = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                log(`Response Status: ${res.status}`);
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    log(`Error Body: ${text}`, "error");
+                } else {
+                    const json = await res.json();
+                    log(`Success! Response: ${JSON.stringify(json, null, 2)}`, "success");
+                }
+
+            } catch (err) {
+                log(`Exception: ${err.message}`, "error");
+            }
+            log(`--- End Test ---\n`);
+        };
+    </script>
+</body>
+</html>

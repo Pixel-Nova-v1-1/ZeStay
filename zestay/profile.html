@@ -43,9 +43,9 @@
 
                 <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;">
 
-                <label for="avatarUploadInput" class="upload-icon-btn">
+                <div id="openUploadModalBtn" class="upload-icon-btn">
                     <i class="fa-solid fa-camera"></i>
-                </label>
+                </div>
             </div>
             <div class="profile-info">
                 <h1 id="profileName">User Name</h1>
@@ -170,6 +170,52 @@
     <div id="avatarLightbox" class="lightbox-modal">
         <span class="close-lightbox">&times;</span>
         <img class="lightbox-content" id="lightboxImg">
+    </div>
+
+    <!-- Profile Upload Modal -->
+    <div id="profileUploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Change Profile Photo</h2>
+
+            <div id="uploadOptions" class="upload-options">
+                <button id="btnUploadPhoto" class="modal-btn primary">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                </button>
+                <button id="btnChooseAvatar" class="modal-btn secondary">
+                    <i class="fa-solid fa-user-astronaut"></i> Choose Avatar
+                </button>
+                <button id="btnRemovePhoto" class="modal-btn danger">
+                    <i class="fa-solid fa-trash"></i> Remove Current Photo
+                </button>
+            </div>
+
+            <div id="avatarSelectionArea" class="avatar-selection-area" style="display: none;">
+                <div class="modal-header-back">
+                    <button id="btnBackToOptions" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <h3>Select an Avatar</h3>
+                </div>
+                <div class="avatar-grid-modal">
+                    <!-- Avatars will be populated by JS -->
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel">
+                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova" class="avatar-option-modal"
+                        data-url="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova">
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ================= CHAT WIDGET ================= -->

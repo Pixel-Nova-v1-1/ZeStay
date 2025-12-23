@@ -1,3 +1,6 @@
+import { auth, db } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -137,41 +140,53 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
 
-    // --- Profile Button Logic ---
-    // --- Profile Button Logic ---
-    const profileBtn = document.getElementById('matchProfileBtn');
-    if (profileBtn) {
-        // Load Avatar
-        const storedProfile = localStorage.getItem('userProfile');
-        if (storedProfile) {
-            try {
-                const data = JSON.parse(storedProfile);
-                let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User'; // Default
+    // --- Auth Logic (Firebase) ---
+    onAuthStateChanged(auth, async (user) => {
+        const authButtons = document.getElementById('auth-buttons');
+        const userProfile = document.getElementById('user-profile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileBtn = document.getElementById('matchProfileBtn');
+        
+        if (user) {
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
 
-                if (data.profileOption === 'upload' && data.uploadedAvatar) {
-                    imgSrc = data.uploadedAvatar;
-                } else if (data.profileOption === 'avatar' && data.avatarId) {
-                    if (!data.avatarId.startsWith('http')) {
-                        imgSrc = `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
-                    } else {
-                        imgSrc = data.avatarId;
+            if (profileBtn) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    
+                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        imgSrc = data.photoUrl || imgSrc;
                     }
+
+                    profileBtn.innerHTML = `<img src="${imgSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
+                    profileBtn.style.padding = '0';
+                    profileBtn.style.overflow = 'hidden';
+                    profileBtn.style.width = '45px';
+                    profileBtn.style.height = '45px';
+                    
+                    profileBtn.onclick = () => {
+                        window.location.href = 'profile.html';
+                    };
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
                 }
-
-                profileBtn.innerHTML = `<img src="${imgSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
-                profileBtn.style.padding = '0';
-                profileBtn.style.overflow = 'hidden';
-                profileBtn.style.width = '45px';
-                profileBtn.style.height = '45px';
-            } catch (e) {
-                console.error("Error parsing user profile:", e);
             }
-        }
 
-        profileBtn.addEventListener('click', () => {
-            window.location.href = 'profile.html';
-        });
-    }
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await signOut(auth);
+                    window.location.reload();
+                };
+            }
+        } else {
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userProfile) userProfile.style.display = 'none';
+        }
+    });
 
     // --- Report Modal Logic ---
     const reportBtn = document.querySelector('.btn-report');
@@ -216,12 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
             listingId: "CURRENT_LISTING_ID", // Replace with actual ID
             reason: reason,
             timestamp: new Date().toISOString(),
-            user: localStorage.getItem('userProfile') ? JSON.parse(localStorage.getItem('userProfile')).name : 'Anonymous'
+            user: auth.currentUser ? auth.currentUser.uid : 'Anonymous'
         });
 
         alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
     }
-
-
 
 });
