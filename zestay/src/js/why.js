@@ -272,24 +272,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Upload Photos to Nhost
                     if (storedFiles.length > 0) {
+                        const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+                        const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+                        const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+
                         for (const file of storedFiles) {
                             try {
-                                const { fileMetadata, error } = await nhost.storage.upload({
-                                    file,
-                                    bucketId: 'default' // Ensure you have a bucket named 'default' or change this
+                                // Create a unique file name with user ID to organize files
+                                const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                                
+                                const formData = new FormData();
+                                formData.append("bucket-id", "default");
+                                formData.append("file[]", file, fileName);
+
+                                const response = await fetch(uploadUrl, {
+                                    method: 'POST',
+                                    body: formData
                                 });
 
-                                if (error) {
-                                    console.error("Nhost Upload Error:", error);
-                                    throw new Error("Failed to upload image to Nhost");
+                                if (!response.ok) {
+                                    const errorText = await response.text();
+                                    throw new Error(`Upload failed: ${response.status} ${errorText}`);
                                 }
 
+                                const responseData = await response.json();
+                                const fileMetadata = responseData.processedFiles?.[0] || responseData;
+
                                 // Construct Public URL
-                                const url = nhost.storage.getPublicUrl({ fileId: fileMetadata.id });
+                                const url = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
+                                console.log("Uploaded Image URL:", url);
                                 imageUrls.push(url);
                             } catch (err) {
                                 console.error("Image upload failed:", err);
-                                // Continue or break? Let's continue but log error
+                                alert("Failed to upload one or more images. Please try again.");
+                                // Stop submission if upload fails
+                                throw err;
                             }
                         }
                     }
