@@ -94,8 +94,8 @@
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    font-size: 24px;
-    color: black;
+    font-size: 16px;
+    color: #666666;
     transition: color 0.3s;
 }
 
