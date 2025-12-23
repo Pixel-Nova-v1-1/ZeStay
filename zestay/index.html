@@ -9,268 +9,262 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<!-- ================= HEADER ================= -->
-<header>
-    <div class="navbar">
-        <div class="logo">
-            <a href="index.html" style="text-decoration:none; color:inherit;">App Name</a>
+    <!-- ================= HEADER ================= -->
+    <header>
+        <div class="navbar">
+            <div class="logo">
+                <a href="index.html" style="text-decoration:none; color:inherit;">Zestay</a>
+            </div>
+
+            <nav class="nav-links">
+                <div class="nav-actions">
+                    <a href="why.html" class="btn-post">
+                        <i class="fa-solid fa-plus"></i> Post Listing
+                    </a>
+
+                    <div id="auth-buttons">
+                        <a href="regimob.html?mode=login">Login</a>
+                        <a href="regimob.html?mode=register">Register</a>
+                    </div>
+
+                    <div id="user-profile" style="display:none; align-items:center; gap:10px;">
+                        <button class="btn-profile" id="landingProfileBtn">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button id="logoutBtn"
+                            style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
         </div>
+    </header>
 
-        <nav class="nav-links">
-            <div class="nav-actions">
-                <a href="why.html" class="btn-post">
-                    <i class="fa-solid fa-plus"></i> Post Listing
-                </a>
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>
+                Find Your Perfect <br>
+                <span class="highlight">Flatmate</span> or
+                <span class="highlight">Room</span>
+            </h1>
 
-                <div id="auth-buttons">
-                    <a href="regimob.html?mode=login">Login</a>
-                    <a href="regimob.html?mode=register">Register</a>
+            <p class="subtitle">
+                Connect with verified flatmates and discover the perfect shared living space in your city
+            </p>
+
+            <div class="find">
+                <div class="search-tabs">
+                    <button class="tab active">Find flatmates</button>
+                    <button class="tab">Find room</button>
                 </div>
 
-                <div id="user-profile" style="display:none; align-items:center; gap:10px;">
-                    <button class="btn-profile" id="landingProfileBtn">
-                        <i class="fa-regular fa-circle-user"></i>
+                <div class="search-input-area">
+                    <div class="input-group">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" id="landingSearchInput" placeholder="Enter your city or location"
+                            autocomplete="off">
+                    </div>
+
+                    <button class="btn-search" id="landingSearchBtn">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search
                     </button>
-                    <button
-                        id="logoutBtn"
-                        style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">
-                        Logout
-                    </button>
-                </div>
-            </div>
-        </nav>
-    </div>
-</header>
-
-<!-- ================= HERO ================= -->
-<section class="hero">
-    <div class="hero-content">
-        <h1>
-            Find Your Perfect <br>
-            <span class="highlight">Flatmate</span> or
-            <span class="highlight">Room</span>
-        </h1>
-
-        <p class="subtitle">
-            Connect with verified flatmates and discover the perfect shared living space in your city
-        </p>
-
-        <div class="find">
-            <div class="search-tabs">
-                <button class="tab active">Find flatmates</button>
-                <button class="tab">Find room</button>
-            </div>
-
-            <div class="search-input-area">
-                <div class="input-group">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <input
-                        type="text"
-                        id="landingSearchInput"
-                        placeholder="Enter your city or location"
-                        autocomplete="off"
-                    >
                 </div>
 
-                <button class="btn-search" id="landingSearchBtn">
-                    <i class="fa-solid fa-magnifying-glass"></i> Search
-                </button>
-            </div>
-
-            <div class="top-cities">
-                Top cities:
-                <a href="match.html?location=Mumbai">Mumbai</a>,
-                <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>,
-                <a href="match.html?location=Pune">Pune</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="hero-image">
-        <img
-            src="https://images.unsplash.com/photo-1594873604892-b599f847e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-            alt="Modern Living Room">
-    </div>
-</section>
-
-<!-- ================= FEATURES ================= -->
-<section class="features">
-    <div class="features-header">
-        <h2>Why Choose App Name?</h2>
-        <p>We make finding the perfect flatmate or room simple, safe, and efficient.</p>
-    </div>
-
-    <div class="features-content">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="icon-box"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <h3>Smart Search</h3>
-                <p>Find the perfect match based on personality, location, budget, and lifestyle preferences.</p>
-            </div>
-            <div class="feature-card">
-                <div class="icon-box"><i class="fa-solid fa-users"></i></div>
-                <h3>Community Driven</h3>
-                <p>Join a community of thousands of flatmates and property owners.</p>
-            </div>
-            <div class="feature-card">
-                <div class="icon-box"><i class="fa-solid fa-check-circle"></i></div>
-                <h3>Easy Listings</h3>
-                <p>Post your listing in minutes with our simple and intuitive interface.</p>
-            </div>
-            <div class="feature-card">
-                <div class="icon-box"><i class="fa-solid fa-comments"></i></div>
-                <h3>Direct Messaging</h3>
-                <p>Connect directly with flatmates and landlords through our messaging system.</p>
+                <div class="top-cities">
+                    Top cities:
+                    <a href="match.html?location=Mumbai">Mumbai</a>,
+                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>,
+                    <a href="match.html?location=Pune">Pune</a>
+                </div>
             </div>
         </div>
 
-        <div class="features-image">
-            <img
-                src="https://i.ibb.co/tM99Brbp/file-0000000058207206b29f6706015b5978-1-1.png"
-                alt="Agreement Illustration">
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1594873604892-b599f847e859?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+                alt="Modern Living Room">
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- ================= HOW IT WORKS ================= -->
-<section class="works">
-    <div class="works-header">
-        <h1>How it Works</h1>
-        <p class="works-subtitle">Get started in four simple steps and find your ideal flatmate or room.</p>
-    </div>
-
-    <div class="four-steps">
-        <div class="step-card">
-            <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
-            <div class="step-label">Step 1</div>
-            <h3>Sign Up</h3>
-            <p>Create your profile in minutes with basic details and preferences.</p>
+    <!-- ================= FEATURES ================= -->
+    <section class="features">
+        <div class="features-header">
+            <h2>Why Choose App Name?</h2>
+            <p>We make finding the perfect flatmate or room simple, safe, and efficient.</p>
         </div>
 
-        <div class="step-card">
-            <div class="step-icon"><i class="fa-solid fa-search"></i></div>
-            <div class="step-label">Step 2</div>
-            <h3>Search & Filter</h3>
-            <p>Browse listings based on your location, budget, and lifestyle.</p>
+        <div class="features-content">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <h3>Smart Search</h3>
+                    <p>Find the perfect match based on personality, location, budget, and lifestyle preferences.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-users"></i></div>
+                    <h3>Community Driven</h3>
+                    <p>Join a community of thousands of flatmates and property owners.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-check-circle"></i></div>
+                    <h3>Easy Listings</h3>
+                    <p>Post your listing in minutes with our simple and intuitive interface.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Direct Messaging</h3>
+                    <p>Connect directly with flatmates and landlords through our messaging system.</p>
+                </div>
+            </div>
+
+            <div class="features-image">
+                <img src="https://i.ibb.co/tM99Brbp/file-0000000058207206b29f6706015b5978-1-1.png"
+                    alt="Agreement Illustration">
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= HOW IT WORKS ================= -->
+    <section class="works">
+        <div class="works-header">
+            <h1>How it Works</h1>
+            <p class="works-subtitle">Get started in four simple steps and find your ideal flatmate or room.</p>
         </div>
 
-        <div class="step-card">
-            <div class="step-icon"><i class="fa-regular fa-comment-dots"></i></div>
-            <div class="step-label">Step 3</div>
-            <h3>Connect</h3>
-            <p>Message potential flatmates or landlords directly through the platform.</p>
-        </div>
+        <div class="four-steps">
+            <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <div class="step-label">Step 1</div>
+                <h3>Sign Up</h3>
+                <p>Create your profile in minutes with basic details and preferences.</p>
+            </div>
 
-        <div class="step-card">
-            <div class="step-icon"><i class="fa-solid fa-house"></i></div>
-            <div class="step-label">Step 4</div>
-            <h3>Move In</h3>
-            <p>Find your perfect match and start your new living experience.</p>
-        </div>
-    </div>
-</section>
+            <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-search"></i></div>
+                <div class="step-label">Step 2</div>
+                <h3>Search & Filter</h3>
+                <p>Browse listings based on your location, budget, and lifestyle.</p>
+            </div>
 
-<!-- ================= FOOTER ================= -->
-<footer class="finally">
-    <div class="footer-content">
-        <div class="footer-section">
-            <h2 class="footer-logo">App Name</h2>
-            <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
-            <div class="social-icons">
-                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-                <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <div class="step-card">
+                <div class="step-icon"><i class="fa-regular fa-comment-dots"></i></div>
+                <div class="step-label">Step 3</div>
+                <h3>Connect</h3>
+                <p>Message potential flatmates or landlords directly through the platform.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-house"></i></div>
+                <div class="step-label">Step 4</div>
+                <h3>Move In</h3>
+                <p>Find your perfect match and start your new living experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="finally">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h2 class="footer-logo">App Name</h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How it Works</a></li>
+                    <li><a href="#">Safety Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Popular Cities</h3>
+                <ul>
+                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Delhi</a></li>
+                    <li><a href="#">Pune</a></li>
+                    <li><a href="#">Hyderabad</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@appname.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
             </div>
         </div>
 
-        <div class="footer-section">
-            <h3>Quick Links</h3>
-            <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">How it Works</a></li>
-                <li><a href="#">Safety Tips</a></li>
-                <li><a href="#">FAQ</a></li>
-                <li><a href="#">Blog</a></li>
-            </ul>
+        <div class="footer-bottom">
+            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= CHAT WIDGET ================= -->
+    <div id="chatWidget" class="chat-widget closed">
+        <div class="chat-header">
+            <button id="chatBackBtn" class="chat-back-btn hidden">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden">
+            <div class="chat-header-info">
+                <h3 id="chatTitle">Messages</h3>
+                <span id="chatStatus" class="chat-status"></span>
+            </div>
+            <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
         </div>
 
-        <div class="footer-section">
-            <h3>Popular Cities</h3>
-            <ul>
-                <li><a href="#">Navi Mumbai</a></li>
-                <li><a href="#">Mumbai</a></li>
-                <li><a href="#">Delhi</a></li>
-                <li><a href="#">Pune</a></li>
-                <li><a href="#">Hyderabad</a></li>
-            </ul>
-        </div>
+        <div id="chatListBody" class="chat-body list-view"></div>
+        <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
 
-        <div class="footer-section">
-            <h3>Contact Us</h3>
-            <ul class="contact-info">
-                <li><i class="fa-regular fa-envelope"></i> support@appname.com</li>
-                <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
-                <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <p>&copy; 2025 App Name. All rights reserved.</p>
-        <div class="footer-legal">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Cookie Policy</a>
+        <div id="chatFooter" class="chat-footer hidden">
+            <button class="chat-attach-btn"><i class="fa-solid fa-paperclip"></i></button>
+            <input type="text" id="chatInput" placeholder="Message...">
+            <button id="chatSendBtn" class="chat-send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
         </div>
     </div>
-</footer>
 
-<!-- ================= CHAT WIDGET ================= -->
-<div id="chatWidget" class="chat-widget closed">
-    <div class="chat-header">
-        <button id="chatBackBtn" class="chat-back-btn hidden">
-            <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden">
-        <div class="chat-header-info">
-            <h3 id="chatTitle">Messages</h3>
-            <span id="chatStatus" class="chat-status"></span>
-        </div>
-        <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
-    </div>
+    <button id="chatToggleBtn" class="chat-toggle-btn">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span class="chat-badge">4</span>
+    </button>
 
-    <div id="chatListBody" class="chat-body list-view"></div>
-    <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
+    <!-- ================= GOOGLE MAPS + PLACES ================= -->
+    <!-- 🔴 REPLACE WITH YOUR REAL API KEY -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
+        defer>
+        </script>
 
-    <div id="chatFooter" class="chat-footer hidden">
-        <button class="chat-attach-btn"><i class="fa-solid fa-paperclip"></i></button>
-        <input type="text" id="chatInput" placeholder="Message...">
-        <button id="chatSendBtn" class="chat-send-btn">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </div>
-</div>
-
-<button id="chatToggleBtn" class="chat-toggle-btn">
-    <i class="fa-solid fa-comment-dots"></i>
-    <span class="chat-badge">4</span>
-</button>
-
-<!-- ================= GOOGLE MAPS + PLACES ================= -->
-<!-- 🔴 REPLACE WITH YOUR REAL API KEY -->
-<script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
-    defer>
-</script>
-
-<!-- ================= MAIN JS ================= -->
-<script type="module" src="src/main.js"></script>
+    <!-- ================= MAIN JS ================= -->
+    <script type="module" src="src/main.js"></script>
 
 </body>
+
 </html>
