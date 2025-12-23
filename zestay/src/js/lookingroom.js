@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -200,16 +200,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Backend Integration Placeholder
-    function submitReport(reason) {
-        // TODO: Backend integration point
-        console.log("Report Submitted:", {
-            listingId: userId, 
-            reason: reason,
-            timestamp: new Date().toISOString(),
-            user: auth.currentUser ? auth.currentUser.uid : 'Anonymous'
-        });
+    async function submitReport(reason) {
+        if (!auth.currentUser) {
+            alert("Please login to report.");
+            return;
+        }
 
-        alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+        try {
+            await addDoc(collection(db, "reports"), {
+                reportedEntityId: userId, // The ID of the user/listing being reported
+                reportedEntityType: 'user', // or 'listing' depending on context
+                reason: reason,
+                reportedBy: auth.currentUser.uid,
+                reportedByEmail: auth.currentUser.email,
+                timestamp: serverTimestamp(),
+                status: 'pending'
+            });
+
+            alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+        } catch (error) {
+            console.error("Error submitting report:", error);
+            alert("Failed to submit report. Please try again.");
+        }
     }
 
 });

@@ -561,6 +561,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const location = userData.location || 'Location not specified';
         const rent = userData.rent ? `₹ ${userData.rent}` : 'Rent not specified';
         
+        const verifiedBadge = userData.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #1abc9c; margin-left: 5px;" title="Verified User"></i>' : '';
+
         const html = `
         <div class="listing-card" style="cursor: default; animation: none; max-width: 350px; margin: 0 auto;">
             <div class="card-content">
@@ -568,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    <img src="${avatar}" alt="Avatar">
                 </div>
                 <div class="card-details">
-                    <h3>${userData.name || 'User'}</h3>
+                    <h3>${userData.name || 'User'}${verifiedBadge}</h3>
                     <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                     
                     <div class="card-info-grid">
