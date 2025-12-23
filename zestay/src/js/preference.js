@@ -1,5 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { auth, db } from "../firebase.js";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
+document.addEventListener('DOMContentLoaded', () => {
 
     const preferencesData = [
         { id: 'night-owl', label: 'Night Owl', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png?ex=6947a58c&is=6946540c&hm=4beaa2241099fade45cc8db362da8dab01c34f66fe51eee157d6179bc41d956b&=&format=webp&quality=lossless&width=813&height=813' },
@@ -16,21 +19,31 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'non-smoker', label: 'Non-smoker', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842885996773417/12.png?ex=6947a58d&is=6946540d&hm=f6bdb9d69c407be0a9abe0ea66b4ab3def35790ca12acec6b4161fd51824ef63&=&format=webp&quality=lossless&width=813&height=813' }
     ];
 
-
-    const nonAlcoholicValues = preferencesData.find(p => p.id === 'non-alcoholic');
-    // if (nonAlcoholicValues) nonAlcoholicValues.icon = 'fa-solid fa-ban'; // General ban or specific icon if available locally
-
     const grid = document.getElementById('preferenceGrid');
+    const nextBtn = document.getElementById('nextBtn');
+    const subtitle = document.querySelector('.subtitle');
+    
     const selectedPreferences = new Set();
     const MIN_SELECTION = 5;
+    let currentUser = null;
 
+    // 1. CHECK AUTH STATE
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            // Optional: Restore previously selected preferences if they exist
+            restoreSelection(user.uid);
+        } else {
+            // Not logged in? Go back to start
+            window.location.replace("/landing.html");
+        }
+    });
 
+    // 2. RENDER GRID
     preferencesData.forEach(pref => {
         const item = document.createElement('div');
         item.classList.add('pref-item');
         item.setAttribute('data-id', pref.id);
-
-
 
         item.innerHTML = `
             <div class="icon-circle">
@@ -43,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.appendChild(item);
     });
 
-
     function toggleSelection(element, id) {
         if (selectedPreferences.has(id)) {
             selectedPreferences.delete(id);
@@ -54,37 +66,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 3. HANDLE SUBMIT
+    nextBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
 
-    window.submitPreferences = function () {
         if (selectedPreferences.size < MIN_SELECTION) {
             alert(`Please select at least ${MIN_SELECTION} preferences to proceed.`);
-
-
-            const subtitle = document.querySelector('.subtitle');
             subtitle.style.color = '#e74c3c';
             setTimeout(() => subtitle.style.color = '', 1000);
             return;
         }
 
-        // Save to localStorage or pass to backend
-        const preferencesArray = Array.from(selectedPreferences);
+        // Visual Feedback
+        const originalText = nextBtn.innerHTML;
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = `Saving...`;
 
-        // Simulating Backend Ready object
-        const userData = {
-            preferences: preferencesArray,
-            timestamp: new Date().toISOString()
-        };
+        try {
+            const preferencesArray = Array.from(selectedPreferences);
 
-        console.log('Preferences Data Ready for Backend:', userData);
-        localStorage.setItem('userPreferences', JSON.stringify(userData));
+            // SAVE TO FIREBASE
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, {
+                preferences: preferencesArray
+            });
 
+            console.log("Preferences saved!");
 
-        document.body.style.transition = 'opacity 0.5s ease';
-        document.body.style.opacity = '0';
+            // Animation & Redirect
+            document.body.style.transition = 'opacity 0.5s ease';
+            document.body.style.opacity = '0';
 
-        setTimeout(() => {
-            window.location.href = 'ques.html';
-        }, 500);
-    };
+            setTimeout(() => {
+                window.location.href = 'ques.html';
+            }, 500);
 
+        } catch (error) {
+            console.error("Error saving preferences:", error);
+            alert("Error saving data: " + error.message);
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = originalText;
+        }
+    });
+
+    // Optional: Restore previously saved selections if user comes back
+    async function restoreSelection(uid) {
+        try {
+            const snap = await getDoc(doc(db, "users", uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data.preferences && Array.isArray(data.preferences)) {
+                    data.preferences.forEach(prefId => {
+                        selectedPreferences.add(prefId);
+                        const el = document.querySelector(`.pref-item[data-id="${prefId}"]`);
+                        if (el) el.classList.add('selected');
+                    });
+                }
+            }
+        } catch (e) {
+            console.log("No previous prefs found or error reading.");
+        }
+    }
 });
