@@ -170,6 +170,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (authButtons) authButtons.style.display = 'flex';
             if (userProfile) userProfile.style.display = 'none';
         }
+
+        // Post Listing Button Logic
+        const postListingBtn = document.getElementById('postListingBtn');
+        if (postListingBtn) {
+            postListingBtn.onclick = (e) => {
+                e.preventDefault();
+                if (user) {
+                    window.location.href = 'why.html';
+                } else {
+                    window.location.href = 'regimob.html?mode=login';
+                }
+            };
+        }
     });
 });
 

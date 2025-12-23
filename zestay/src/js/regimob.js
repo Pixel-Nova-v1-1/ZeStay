@@ -9,7 +9,7 @@ import {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
-  const mode = params.get("mode"); // 'login' or 'register'
+  let mode = params.get("mode"); // 'login' or 'register'
   const oobCode = params.get("oobCode"); // Firebase verification code
 
   const emailInput = document.getElementById("emailInput");
@@ -18,18 +18,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
   const authActionBtn = document.getElementById("authActionBtn");
   const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+  const toggleConfirmPasswordBtn = document.getElementById("toggleConfirmPasswordBtn");
 
   const formContainer = document.querySelector(".form-container");
   const verificationSection = document.getElementById("verificationSection");
   const resendBtn = document.getElementById("resendBtn");
 
-  // UI Setup
-  if (mode === "register") {
-    if (confirmPasswordGroup) confirmPasswordGroup.style.display = "flex";
-    if (authActionBtn) authActionBtn.textContent = "Register";
-  } else {
-    if (authActionBtn) authActionBtn.textContent = "Login";
+  const authToggleLink = document.getElementById("authToggleLink");
+  const authToggleText = document.getElementById("authToggleText");
+  const title = document.getElementById("authTitle");
+  const subtitle = document.getElementById("authSubtitle");
+
+  // Helper to update UI based on mode
+  function updateUI() {
+    if (mode === "register") {
+      if (confirmPasswordGroup) confirmPasswordGroup.style.display = "flex";
+      if (authActionBtn) authActionBtn.textContent = "Register";
+      if (title) title.textContent = "Create your account";
+      if (subtitle) subtitle.textContent = "We’ll send you a link to complete registration";
+      if (authToggleText) authToggleText.innerHTML = `Already have an account? <a href="#" id="authToggleLink" style="color: #2e7d32; text-decoration: none; font-weight: 600;">Login</a>`;
+    } else {
+      if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
+      if (authActionBtn) authActionBtn.textContent = "Login";
+      if (title) title.textContent = "Welcome back";
+      if (subtitle) subtitle.textContent = "We’ll send you a secure login link";
+      if (authToggleText) authToggleText.innerHTML = `Don't have an account? <a href="#" id="authToggleLink" style="color: #2e7d32; text-decoration: none; font-weight: 600;">Register</a>`;
+    }
+    // Re-attach listener to new link element
+    const newLink = document.getElementById("authToggleLink");
+    if (newLink) {
+      newLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        mode = mode === "register" ? "login" : "register";
+        // Update URL without reload
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('mode', mode);
+        window.history.pushState({}, '', newUrl);
+        updateUI();
+      });
+    }
   }
+
+  // Initial UI Setup
+  updateUI();
 
   // Toggle Password Visibility
   if (togglePasswordBtn && passwordInput) {
@@ -37,6 +68,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
       togglePasswordBtn.innerHTML = type === "password" ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
+    });
+  }
+
+  // Toggle Confirm Password Visibility
+  if (toggleConfirmPasswordBtn && confirmPasswordInput) {
+    toggleConfirmPasswordBtn.addEventListener("click", () => {
+      const type = confirmPasswordInput.getAttribute("type") === "password" ? "text" : "password";
+      confirmPasswordInput.setAttribute("type", type);
+      toggleConfirmPasswordBtn.innerHTML = type === "password" ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
     });
   }
 
