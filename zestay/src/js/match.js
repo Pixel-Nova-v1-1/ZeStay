@@ -237,7 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
         } else if (type === 'Flats') {
-            const image = (item.photos && item.photos.length > 0) ? item.photos[0] : 'public/images/house-removebg-preview.png';
+            const image = (item.photos && item.photos.length > 0) ? item.photos[0] : '/images/house-removebg-preview.png';
+            // console.log("Flat Image URL:", image); // Debugging
             const location = item.location || 'Location not specified';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';

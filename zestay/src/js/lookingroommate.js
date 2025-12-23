@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayDescription').textContent = data.description;
 
         // Images
-        currentImages = data.images.length > 0 ? data.images : ['public/images/house-removebg-preview.png'];
+        currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
         updateSlider(0);
 
         // Preferences

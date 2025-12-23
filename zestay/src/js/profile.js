@@ -36,29 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Preference Map (Upstream version with images + Legacy Support)
     const preferenceMap = {
         // New Keys (Hyphens)
-        'night-owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
-        'early-bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
-        'music-lover': { label: 'Music Lover', image: 'public/images/music.png' },
-        'quiet-seeker': { label: 'Quiet Seeker', image: 'public/images/quiet.png' },
-        'pet-lover': { label: 'Pet Lover', image: 'public/images/petlover.png' },
-        'studious': { label: 'Studious', image: 'public/images/studious.png' },
-        'sporty': { label: 'Sporty', image: 'public/images/sporty.png' },
-        'guest-friendly': { label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
-        'wanderer': { label: 'Wanderer', image: 'public/images/wanderer.png' },
-        'clean-centric': { label: 'Clean centric', image: 'public/images/cleaner.png' },
-        'non-alcoholic': { label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
-        'non-smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' },
+        'night-owl': { label: 'Night Owl', image: '/images/nightowl.png' },
+        'early-bird': { label: 'Early Bird', image: '/images/earlybird.png' },
+        'music-lover': { label: 'Music Lover', image: '/images/music.png' },
+        'quiet-seeker': { label: 'Quiet Seeker', image: '/images/quiet.png' },
+        'pet-lover': { label: 'Pet Lover', image: '/images/petlover.png' },
+        'studious': { label: 'Studious', image: '/images/studious.png' },
+        'sporty': { label: 'Sporty', image: '/images/sporty.png' },
+        'guest-friendly': { label: 'Guest Friendly', image: '/images/guestfriendly.png' },
+        'wanderer': { label: 'Wanderer', image: '/images/wanderer.png' },
+        'clean-centric': { label: 'Clean centric', image: '/images/cleaner.png' },
+        'non-alcoholic': { label: 'Non-alcoholic', image: '/images/nonalcoholic.png' },
+        'non-smoker': { label: 'Non-smoker', image: '/images/nonsmoker.png' },
 
         // Legacy Keys (Underscores) - Mapping to same images
-        'night_owl': { label: 'Night Owl', image: 'public/images/nightowl.png' },
-        'early_bird': { label: 'Early Bird', image: 'public/images/earlybird.png' },
-        'music_lover': { label: 'Music Lover', image: 'public/images/music.png' },
-        'quiet_seeker': { label: 'Quiet Seeker', image: 'public/images/quiet.png' },
-        'pet_lover': { label: 'Pet Lover', image: 'public/images/petlover.png' },
-        'guest_friendly': { label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
-        'clean_centric': { label: 'Clean centric', image: 'public/images/cleaner.png' },
-        'non_alcoholic': { label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
-        'non_smoker': { label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
+        'night_owl': { label: 'Night Owl', image: '/images/nightowl.png' },
+        'early_bird': { label: 'Early Bird', image: '/images/earlybird.png' },
+        'music_lover': { label: 'Music Lover', image: '/images/music.png' },
+        'quiet_seeker': { label: 'Quiet Seeker', image: '/images/quiet.png' },
+        'pet_lover': { label: 'Pet Lover', image: '/images/petlover.png' },
+        'guest_friendly': { label: 'Guest Friendly', image: '/images/guestfriendly.png' },
+        'clean_centric': { label: 'Clean centric', image: '/images/cleaner.png' },
+        'non_alcoholic': { label: 'Non-alcoholic', image: '/images/nonalcoholic.png' },
+        'non_smoker': { label: 'Non-smoker', image: '/images/nonsmoker.png' }
     };
 
     // Canonical List for Rendering (to avoid duplicates)
@@ -561,8 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const location = userData.location || 'Location not specified';
         const rent = userData.rent ? `₹ ${userData.rent}` : 'Rent not specified';
         
-        const verifiedBadge = userData.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #1abc9c; margin-left: 5px;" title="Verified User"></i>' : '';
-
         const html = `
         <div class="listing-card" style="cursor: default; animation: none; max-width: 350px; margin: 0 auto;">
             <div class="card-content">
@@ -570,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    <img src="${avatar}" alt="Avatar">
                 </div>
                 <div class="card-details">
-                    <h3>${userData.name || 'User'}${verifiedBadge}</h3>
+                    <h3>${userData.name || 'User'}</h3>
                     <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                     
                     <div class="card-info-grid">
