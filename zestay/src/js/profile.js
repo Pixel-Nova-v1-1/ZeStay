@@ -165,6 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadPreferences(data.preferences);
                 }
 
+                // Load Listings (My Profile Card)
+                loadUserListings(data, uid);
+
                 isEditing = false;
                 editProfileBtn.style.display = 'block';
                 saveProfileBtn.style.display = 'none';
@@ -530,6 +533,70 @@ document.addEventListener('DOMContentLoaded', () => {
              `;
             preferencesGrid.appendChild(div);
         });
+    }
+
+    function loadUserListings(userData, uid) {
+        if (!listingsContainer) return;
+        
+        listingsContainer.innerHTML = ''; // Clear empty state
+
+        let interestsHTML = '';
+        const interests = userData.preferences || [];
+        let hobbies = [];
+        if (userData.hobbies) {
+             if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
+             else hobbies = userData.hobbies.split(',').map(s => s.trim());
+        }
+        
+        const allInterests = [...interests, ...hobbies].slice(0, 5);
+
+        if (allInterests.length > 0) {
+            interestsHTML = allInterests.map(interest => `<span class="interest-tag">${interest.replace(/-/g, ' ')}</span>`).join('');
+            if (allInterests.length >= 5) {
+                 interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
+            }
+        }
+
+        const avatar = userData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (userData.name || 'User');
+        const location = userData.location || 'Location not specified';
+        const rent = userData.rent ? `₹ ${userData.rent}` : 'Rent not specified';
+        
+        const html = `
+        <div class="listing-card" style="cursor: default; animation: none; max-width: 350px; margin: 0 auto;">
+            <div class="card-content">
+                <div class="card-avatar">
+                   <img src="${avatar}" alt="Avatar">
+                </div>
+                <div class="card-details">
+                    <h3>${userData.name || 'User'}</h3>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                    
+                    <div class="card-info-grid">
+                        <div class="info-item">
+                            <span class="label">Rent</span>
+                            <span class="value">${rent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Gender</span>
+                            <span class="value">${userData.gender || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="match-wrapper">
+                    <span class="match-score" style="background: #e0f7fa; color: #006064;">My Profile</span>
+                    <div class="interests-tooltip">
+                        <div class="tooltip-title">My Interests</div>
+                        <div class="interests-grid">
+                            ${interestsHTML}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        listingsContainer.innerHTML = html;
     }
 
     // --- Preferences Edit/Save Logic ---
