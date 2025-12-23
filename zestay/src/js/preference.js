@@ -96,4 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
             nextBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";
         }
     };
+
+    // Attach submit handler to button
+    if (nextBtn) {
+        nextBtn.addEventListener("click", window.submitPreferences);
+    }
 });
