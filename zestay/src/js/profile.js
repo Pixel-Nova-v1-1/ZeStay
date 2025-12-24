@@ -1,7 +1,7 @@
 import { auth, db } from "../firebase";
 import { nhost } from "../nhost";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarSelectionArea = document.getElementById('avatarSelectionArea');
     const btnBackToOptions = document.getElementById('btnBackToOptions');
     const avatarOptionsModal = document.querySelectorAll('.avatar-option-modal');
+
+    // --- Edit Modal Elements (Moved to top scope) ---
+    const reqModal = document.getElementById('reqModal');
+    const roomModal = document.getElementById('roomModal');
+    const closeReqBtn = document.getElementById('closeReqModal');
+    const closeRoomBtn = document.getElementById('closeRoomModal');
+    const reqForm = document.getElementById('reqForm');
+    const roomForm = document.getElementById('roomForm');
 
     let isEditing = false;
     let currentUser = null;
@@ -535,40 +543,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function loadUserListings(userData, uid) {
+    async function loadUserListings(userData, uid) {
         if (!listingsContainer) return;
         
-        listingsContainer.innerHTML = ''; // Clear empty state
+        listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">Loading listings...</p>';
 
-        let interestsHTML = '';
-        const interests = userData.preferences || [];
-        let hobbies = [];
-        if (userData.hobbies) {
-             if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
-             else hobbies = userData.hobbies.split(',').map(s => s.trim());
-        }
-        
-        const allInterests = [...interests, ...hobbies].slice(0, 5);
+        try {
+            // Check for flats
+            const flatsQuery = query(collection(db, "flats"), where("userId", "==", uid));
+            const flatsSnapshot = await getDocs(flatsQuery);
+            
+            // Check for requirements
+            const reqQuery = query(collection(db, "requirements"), where("userId", "==", uid));
+            const reqSnapshot = await getDocs(reqQuery);
 
-        if (allInterests.length > 0) {
-            interestsHTML = allInterests.map(interest => `<span class="interest-tag">${interest.replace(/-/g, ' ')}</span>`).join('');
-            if (allInterests.length >= 5) {
-                 interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
+            listingsContainer.innerHTML = ''; // Clear loading
+
+            if (flatsSnapshot.empty && reqSnapshot.empty) {
+                listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
+                return;
             }
-        }
 
-        const avatar = userData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (userData.name || 'User');
-        const location = userData.location || 'Location not specified';
-        const rent = userData.rent ? `₹ ${userData.rent}` : 'Rent not specified';
-        
-        const html = `
-        <div class="listing-card" style="cursor: default; animation: none; max-width: 350px; margin: 0 auto;">
+            // Render Flats
+            flatsSnapshot.forEach(doc => {
+                const data = doc.data();
+                renderListingCard(doc.id, data, 'flat');
+            });
+
+            // Render Requirements
+            reqSnapshot.forEach(doc => {
+                const data = doc.data();
+                renderListingCard(doc.id, data, 'requirement');
+            });
+
+        } catch (error) {
+            console.error("Error loading listings:", error);
+            listingsContainer.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error loading listings.</p>';
+        }
+    }
+
+    function renderListingCard(docId, data, type) {
+        const avatar = data.userPhoto || (currentUser ? currentUser.photoURL : 'https://api.dicebear.com/9.x/avataaars/svg?seed=User');
+        const location = data.location || 'Location not specified';
+        const rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
+        const typeLabel = type === 'flat' ? 'Room/Flat' : 'Roommate Requirement';
+        const gender = data.gender || 'Any';
+
+        const card = document.createElement('div');
+        card.className = 'listing-card';
+        card.style.maxWidth = '600px'; // Increased size
+        card.style.margin = '10px auto';
+        card.style.position = 'relative';
+
+        card.innerHTML = `
             <div class="card-content">
                 <div class="card-avatar">
                    <img src="${avatar}" alt="Avatar">
                 </div>
                 <div class="card-details">
-                    <h3>${userData.name || 'User'}</h3>
+                    <h3>${typeLabel}</h3>
                     <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                     
                     <div class="card-info-grid">
@@ -577,27 +610,286 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="value">${rent}</span>
                         </div>
                         <div class="info-item">
-                            <span class="label">Gender</span>
-                            <span class="value">${userData.gender || 'N/A'}</span>
+                            <span class="label">Looking For</span>
+                            <span class="value">${gender}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card-footer">
-                <div class="match-wrapper">
-                    <span class="match-score" style="background: #e0f7fa; color: #006064;">My Profile</span>
-                    <div class="interests-tooltip">
-                        <div class="tooltip-title">My Interests</div>
-                        <div class="interests-grid">
-                            ${interestsHTML}
-                        </div>
-                    </div>
-                </div>
+            <div class="card-footer" style="justify-content: space-between;">
+                 <span class="match-score" style="background: #e0f7fa; color: #006064;">${type === 'flat' ? 'My Room' : 'My Request'}</span>
+                 <div class="listing-actions">
+                    <button class="btn-edit-listing" data-id="${docId}" data-type="${type}" style="background: #e3f2fd; color: #1565c0; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </button>
+                    <button class="btn-delete-listing" data-id="${docId}" data-type="${type}" style="background: #ffcdd2; color: #c62828; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                 </div>
             </div>
-        </div>`;
-        
-        listingsContainer.innerHTML = html;
+        `;
+
+        // Add Edit Event Listener
+        const editBtn = card.querySelector('.btn-edit-listing');
+        editBtn.addEventListener('click', () => {
+            openEditModal(docId, data, type);
+        });
+
+        // Add Delete Event Listener
+        const deleteBtn = card.querySelector('.btn-delete-listing');
+        deleteBtn.addEventListener('click', async () => {
+            if (confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+                try {
+                    const collectionName = type === 'flat' ? 'flats' : 'requirements';
+                    await deleteDoc(doc(db, collectionName, docId));
+                    card.remove();
+                    
+                    // If no more cards, show empty message
+                    if (listingsContainer.children.length === 0) {
+                        listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
+                    }
+                    
+                    alert("Listing deleted successfully.");
+                } catch (error) {
+                    console.error("Error deleting listing:", error);
+                    alert("Failed to delete listing.");
+                }
+            }
+        });
+
+        listingsContainer.appendChild(card);
     }
+
+    // --- Edit Modal Logic ---
+    // (Variables moved to top scope)
+
+    // Close Modals
+    if (closeReqBtn) closeReqBtn.onclick = () => reqModal.classList.remove('active');
+    if (closeRoomBtn) closeRoomBtn.onclick = () => roomModal.classList.remove('active');
+    window.onclick = (e) => {
+        if (e.target === reqModal) reqModal.classList.remove('active');
+        if (e.target === roomModal) roomModal.classList.remove('active');
+    };
+
+    // Initialize UI Interactions (Toggles, Chips, Amenities)
+    function initModalUI(modal) {
+        // Toggles
+        modal.querySelectorAll('.toggle-group').forEach(group => {
+            group.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+        });
+
+        // Chips
+        modal.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => chip.classList.toggle('active'));
+        });
+
+        // Amenities
+        modal.querySelectorAll('.amenity-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const icon = item.querySelector('.amenity-icon');
+                if (icon) icon.classList.toggle('active');
+            });
+        });
+    }
+
+    if (reqModal) initModalUI(reqModal);
+    if (roomModal) initModalUI(roomModal);
+
+    // Google Maps Autocomplete for Edit Modals
+    function initEditAutocomplete() {
+        const reqInput = document.getElementById('reqLocation');
+        const roomInput = document.getElementById('roomLocation');
+        
+        const checkGoogle = setInterval(() => {
+            if (window.google && google.maps && google.maps.places) {
+                clearInterval(checkGoogle);
+                if (reqInput) {
+                    new google.maps.places.Autocomplete(reqInput, {
+                        types: ['(cities)'],
+                        componentRestrictions: { country: 'in' }
+                    });
+                }
+                if (roomInput) {
+                    new google.maps.places.Autocomplete(roomInput, {
+                        types: ['(cities)'],
+                        componentRestrictions: { country: 'in' }
+                    });
+                }
+            }
+        }, 100);
+    }
+    initEditAutocomplete();
+
+
+    function openEditModal(docId, data, type) {
+        const modal = type === 'flat' ? roomModal : reqModal;
+        const form = type === 'flat' ? roomForm : reqForm;
+        
+        if (!modal || !form) return;
+
+        // Set Doc ID
+        form.querySelector('input[name="docId"]').value = docId;
+
+        // Populate Fields
+        if (data.rent) form.querySelector('input[name="rent"]').value = data.rent;
+        if (data.location) form.querySelector('input[name="location"]').value = data.location;
+        if (data.description) form.querySelector('textarea[name="description"]').value = data.description;
+
+        // Populate Toggles
+        const setToggle = (groupName, value) => {
+            const group = form.querySelector(`.toggle-group[data-group="${groupName}"]`);
+            if (group && value) {
+                group.querySelectorAll('.toggle-btn').forEach(btn => {
+                    if (btn.dataset.value === value.toLowerCase()) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+        };
+
+        setToggle('gender', data.gender);
+        setToggle('occupancy', data.occupancy);
+        setToggle('pg', data.pg);
+        setToggle('teams', data.teams);
+        setToggle('contact', data.contact);
+
+        // Populate Chips (Highlights/Preferences)
+        const chipsContainer = form.querySelector('.chips-container');
+        if (chipsContainer && data.highlights) {
+            chipsContainer.querySelectorAll('.chip').forEach(chip => {
+                if (data.highlights.includes(chip.innerText)) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+        }
+
+        // Populate Amenities
+        const amenitiesGrid = form.querySelector('.amenities-grid');
+        if (amenitiesGrid && data.amenities) {
+            amenitiesGrid.querySelectorAll('.amenity-item').forEach(item => {
+                const icon = item.querySelector('.amenity-icon');
+                const text = item.querySelector('span').innerText;
+                if (data.amenities.includes(text)) {
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                }
+            });
+        }
+
+        // Show Existing Photos (for Room)
+        if (type === 'flat' && data.photos) {
+            const existingPhotosDiv = document.getElementById('existingPhotos');
+            if (existingPhotosDiv) {
+                existingPhotosDiv.innerHTML = data.photos.map(url => 
+                    `<img src="${url}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">`
+                ).join('');
+            }
+        }
+
+        modal.classList.add('active');
+    }
+
+    // Handle Form Submission (Update)
+    const handleUpdate = async (e, type) => {
+        e.preventDefault();
+        const form = e.target;
+        const docId = form.querySelector('input[name="docId"]').value;
+        const collectionName = type === 'flat' ? 'flats' : 'requirements';
+        const submitBtn = form.querySelector('.submit-btn');
+        
+        submitBtn.innerText = "Updating...";
+        submitBtn.disabled = true;
+
+        try {
+            const formData = new FormData(form);
+            const data = {};
+
+            // Collect Toggles
+            form.querySelectorAll('.toggle-group').forEach(group => {
+                const activeBtn = group.querySelector('.toggle-btn.active');
+                if (activeBtn) data[group.dataset.group] = activeBtn.dataset.value;
+            });
+
+            // Collect Chips
+            const chips = [];
+            form.querySelectorAll('.chip.active').forEach(chip => chips.push(chip.innerText));
+            data.highlights = chips;
+
+            // Collect Amenities
+            const amenities = [];
+            form.querySelectorAll('.amenity-icon.active').forEach(icon => {
+                amenities.push(icon.nextElementSibling.innerText);
+            });
+            data.amenities = amenities;
+
+            // Collect Inputs
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'roomPhotos' && key !== 'docId') {
+                    data[key] = value;
+                }
+            }
+
+            // Handle Photo Upload (New Photos)
+            // Note: This implementation appends new photos. Deleting old ones is not implemented in this simple version.
+            const fileInput = form.querySelector('input[type="file"]');
+            if (fileInput && fileInput.files.length > 0) {
+                const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+                const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+                const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+                
+                const newImageUrls = [];
+                for (const file of fileInput.files) {
+                     const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                     const fd = new FormData();
+                     fd.append("bucket-id", "default");
+                     fd.append("file[]", file, fileName);
+                     
+                     const res = await fetch(uploadUrl, { method: 'POST', body: fd });
+                     if (res.ok) {
+                         const resData = await res.json();
+                         const fileMetadata = resData.processedFiles?.[0] || resData;
+                         newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
+                     }
+                }
+                
+                // Fetch existing photos to append
+                const docSnap = await getDoc(doc(db, collectionName, docId));
+                const existingPhotos = docSnap.data().photos || [];
+                data.photos = [...existingPhotos, ...newImageUrls];
+            }
+
+            await updateDoc(doc(db, collectionName, docId), data);
+            
+            alert("Listing updated successfully!");
+            
+            // Close Modal & Refresh
+            if (type === 'flat') roomModal.classList.remove('active');
+            else reqModal.classList.remove('active');
+            
+            loadUserListings(currentUser, currentUser.uid); // Refresh list
+
+        } catch (error) {
+            console.error("Error updating listing:", error);
+            alert("Failed to update listing.");
+        } finally {
+            submitBtn.innerText = type === 'flat' ? "Update Room" : "Update Requirement";
+            submitBtn.disabled = false;
+        }
+    };
+
+    if (reqForm) reqForm.addEventListener('submit', (e) => handleUpdate(e, 'requirement'));
+    if (roomForm) roomForm.addEventListener('submit', (e) => handleUpdate(e, 'flat'));
+
 
     // --- Preferences Edit/Save Logic ---
     const editPrefsBtn = document.getElementById('editPrefsBtn');
