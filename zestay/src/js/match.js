@@ -4,7 +4,7 @@ import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
-    let flatsData = []; 
+    let flatsData = [];
 
     let currentType = 'Roommates';
     let currentFilter = 'Any';
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (docSnap.exists()) {
                     currentUserData = docSnap.data();
                     imgSrc = currentUserData.photoUrl || imgSrc;
-                    
+
                     // Fetch matches after getting current user data
                     await fetchMatches();
                 }
@@ -129,8 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const matches = (await Promise.all(matchesPromises)).filter(m => m !== null);
 
             // Sort by match score descending
-            matches.sort((a, b) => b.matchScore - a.matchScore);
-            allUsers = matches; // Update global state (renaming variable might be good but keeping it for now to minimize changes)
+            users.sort((a, b) => b.matchScore - a.matchScore);
+            allUsers = matches;
             
             if (currentType === 'Roommates') {
                 init();
@@ -200,8 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     matchScore: matchScore
                 };
             });
-
-            const flats = (await Promise.all(flatPromises)).filter(f => f !== null);
             
             // Sort by newest first
             flats.sort((a, b) => {
@@ -212,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             flatsData = flats;
-            
+
             if (currentType === 'Flats') {
                 init();
             }
@@ -238,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Preferences Match (50%)
         const p1 = user1.preferences || [];
         const p2 = user2.preferences || [];
-        
+
         if (p1.length === 0) return Math.round(personalityMatch); // If no prefs, rely on personality
 
         const shared = p1.filter(p => p2.includes(p));
@@ -262,28 +260,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const interests = item.userPreferences || [];
             // Also add hobbies if available
             let hobbies = [];
-            if (item.userHobbies) {
-                 if (Array.isArray(item.userHobbies)) hobbies = item.userHobbies;
-                 else if (typeof item.userHobbies === 'string') hobbies = item.userHobbies.split(',').map(s => s.trim());
+            if (item.hobbies) {
+                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
+                 else hobbies = item.hobbies.split(',').map(s => s.trim());
             }
-            
+
             // Combine and take top 5
             const allInterests = [...interests, ...hobbies].slice(0, 5);
 
             if (allInterests.length > 0) {
                 interestsHTML = allInterests.map(interest => `<span class="interest-tag">${interest.replace(/-/g, ' ')}</span>`).join('');
                 if (allInterests.length >= 5) {
-                     interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
+                    interestsHTML += `<span class="interest-tag view-more" style="background: transparent;">View More</span>`;
                 }
             }
 
-            const avatar = item.userPhoto;
-            const location = item.location || 'Location not specified'; // From Requirement
-            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified'; // From Requirement
-            // User requested: "take the name, gender and profile pic of the user"
-            // So we use item.userGender
-            
-            const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #2ecc71; font-size: 0.9em; margin-left: 5px;" title="Verified"></i>' : '';
+            const avatar = item.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.name;
+            const location = item.location || 'Location not specified';
+            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
+            const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
 
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
@@ -292,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.userName}${verifiedIcon}</h3>
+                        <h3>${item.name || 'User'}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
@@ -317,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
+                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
         } else if (type === 'Flats') {
@@ -325,8 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
             
-            const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #2ecc71; font-size: 0.9em; margin-left: 5px;" title="Verified"></i>' : '';
-
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
@@ -355,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         } else {
             // Fallback
-             return ``;
+            return ``;
         }
     }
 
@@ -395,9 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filteredData.length === 0) {
             if (currentType === 'Flats') {
-                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No flats available yet.</p>';
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No flats available yet.</p>';
             } else {
-                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
             }
             return;
         }
@@ -405,20 +399,20 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
         // Simple pagination
         const end = Math.min(currentIndex + itemsPerPage, filteredData.length);
-        
+
         for (let i = currentIndex; i < end; i++) {
             const item = filteredData[i];
             html += getCardHTML(item, currentType, i);
         }
 
         if (currentIndex === 0) {
-             container.innerHTML = html;
+            container.innerHTML = html;
         } else {
-             container.insertAdjacentHTML('beforeend', html);
+            container.insertAdjacentHTML('beforeend', html);
         }
-        
+
         currentIndex = end;
-        
+
         // Hide more button if no more items
         if (moreBtn) {
             if (currentIndex >= filteredData.length) {
@@ -450,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentType = type;
 
             console.log('Switched to:', currentType);
-            
+
             if (currentType === 'Flats') {
                 fetchFlats();
             } else {
