@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const matches = (await Promise.all(matchesPromises)).filter(m => m !== null);
 
             // Sort by match score descending
-            users.sort((a, b) => b.matchScore - a.matchScore);
+            matches.sort((a, b) => b.matchScore - a.matchScore);
             allUsers = matches;
             
             if (currentType === 'Roommates') {
@@ -201,6 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
             
+            const flats = (await Promise.all(flatPromises)).filter(f => f !== null);
+
             // Sort by newest first
             flats.sort((a, b) => {
                 if (a.createdAt && b.createdAt) {
@@ -252,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const style = `style="animation-delay: ${delay}s"`;
         // Store type and ID in data attributes for delegation
         const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
+        
+        const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
 
         if (type === 'Roommates') {
 
@@ -275,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const avatar = item.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.name;
+            const avatar = item.userPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (item.userName || 'User');
             const location = item.location || 'Location not specified';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
@@ -287,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.name || 'User'}</h3>
+                        <h3>${item.userName || 'User'}${verifiedIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
