@@ -164,16 +164,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists() && userDoc.data().isVerified) {
 
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetId = urlParams.get('id');
+
+                    // CHECK TARGET VERIFICATION
+                    let targetVerified = false;
+                    try {
+                        if (targetId) {
+                            const targetDoc = await getDoc(doc(db, "users", targetId));
+                            if (targetDoc.exists() && targetDoc.data().isVerified) {
+                                targetVerified = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching target user:", e);
+                    }
+
+                    if (!targetVerified) {
+                        alert("The other user is not verified yet. You cannot message them.");
+                        return;
+                    }
+
                     const targetName = document.getElementById('profileName').textContent;
                     const targetAvatar = document.getElementById('profileImage').src;
-
-                    // We need a target ID. In lookingroom.js, 'userId' is often a global or passed value?
-                    // Looking at file, `loadUserProfile` or logic should have defined it.
-                    // Wait, `lookingroom.js` doesn't have `userId` in scope in the snippet I saw?
-                    // Let me check lines 1-50 to see where `userId` comes from.
-                    // If it's from URL, I should re-parse it.
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const targetId = urlParams.get('id') || 'mock-user-id';
 
                     window.startChat({
                         id: targetId,

@@ -298,7 +298,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Construct Target User Object
                     const urlParams = new URLSearchParams(window.location.search);
-                    const targetId = currentOwnerId || urlParams.get('id') || 'mock-user-id';
+                    const targetId = currentOwnerId || urlParams.get('id');
+
+                    if (!targetId || targetId === 'mock-user-id') {
+                        console.warn("No valid target ID found for chat.");
+                        // Fallback for demo? Or block? 
+                        // For now, let's allow mock-user if locally testing, but in prod we need real ID.
+                        // But for verification check, we need a real ID to fetch.
+                    }
+
+                    // CHECK TARGET VERIFICATION
+                    let targetVerified = false;
+                    try {
+                        if (targetId) {
+                            const targetDoc = await getDoc(doc(db, "users", targetId));
+                            if (targetDoc.exists() && targetDoc.data().isVerified) {
+                                targetVerified = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching target user:", e);
+                    }
+
+                    if (!targetVerified) {
+                        alert("The other user is not verified yet. You cannot message them.");
+                        return;
+                    }
 
                     const targetName = document.getElementById('profileName').textContent;
                     const targetAvatar = document.getElementById('profileImage').src;
