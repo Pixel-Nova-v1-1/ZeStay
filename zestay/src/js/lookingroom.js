@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderProfile(userData) {
         const avatar = userData.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${userData.name}`;
-        
+
         document.getElementById('profileImage').src = avatar;
         document.getElementById('profileName').textContent = userData.name || 'User';
 
@@ -65,16 +65,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayLookingFor').textContent = userData.gender ? `Same as gender (${userData.gender})` : 'Any'; // Inferring
         document.getElementById('displayDescription').textContent = userData.description || 'No description provided.';
 
+        // Verified Box in Basic Info
+        if (userData.isVerified) {
+            const infoGrid = document.querySelector('.info-grid');
+            if (infoGrid) {
+                // Check if already added to prevent duplicates if re-rendered
+                if (!infoGrid.querySelector('.verified-box')) {
+                    const verifiedBox = document.createElement('div');
+                    verifiedBox.className = 'info-item verified-box';
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                    `;
+                    infoGrid.appendChild(verifiedBox);
+                }
+            }
+        }
+
         // Populate Preferences
         const prefContainer = document.getElementById('preferencesContainer');
-        prefContainer.innerHTML = ''; 
-        
+        prefContainer.innerHTML = '';
+
         if (userData.preferences && userData.preferences.length > 0) {
             userData.preferences.forEach(prefId => {
                 // Handle legacy underscores
                 const key = prefId.replace(/_/g, '-');
                 const pref = preferenceMap[key];
-                
+
                 if (pref) {
                     const prefHTML = `
                         <div class="item-circle">
@@ -92,24 +109,43 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate Highlights (Hobbies)
         const highlightContainer = document.getElementById('highlightsContainer');
         highlightContainer.innerHTML = '';
-        
+
         let hobbies = [];
         if (userData.hobbies) {
-             if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
-             else hobbies = userData.hobbies.split(',').map(s => s.trim());
+            if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
+            else hobbies = userData.hobbies.split(',').map(s => s.trim());
         }
 
         if (hobbies.length > 0) {
             hobbies.forEach(hl => {
-                if(hl) {
+                if (hl) {
                     const hlHTML = `<div class="highlight-pill"><i class="fa-solid fa-check"></i> ${hl}</div>`;
                     highlightContainer.innerHTML += hlHTML;
                 }
             });
         } else {
-             highlightContainer.innerHTML = '<p>No hobbies listed.</p>';
+            highlightContainer.innerHTML = '<p>No hobbies listed.</p>';
+        }
+        // Adjust font size
+        setTimeout(adjustProfileNameFontSize, 0);
+    }
+
+    function adjustProfileNameFontSize() {
+        const nameEl = document.getElementById('profileName');
+        if (!nameEl) return;
+
+        let fontSize = 26; // Start with max font size
+        nameEl.style.fontSize = fontSize + 'px';
+        nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
+
+        // Reduce font size until it fits
+        while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
+            fontSize--;
+            nameEl.style.fontSize = fontSize + 'px';
         }
     }
+
+    window.addEventListener('resize', adjustProfileNameFontSize);
 
     // --- Auth Logic (Firebase) ---
     onAuthStateChanged(auth, (user) => {
@@ -121,16 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfile) userProfile.style.display = 'flex';
-            
+
             // Load the profile data
             loadUserProfile();
 
             if (profileBtn) {
-                 // Just set the image, click handler is already set in HTML or we can set it here
-                 // But wait, we need to fetch current user's photo for the top right button
-                 // The loadUserProfile fetches the *viewed* user.
-                 // We need to fetch *current* user for the top right button.
-                 fetchCurrentUserProfile(user, profileBtn);
+                // Just set the image, click handler is already set in HTML or we can set it here
+                // But wait, we need to fetch current user's photo for the top right button
+                // The loadUserProfile fetches the *viewed* user.
+                // We need to fetch *current* user for the top right button.
+                fetchCurrentUserProfile(user, profileBtn);
             }
 
             if (logoutBtn) {

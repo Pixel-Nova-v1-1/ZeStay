@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const title = document.getElementById("authTitle");
   const subtitle = document.getElementById("authSubtitle");
   const forgotPasswordLink = document.getElementById("forgotPasswordLink");
-  
+
   let isResetMode = false;
 
   // Helper to update UI based on mode
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Reset reset mode if switching between login/register
     isResetMode = false;
     if (passwordInput) passwordInput.closest('.input-group').style.display = "flex";
-    
+
     if (mode === "register") {
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = "flex";
       if (authActionBtn) authActionBtn.textContent = "Register";
@@ -77,17 +77,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     forgotPasswordLink.addEventListener('click', (e) => {
       e.preventDefault();
       isResetMode = true;
-      
+
       // Hide password fields
       if (passwordInput) passwordInput.closest('.input-group').style.display = 'none';
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = 'none';
       forgotPasswordLink.style.display = 'none';
-      
+
       // Update Text
       if (authActionBtn) authActionBtn.textContent = "Send Reset Link";
       if (title) title.textContent = "Reset Password";
       if (subtitle) subtitle.textContent = "Enter your email to receive a reset link";
-      
+
       // Change toggle link to "Back to Login"
       if (authToggleText) {
         authToggleText.innerHTML = `<a href="#" id="backToLoginLink" style="color: #2e7d32; text-decoration: none; font-weight: 600;">Back to Login</a>`;
@@ -138,10 +138,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       try {
         if (isResetMode) {
-            await sendPasswordResetEmail(auth, email);
-            alert("Password reset link sent to " + email);
-            updateUI(); // Go back to login
-            return;
+          await sendPasswordResetEmail(auth, email);
+          alert("Password reset link sent to " + email);
+          updateUI(); // Go back to login
+          return;
         }
 
         if (mode === "register") {
@@ -155,7 +155,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           const user = userCredential.user;
 
           // 2. Send Verification Email
-          await sendEmailVerification(user);
+          const actionCodeSettings = {
+            url: window.location.origin + '/regimob.html?mode=login',
+            handleCodeInApp: true
+          };
+          await sendEmailVerification(user, actionCodeSettings);
 
           // 3. Show Verification UI
           formContainer.style.display = "none";
