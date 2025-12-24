@@ -28,7 +28,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("dob").value = data.dob || "";
                 document.getElementById("occupation").value = data.occupation || "";
                 document.getElementById("gender").value = data.gender || "";
-                document.getElementById("hobbies").value = data.hobbies || "";
+                
+                // Pre-fill hobbies
+                const hobbies = data.hobbies || "";
+                // Handle both array and string (legacy)
+                const hobbyList = Array.isArray(hobbies) ? hobbies : (typeof hobbies === 'string' ? hobbies.split(',') : []);
+                
+                hobbyList.forEach(hobby => {
+                    const option = document.querySelector(`.hobby-option[data-value="${hobby.trim()}"]`);
+                    if (option) option.classList.add('selected');
+                });
+                document.getElementById("hobbies").value = hobbyList.join(',');
             }
         } else {
             alert("You must be logged in to access this page.");
@@ -49,6 +59,21 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedAvatarUrl = img.src;
         });
     });
+
+    // Handle Hobby Selection
+    const hobbyOptions = document.querySelectorAll('.hobby-option');
+    hobbyOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            option.classList.toggle('selected');
+            updateHobbiesInput();
+        });
+    });
+
+    function updateHobbiesInput() {
+        const selectedHobbies = Array.from(document.querySelectorAll('.hobby-option.selected'))
+            .map(opt => opt.dataset.value);
+        document.getElementById('hobbies').value = selectedHobbies.join(',');
+    }
 
     // 3. Handle File Upload Preview
     profilePicInput.addEventListener("change", (e) => {
@@ -168,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: user.email,
                 occupation: document.getElementById("occupation").value,
                 gender: document.getElementById("gender").value,
-                hobbies: document.getElementById("hobbies").value,
+                hobbies: Array.from(document.querySelectorAll('.hobby-option.selected')).map(opt => opt.dataset.value),
                 photoUrl: finalPhotoUrl,
                 profileOption: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? 'upload' : 'avatar',
                 uid: user.uid,

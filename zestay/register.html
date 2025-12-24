@@ -61,16 +61,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="hobbies">Hobbies:</label>
-                    <select id="hobbies" name="hobbies">
-                        <option value="" disabled selected>Select Hobby</option>
-                        <option value="reading">Reading</option>
-                        <option value="traveling">Traveling</option>
-                        <option value="gaming">Gaming</option>
-                        <option value="sports">Sports</option>
-                        <option value="music">Music</option>
-                        <option value="cooking">Cooking</option>
-                    </select>
+                    <label>Hobbies:</label>
+                    <div class="hobbies-selection" id="hobbies-container">
+                        <div class="hobby-option" data-value="reading">Reading</div>
+                        <div class="hobby-option" data-value="traveling">Traveling</div>
+                        <div class="hobby-option" data-value="gaming">Gaming</div>
+                        <div class="hobby-option" data-value="sports">Sports</div>
+                        <div class="hobby-option" data-value="music">Music</div>
+                        <div class="hobby-option" data-value="cooking">Cooking</div>
+                    </div>
+                    <!-- Hidden input to store comma-separated values for form submission compatibility if needed, 
+                         though we will likely gather data directly from the DOM in JS -->
+                    <input type="hidden" id="hobbies" name="hobbies">
                 </div>
             </div>
 

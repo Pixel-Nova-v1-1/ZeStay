@@ -31,73 +31,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const docRef = doc(db, "users", userId);
-            const docSnap = await getDoc(docRef);
+            // 1. Try to fetch from 'requirements' collection first (since match.js links here with reqId)
+            const reqDocRef = doc(db, "requirements", userId);
+            const reqDocSnap = await getDoc(reqDocRef);
 
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                renderProfile(userData);
+            if (reqDocSnap.exists()) {
+                const reqData = reqDocSnap.data();
+                
+                // 2. Fetch User Data
+                if (reqData.userId) {
+                    const userDocRef = doc(db, "users", reqData.userId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        // Merge Data: Requirement takes precedence for specific fields
+                        const mergedData = {
+                            ...userData, // name, photoUrl, gender (user), hobbies
+                            ...reqData,  // rent, location, occupancy, description, highlights (preferences)
+                            userGender: userData.gender, // Explicitly store user gender
+                            lookingForGender: reqData.gender // Explicitly store looking for gender
+                        };
+                        renderProfile(mergedData);
+                        return;
+                    }
+                }
+                // If user not found but req exists (shouldn't happen ideally), render what we have
+                renderProfile(reqData);
             } else {
-                alert("User not found.");
-                window.location.href = 'match.html';
+                // Fallback: Check if it's a direct user ID (legacy support or direct link)
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    renderProfile(userDocSnap.data());
+                } else {
+                    alert("Listing not found.");
+                    window.location.href = 'match.html';
+                }
             }
         } catch (error) {
-            console.error("Error fetching user:", error);
-            alert("Error loading profile.");
+            console.error("Error fetching details:", error);
+            alert("Error loading details.");
         }
     }
 
-    function renderProfile(userData) {
-        const avatar = userData.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${userData.name}`;
+    function renderProfile(data) {
+        const avatar = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
 
         document.getElementById('profileImage').src = avatar;
-        document.getElementById('profileName').textContent = userData.name || 'User';
+        document.getElementById('profileName').textContent = data.name || 'User';
 
         // Verification Badge
         const verificationBadge = document.getElementById('verificationBadge');
         if (verificationBadge) {
-            verificationBadge.style.display = userData.isVerified ? 'inline-block' : 'none';
+            verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
         }
 
-        document.getElementById('displayLocation').textContent = userData.location || 'Not specified';
-        document.getElementById('displayGender').textContent = userData.gender || 'Not specified';
-        document.getElementById('displayRent').textContent = userData.rent ? `₹ ${userData.rent}` : 'Not specified';
-        document.getElementById('displayOccupancy').textContent = userData.occupancy || 'Single';
-        document.getElementById('displayLookingFor').textContent = userData.gender ? `Same as gender (${userData.gender})` : 'Any'; // Inferring
-        document.getElementById('displayDescription').textContent = userData.description || 'No description provided.';
+        document.getElementById('displayLocation').textContent = data.location || 'Not specified';
+        // Display User's Gender
+        document.getElementById('displayGender').textContent = data.userGender || data.gender || 'Not specified';
+        
+        document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
+        document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';
+        
+        // Display "Looking For" Gender
+        const lookingFor = data.lookingForGender || (data.gender && data.gender !== data.userGender ? data.gender : 'Any');
+        document.getElementById('displayLookingFor').textContent = lookingFor; 
+        
+        document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
 
-        // Populate Preferences
+        // Populate Preferences (Highlights from Requirement)
         const prefContainer = document.getElementById('preferencesContainer');
         prefContainer.innerHTML = '';
 
-        if (userData.preferences && userData.preferences.length > 0) {
-            userData.preferences.forEach(prefId => {
-                // Handle legacy underscores
-                const key = prefId.replace(/_/g, '-');
-                const pref = preferenceMap[key];
+        // Use 'highlights' from requirement if available, else 'preferences' from user
+        const preferences = data.highlights || data.preferences || [];
 
-                if (pref) {
-                    const prefHTML = `
-                        <div class="item-circle">
-                            <div class="circle-icon"><img src="${pref.image}" alt="${pref.label}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;"></div>
-                            <span class="item-label">${pref.label}</span>
+        if (preferences.length > 0) {
+            preferences.forEach(prefItem => {
+                // Check if it maps to an icon, otherwise display generic
+                // The chips are text like "Clean & organized". 
+                // We can try to find a partial match or just display text.
+                
+                let image = 'public/images/star.png'; // Default icon
+                let label = prefItem;
+
+                // Simple mapping attempt (can be expanded)
+                const lowerPref = prefItem.toLowerCase();
+                if (lowerPref.includes('clean')) image = 'public/images/cleaner.png';
+                else if (lowerPref.includes('quiet') || lowerPref.includes('calm')) image = 'public/images/quiet.png';
+                else if (lowerPref.includes('music')) image = 'public/images/music.png';
+                else if (lowerPref.includes('pet')) image = 'public/images/petlover.png';
+                else if (lowerPref.includes('sport')) image = 'public/images/sporty.png';
+                else if (lowerPref.includes('guest')) image = 'public/images/guestfriendly.png';
+                else if (lowerPref.includes('party') || lowerPref.includes('social')) image = 'public/images/party.png'; // Assuming party image exists or use generic
+                else if (lowerPref.includes('work')) image = 'public/images/work.png'; // Assuming work image exists
+                
+                // If we don't have the specific images, we can just use a default style or try to use the existing map if keys match
+                // But since keys don't match, we'll just create a simple item.
+                
+                // If the item is just a string
+                const prefHTML = `
+                    <div class="item-circle">
+                        <div class="circle-icon" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-star" style="color: #666;"></i>
                         </div>
-                    `;
-                    prefContainer.innerHTML += prefHTML;
-                }
+                        <span class="item-label">${label}</span>
+                    </div>
+                `;
+                prefContainer.innerHTML += prefHTML;
             });
         } else {
             prefContainer.innerHTML = '<p>No preferences selected.</p>';
         }
 
-        // Populate Highlights (Hobbies)
+        // Populate Highlights (Hobbies from User)
         const highlightContainer = document.getElementById('highlightsContainer');
         highlightContainer.innerHTML = '';
 
         let hobbies = [];
-        if (userData.hobbies) {
-            if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
-            else hobbies = userData.hobbies.split(',').map(s => s.trim());
+        if (data.hobbies) {
+            if (Array.isArray(data.hobbies)) hobbies = data.hobbies;
+            else hobbies = data.hobbies.split(',').map(s => s.trim());
         }
 
         if (hobbies.length > 0) {

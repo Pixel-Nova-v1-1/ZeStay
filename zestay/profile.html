@@ -111,16 +111,15 @@
                             <input type="date" id="display-dob" class="profile-input" readonly>
                         </div>
                         <div class="form-group-half">
-                            <label for="display-hobbies">Hobbies</label>
-                            <select id="display-hobbies" class="profile-input" disabled>
-                                <option value="" disabled selected>Select Hobby</option>
-                                <option value="reading">Reading</option>
-                                <option value="traveling">Traveling</option>
-                                <option value="gaming">Gaming</option>
-                                <option value="sports">Sports</option>
-                                <option value="music">Music</option>
-                                <option value="cooking">Cooking</option>
-                            </select>
+                            <label>Hobbies</label>
+                            <div class="hobbies-selection profile-input" id="display-hobbies-container" style="height: auto; min-height: 50px; display: flex; flex-wrap: wrap; gap: 10px;">
+                                <div class="hobby-option" data-value="reading">Reading</div>
+                                <div class="hobby-option" data-value="traveling">Traveling</div>
+                                <div class="hobby-option" data-value="gaming">Gaming</div>
+                                <div class="hobby-option" data-value="sports">Sports</div>
+                                <div class="hobby-option" data-value="music">Music</div>
+                                <div class="hobby-option" data-value="cooking">Cooking</div>
+                            </div>
                         </div>
                     </div>
                     <div class="save-btn-container">
