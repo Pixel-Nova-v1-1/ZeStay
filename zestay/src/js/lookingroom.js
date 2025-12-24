@@ -95,7 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayLookingFor').textContent = data.gender ? `Same as gender (${data.gender})` : 'Any'; // Inferring
         document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
 
-        // Populate Preferences (Highlights from Requirement)
+        // Verified/Unverified Box in Basic Info
+        const infoGrid = document.querySelector('.info-grid');
+        if (infoGrid) {
+            let verifiedBox = infoGrid.querySelector('.verified-box');
+            if (!verifiedBox) {
+                verifiedBox = document.createElement('div');
+                verifiedBox.className = 'info-item verified-box';
+                infoGrid.appendChild(verifiedBox);
+            }
+
+            if (userData.isVerified) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                `;
+            } else {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                `;
+            }
+        }
+
+        // Populate Preferences
         const prefContainer = document.getElementById('preferencesContainer');
         prefContainer.innerHTML = '';
 

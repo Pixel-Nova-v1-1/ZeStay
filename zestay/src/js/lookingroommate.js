@@ -155,18 +155,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayDescription').textContent = data.description;
 
         // Verified Box in Basic Info
-        if (data.isVerified) {
-            const infoGrid = document.querySelector('.info-grid');
-            if (infoGrid) {
-                if (!infoGrid.querySelector('.verified-box')) {
-                    const verifiedBox = document.createElement('div');
-                    verifiedBox.className = 'info-item verified-box';
-                    verifiedBox.innerHTML = `
-                        <h4>Status</h4>
-                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
-                    `;
-                    infoGrid.appendChild(verifiedBox);
-                }
+        // Verified/Unverified Box in Basic Info
+        const infoGrid = document.querySelector('.info-grid');
+        if (infoGrid) {
+            let verifiedBox = infoGrid.querySelector('.verified-box');
+            if (!verifiedBox) {
+                verifiedBox = document.createElement('div');
+                verifiedBox.className = 'info-item verified-box';
+                infoGrid.appendChild(verifiedBox);
+            }
+
+            if (data.isVerified) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                `;
+            } else {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                `;
             }
         }
 
@@ -203,6 +211,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerLabel.includes('park')) iconClass = 'fa-car';
                 else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
                 else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
+                else if (lowerLabel.includes('power')) iconClass = 'fa-battery-full';
+                else if (lowerLabel.includes('fridge')) iconClass = 'fa-snowflake';
+                else if (lowerLabel.includes('water') || lowerLabel.includes('ro')) iconClass = 'fa-bottle-water';
+                else if (lowerLabel.includes('kitchen')) iconClass = 'fa-fire-burner';
+                else if (lowerLabel.includes('cook')) iconClass = 'fa-kitchen-set';
+                else if (lowerLabel.includes('geyser')) iconClass = 'fa-faucet';
 
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">

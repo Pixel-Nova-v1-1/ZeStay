@@ -325,6 +325,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
 
+            // Amenities Logic
+            const amenities = item.amenities || [];
+            let amenitiesHTML = '';
+
+            if (amenities.length > 0) {
+                amenitiesHTML = amenities.slice(0, 5).map(am => {
+                    let icon = '';
+                    const lower = am.toLowerCase();
+                    if (lower.includes('wifi')) icon = '<i class="fa-solid fa-wifi"></i> ';
+                    else if (lower.includes('wash')) icon = '<i class="fa-solid fa-shirt"></i> ';
+                    else if (lower.includes('ac') || lower.includes('air')) icon = '<i class="fa-solid fa-wind"></i> ';
+                    else if (lower.includes('tv')) icon = '<i class="fa-solid fa-tv"></i> ';
+                    else if (lower.includes('park')) icon = '<i class="fa-solid fa-car"></i> ';
+                    else if (lower.includes('lift')) icon = '<i class="fa-solid fa-elevator"></i> ';
+                    else if (lower.includes('power')) icon = '<i class="fa-solid fa-battery-full"></i> ';
+                    else if (lower.includes('gym')) icon = '<i class="fa-solid fa-dumbbell"></i> ';
+                    else if (lower.includes('fridge')) icon = '<i class="fa-solid fa-snowflake"></i> ';
+                    else if (lower.includes('water') || lower.includes('ro')) icon = '<i class="fa-solid fa-bottle-water"></i> ';
+                    else if (lower.includes('kitchen')) icon = '<i class="fa-solid fa-fire-burner"></i> ';
+                    else if (lower.includes('cook')) icon = '<i class="fa-solid fa-kitchen-set"></i> ';
+                    else if (lower.includes('geyser')) icon = '<i class="fa-solid fa-faucet"></i> ';
+
+                    return `<span class="interest-tag">${icon}${am}</span>`;
+                }).join('');
+
+                if (amenities.length > 5) {
+                    amenitiesHTML += `<span class="interest-tag view-more" style="background: transparent;">+${amenities.length - 5}</span>`;
+                }
+            }
+
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
@@ -348,7 +378,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="card-footer">
-                    <span class="match-score">${item.matchScore}% match!</span>
+                    <div class="match-wrapper">
+                        <span class="match-score">${item.matchScore}% match!</span>
+                        ${amenitiesHTML ? `
+                        <div class="interests-tooltip">
+                            <div class="tooltip-title">Amenities</div>
+                            <div class="interests-grid">
+                                ${amenitiesHTML}
+                            </div>
+                        </div>` : ''}
+                    </div>
                 </div>
             </div>`;
         } else {
