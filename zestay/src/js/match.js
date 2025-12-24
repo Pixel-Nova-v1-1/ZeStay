@@ -3,8 +3,11 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import { showToast } from "./toast.js";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 console.log("match.js loaded");
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
