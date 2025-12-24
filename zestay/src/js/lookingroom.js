@@ -51,6 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('profileImage').src = avatar;
         document.getElementById('profileName').textContent = userData.name || 'User';
+
+        // Verification Badge
+        const verificationBadge = document.getElementById('verificationBadge');
+        if (verificationBadge) {
+            verificationBadge.style.display = userData.isVerified ? 'inline-block' : 'none';
+        }
+
         document.getElementById('displayLocation').textContent = userData.location || 'Not specified';
         document.getElementById('displayGender').textContent = userData.gender || 'Not specified';
         document.getElementById('displayRent').textContent = userData.rent ? `₹ ${userData.rent}` : 'Not specified';

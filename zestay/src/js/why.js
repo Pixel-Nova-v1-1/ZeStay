@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { nhost } from "../nhost";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,8 +77,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (switchToRoomLink && roomModal && reqModal) {
-        switchToRoomLink.addEventListener('click', (e) => {
+        switchToRoomLink.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            if (!currentUser) {
+                alert("Please login to post.");
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "flats"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    alert("You have already posted a room/flat. You can only post one.");
+                    return;
+                }
+            } catch (error) {
+                console.error("Error checking existing flats:", error);
+            }
+
             reqModal.classList.remove('active');
             roomModal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -117,7 +136,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (openRoomBtn && roomModal) {
-        openRoomBtn.addEventListener('click', () => {
+        openRoomBtn.addEventListener('click', async () => {
+            if (!currentUser) {
+                alert("Please login to post.");
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "flats"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    alert("You have already posted a room/flat. You can only post one.");
+                    return;
+                }
+            } catch (error) {
+                console.error("Error checking existing flats:", error);
+            }
+
             roomModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             console.log("Room Modal Opened");

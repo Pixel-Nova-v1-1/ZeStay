@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: "Flat Owner", 
                         avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
                         location: flatData.location || "Location not specified",
-                        gender: flatData.gender || "Any", 
+                        gender: "Not Specified", 
                         rent: flatData.rent || "N/A",
                         occupancy: flatData.occupancy || "Any",
                         lookingFor: flatData.gender || "Any",
@@ -83,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const userData = userDoc.data();
                                 data.name = userData.name || "Flat Owner";
                                 data.avatar = userData.photoUrl || data.avatar;
+                                data.isVerified = userData.isVerified;
+                                data.gender = userData.gender || "Not Specified";
                             }
                         } catch (e) {
                             console.log("Could not fetch owner details");
@@ -100,6 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Profile
         document.getElementById('profileName').textContent = data.name;
         document.getElementById('profileImage').src = data.avatar;
+
+        // Verification Badge
+        const verificationBadge = document.getElementById('verificationBadge');
+        if (verificationBadge) {
+            verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+        }
 
         // Basic Info
         document.getElementById('displayLocation').textContent = data.location;
