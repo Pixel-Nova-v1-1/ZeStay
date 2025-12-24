@@ -1,3 +1,5 @@
+import { showToast } from "./toast.js";
+
 /* =========================================================
    TAB SWITCHING (Find flatmates / Find room)
    ========================================================= */
@@ -86,6 +88,11 @@ const landingSearchInput = document.getElementById('landingSearchInput');
 
 if (landingSearchBtn && landingSearchInput) {
     landingSearchBtn.addEventListener('click', () => {
+        if (!landingSearchInput.value.trim()) {
+            showToast("Please enter a location to search.", "warning");
+            return;
+        }
+
         const activeTab = document.querySelector('.tab.active');
         let searchType = 'Roommates';
 
@@ -95,12 +102,15 @@ if (landingSearchBtn && landingSearchInput) {
 
         let url = `match.html?type=${searchType}`;
 
+        // Always include location parameter for text filtering in match.html
+        if (landingSearchInput.value.trim()) {
+            url += `&location=${encodeURIComponent(landingSearchInput.value.trim())}`;
+        }
+
         if (selectedPlace) {
             url += `&placeId=${selectedPlace.placeId}`;
             url += `&lat=${selectedPlace.lat}`;
             url += `&lng=${selectedPlace.lng}`;
-        } else if (landingSearchInput.value.trim()) {
-            url += `&location=${encodeURIComponent(landingSearchInput.value.trim())}`;
         }
 
         window.location.href = url;

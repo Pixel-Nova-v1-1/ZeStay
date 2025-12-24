@@ -1,6 +1,11 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+<<<<<<< Updated upstream
 import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, getDocs, updateDoc, increment } from "firebase/firestore";
+=======
+import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { showToast, showConfirm } from "./toast.js";
+>>>>>>> Stashed changes
 
 
 // --- ZESTAY KNOWLEDGE BASE ---
@@ -538,7 +543,7 @@ async function handleSend() {
     } catch (err) {
       console.error("Error sending message:", err);
       // Alert the user to the specific error
-      alert("Error sending message: " + err.message);
+      showToast("Error sending message: " + err.message, "error");
       appendMessageToUI("Error sending message.", true);
     }
   }
@@ -813,7 +818,8 @@ document.addEventListener('click', (e) => {
 });
 
 async function deleteChat() {
-  if (!confirm("Are you sure you want to delete this chat? It will be removed from your list.")) return;
+  const confirmed = await showConfirm("Are you sure you want to delete this chat? It will be removed from your list.");
+  if (!confirmed) return;
 
   // Logic: Remove currentUser.uid from 'participants' array in Firestore
   if (!activeTargetUser || !activeTargetUser.id || !currentUser) return;
@@ -845,7 +851,7 @@ async function deleteChat() {
         participants: newParticipants
       });
 
-      alert("Chat deleted.");
+      showToast("Chat deleted.", "success");
 
       // Close Menu
       const menu = document.querySelector('.chat-options-menu');
@@ -855,7 +861,7 @@ async function deleteChat() {
     }
   } catch (e) {
     console.error("Error deleting chat:", e);
-    alert("Failed to delete chat.");
+    showToast("Failed to delete chat.", "error");
   }
 }
 
@@ -878,7 +884,7 @@ function closeReportModal() {
 async function submitReport() {
   const reason = document.getElementById('reportReason').value.trim();
   if (!reason) {
-    alert("Please enter a reason.");
+    showToast("Please enter a reason.", "warning");
     return;
   }
 
@@ -895,11 +901,11 @@ async function submitReport() {
       status: 'pending'
     });
 
-    alert("Report submitted successfully.");
+    showToast("Report submitted successfully.", "success");
     closeReportModal();
   } catch (e) {
     console.error("Report error:", e);
-    alert("Failed to submit report.");
+    showToast("Failed to submit report.", "error");
   }
 }
 
@@ -907,7 +913,7 @@ async function submitReport() {
 // Exported startChat function
 export async function startChat(targetUser) {
   if (!currentUser) {
-    alert("Please login to chat.");
+    showToast("Please login to chat.", "warning");
     return;
   }
   // Ensure widget is initialized

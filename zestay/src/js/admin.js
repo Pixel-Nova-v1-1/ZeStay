@@ -1,6 +1,11 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+<<<<<<< Updated upstream
 import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc } from "firebase/firestore";
+=======
+import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { showToast, showConfirm } from "./toast.js";
+>>>>>>> Stashed changes
 
 // DOM Elements
 const logoutBtn = document.getElementById('logoutBtn');
@@ -21,7 +26,7 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists() || !userSnap.data().isAdmin) {
-        alert("Access Denied: You do not have administrator privileges.");
+        showToast("Access Denied: You do not have administrator privileges.", "error");
         window.location.replace("/index.html");
         return;
     }
@@ -41,7 +46,7 @@ logoutBtn.addEventListener('click', async () => {
         window.location.replace("/landing.html");
     } catch (error) {
         console.error("Error signing out:", error);
-        alert("Error signing out");
+        showToast("Error signing out", "error");
     }
 });
 
@@ -242,7 +247,8 @@ window.openImage = (src) => {
 
 // Expose functions to window for onclick handlers
 window.approveVerification = async (requestId, userId) => {
-    if (!confirm("Are you sure you want to approve this user?")) return;
+    const confirmed = await showConfirm("Are you sure you want to approve this user?");
+    if (!confirmed) return;
 
     try {
         // 1. Update Request
@@ -258,6 +264,7 @@ window.approveVerification = async (requestId, userId) => {
         const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
         const request = requestDoc.exists() ? requestDoc.data() : null;
 
+<<<<<<< Updated upstream
         if (request) {
             await updateDoc(doc(db, "users", request.userId), {
                 isVerified: true
@@ -275,16 +282,24 @@ window.approveVerification = async (requestId, userId) => {
         }
 
         alert("Request approved.");
+=======
+        showToast("User verified successfully!", "success");
+>>>>>>> Stashed changes
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error approving:", error);
-        alert("Error approving user: " + error.message);
+        showToast("Error approving user: " + error.message, "error");
     }
 };
 
 window.rejectVerification = async (requestId) => {
+<<<<<<< Updated upstream
     const reason = prompt("Please enter the reason for rejection:");
     if (reason === null) return; // User cancelled
+=======
+    const confirmed = await showConfirm("Are you sure you want to reject this request?");
+    if (!confirmed) return;
+>>>>>>> Stashed changes
 
     try {
         await updateDoc(doc(db, "verification_requests", requestId), {
@@ -293,6 +308,7 @@ window.rejectVerification = async (requestId) => {
             processedAt: new Date()
         });
 
+<<<<<<< Updated upstream
         // Send Notification
         const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
         const request = requestDoc.exists() ? requestDoc.data() : null;
@@ -309,10 +325,13 @@ window.rejectVerification = async (requestId) => {
         }
 
         alert("Request rejected with reason: " + reason);
+=======
+        showToast("Request rejected.", "info");
+>>>>>>> Stashed changes
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error rejecting:", error);
-        alert("Error rejecting request: " + error.message);
+        showToast("Error rejecting request: " + error.message, "error");
     }
 };
 
@@ -462,24 +481,44 @@ async function renderSettings() {
 
 // Window functions for actions
 window.deleteListing = async (id) => {
+<<<<<<< Updated upstream
     if (!confirm("Are you sure you want to delete this listing?")) return;
+=======
+    const confirmed = await showConfirm("Are you sure you want to delete this listing?");
+    if(!confirmed) return;
+>>>>>>> Stashed changes
     try {
         await deleteDoc(doc(db, "listings", id));
-        alert("Listing deleted.");
+        showToast("Listing deleted.", "success");
         renderListings();
+<<<<<<< Updated upstream
     } catch (e) {
         alert("Error: " + e.message);
+=======
+    } catch(e) {
+        showToast("Error: " + e.message, "error");
+>>>>>>> Stashed changes
     }
 };
 
 window.resolveReport = async (id) => {
+<<<<<<< Updated upstream
     if (!confirm("Mark this report as resolved?")) return;
+=======
+    const confirmed = await showConfirm("Mark this report as resolved?");
+    if(!confirmed) return;
+>>>>>>> Stashed changes
     try {
         await updateDoc(doc(db, "reports", id), { status: 'resolved' });
-        alert("Report resolved.");
+        showToast("Report resolved.", "success");
         renderReports();
+<<<<<<< Updated upstream
     } catch (e) {
         alert("Error: " + e.message);
+=======
+    } catch(e) {
+        showToast("Error: " + e.message, "error");
+>>>>>>> Stashed changes
     }
 };
 
@@ -493,9 +532,15 @@ window.saveSettings = async () => {
             allowRegistrations,
             updatedAt: new Date()
         });
+<<<<<<< Updated upstream
         alert("Settings saved successfully!");
     } catch (e) {
         alert("Error saving settings: " + e.message);
+=======
+        showToast("Settings saved successfully!", "success");
+    } catch(e) {
+        showToast("Error saving settings: " + e.message, "error");
+>>>>>>> Stashed changes
     }
 };
 

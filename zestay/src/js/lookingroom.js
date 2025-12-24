@@ -2,6 +2,7 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { startChat } from "./chat.js";
+import { showToast } from "./toast.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadUserProfile() {
         if (!userId) {
-            alert("No user specified.");
+            showToast("No user specified.", "error");
             window.location.href = 'match.html';
             return;
         }
@@ -66,13 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (userDocSnap.exists()) {
                     renderProfile(userDocSnap.data());
                 } else {
-                    alert("Listing not found.");
+                    showToast("Listing not found.", "error");
                     window.location.href = 'match.html';
                 }
             }
         } catch (error) {
             console.error("Error fetching details:", error);
-            alert("Error loading details.");
+            showToast("Error loading details.", "error");
         }
     }
 
@@ -260,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBtn.addEventListener('click', async () => {
             const user = auth.currentUser;
             if (!user) {
-                alert("Please login to chat.");
+                showToast("Please login to chat.", "warning");
                 return;
             }
 
@@ -297,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (!targetVerified) {
-                        alert("The other user is not verified yet. You cannot message them.");
+                        showToast("The other user is not verified yet. You cannot message them.", "warning");
                         return;
                     }
 
@@ -313,11 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                 } else {
-                    alert("Only verified users can initiate chats. Please get verified!");
+                    showToast("Only verified users can initiate chats. Please get verified!", "warning");
                 }
             } catch (err) {
                 console.error("Error checking verification:", err);
-                alert("Error checking verification: " + err.message);
+                showToast("Error checking verification: " + err.message, "error");
             }
         });
     }
@@ -383,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Backend Integration Placeholder
     async function submitReport(reason) {
         if (!auth.currentUser) {
-            alert("Please login to report.");
+            showToast("Please login to report.", "warning");
             return;
         }
 
@@ -398,10 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 status: 'pending'
             });
 
-            alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+            showToast(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`, "success");
         } catch (error) {
             console.error("Error submitting report:", error);
-            alert("Failed to submit report. Please try again.");
+            showToast("Failed to submit report. Please try again.", "error");
         }
     }
 
