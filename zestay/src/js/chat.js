@@ -1,6 +1,10 @@
 import { auth, db } from "../firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
+<<<<<<< Updated upstream
 import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, getDocs, updateDoc, increment } from "firebase/firestore";
+=======
+import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
+>>>>>>> Stashed changes
 import { showToast, showConfirm } from "./toast.js";
 
 
