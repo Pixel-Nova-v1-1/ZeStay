@@ -5,6 +5,9 @@ import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, get
 =======
 import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
