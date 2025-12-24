@@ -31,7 +31,10 @@ onAuthStateChanged(auth, async (user) => {
         createdAt: serverTimestamp()
       });
 
-      window.location.replace("/questions.html");
+      // Don't redirect if we are in the middle of registration flow
+      if (path !== "/regimob.html" && path !== "/register.html") {
+        window.location.replace("/questions.html");
+      }
       return;
     }
 
@@ -55,7 +58,7 @@ onAuthStateChanged(auth, async (user) => {
       if (!hasPreferences) {
         // If they haven't picked preferences yet, force them to preference.html
         // But don't redirect if they are already there!
-        if (path !== "/preference.html") {
+        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html") {
           console.log("Preferences missing. Redirecting to selection...");
           window.location.replace("/preference.html");
         }
