@@ -2,14 +2,8 @@ import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import { showToast } from "./toast.js";
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 console.log("match.js loaded");
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
@@ -79,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userProfile) userProfile.style.display = 'none';
-            
+
             // Redirect to login if not authenticated
             window.location.href = 'regimob.html?mode=login';
         }

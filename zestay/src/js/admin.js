@@ -1,17 +1,8 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-<<<<<<< Updated upstream
 import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc } from "firebase/firestore";
-=======
-import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 
 // DOM Elements
 const logoutBtn = document.getElementById('logoutBtn');
@@ -270,9 +261,7 @@ window.approveVerification = async (requestId, userId) => {
         const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
         const request = requestDoc.exists() ? requestDoc.data() : null;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         if (request) {
             await updateDoc(doc(db, "users", request.userId), {
                 isVerified: true
@@ -289,16 +278,7 @@ window.approveVerification = async (requestId, userId) => {
             });
         }
 
-        alert("Request approved.");
-=======
         showToast("User verified successfully!", "success");
->>>>>>> Stashed changes
-=======
-        showToast("User verified successfully!", "success");
->>>>>>> Stashed changes
-=======
-        showToast("User verified successfully!", "success");
->>>>>>> Stashed changes
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error approving:", error);
@@ -307,23 +287,11 @@ window.approveVerification = async (requestId, userId) => {
 };
 
 window.rejectVerification = async (requestId) => {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+    const confirmed = await showConfirm("Are you sure you want to reject this request?");
+    if (!confirmed) return;
+
     const reason = prompt("Please enter the reason for rejection:");
     if (reason === null) return; // User cancelled
-=======
-    const confirmed = await showConfirm("Are you sure you want to reject this request?");
-    if (!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Are you sure you want to reject this request?");
-    if (!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Are you sure you want to reject this request?");
-    if (!confirmed) return;
->>>>>>> Stashed changes
 
     try {
         await updateDoc(doc(db, "verification_requests", requestId), {
@@ -332,9 +300,6 @@ window.rejectVerification = async (requestId) => {
             processedAt: new Date()
         });
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         // Send Notification
         const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
         const request = requestDoc.exists() ? requestDoc.data() : null;
@@ -350,22 +315,14 @@ window.rejectVerification = async (requestId) => {
             });
         }
 
-        alert("Request rejected with reason: " + reason);
-=======
         showToast("Request rejected.", "info");
->>>>>>> Stashed changes
-=======
-        showToast("Request rejected.", "info");
->>>>>>> Stashed changes
-=======
-        showToast("Request rejected.", "info");
->>>>>>> Stashed changes
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error rejecting:", error);
         showToast("Error rejecting request: " + error.message, "error");
     }
 };
+
 
 async function renderListings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Listings...</h2></div>';
@@ -381,28 +338,31 @@ async function renderListings() {
 
         let html = `
         <div class="recent-activity">
-            <h2>Listings Management</h2>
+            <h2>All Listings</h2>
             <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Price</th>
+                        <th>Type</th>
                         <th>Location</th>
+                        <th>Price</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-        `;
+                <tbody>`;
 
         querySnapshot.forEach((doc) => {
-            const item = doc.data();
+            const data = doc.data();
             html += `
                 <tr>
-                    <td>${item.title || 'Untitled'}</td>
-                    <td>$${item.price || '0'}</td>
-                    <td>${item.location || 'Unknown'}</td>
+                    <td>${data.title || 'Untitled'}</td>
+                    <td>${data.type || 'N/A'}</td>
+                    <td>${data.location || 'N/A'}</td>
+                    <td>₹${data.price || data.rent || 0}</td>
                     <td>
-                        <button onclick="window.deleteListing('${doc.id}')" class="btn btn-danger">Delete</button>
+                        <button onclick="deleteListing('${doc.id}')" class="btn-reject" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `;
@@ -481,7 +441,7 @@ async function renderSettings() {
         const data = snap.exists() ? snap.data() : { maintenanceMode: false, allowRegistrations: true };
 
         contentArea.innerHTML = `
-            <div class="recent-activity">
+        <div class="recent-activity">
                 <h2>Admin Settings</h2>
                 <div style="margin-top: 20px; max-width: 500px;">
                     <div class="settings-group">
@@ -513,84 +473,28 @@ async function renderSettings() {
 
 // Window functions for actions
 window.deleteListing = async (id) => {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    if (!confirm("Are you sure you want to delete this listing?")) return;
-=======
     const confirmed = await showConfirm("Are you sure you want to delete this listing?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Are you sure you want to delete this listing?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Are you sure you want to delete this listing?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
+    if (!confirmed) return;
+
     try {
         await deleteDoc(doc(db, "listings", id));
         showToast("Listing deleted.", "success");
         renderListings();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     } catch (e) {
-        alert("Error: " + e.message);
-=======
-    } catch(e) {
         showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-    } catch(e) {
-        showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-    } catch(e) {
-        showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
     }
 };
 
 window.resolveReport = async (id) => {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    if (!confirm("Mark this report as resolved?")) return;
-=======
     const confirmed = await showConfirm("Mark this report as resolved?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Mark this report as resolved?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
-=======
-    const confirmed = await showConfirm("Mark this report as resolved?");
-    if(!confirmed) return;
->>>>>>> Stashed changes
+    if (!confirmed) return;
+
     try {
         await updateDoc(doc(db, "reports", id), { status: 'resolved' });
         showToast("Report resolved.", "success");
         renderReports();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     } catch (e) {
-        alert("Error: " + e.message);
-=======
-    } catch(e) {
         showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-    } catch(e) {
-        showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-    } catch(e) {
-        showToast("Error: " + e.message, "error");
->>>>>>> Stashed changes
     }
 };
 
@@ -604,27 +508,9 @@ window.saveSettings = async () => {
             allowRegistrations,
             updatedAt: new Date()
         });
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        alert("Settings saved successfully!");
+        showToast("Settings saved successfully!", "success");
     } catch (e) {
-        alert("Error saving settings: " + e.message);
-=======
-        showToast("Settings saved successfully!", "success");
-    } catch(e) {
         showToast("Error saving settings: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-        showToast("Settings saved successfully!", "success");
-    } catch(e) {
-        showToast("Error saving settings: " + e.message, "error");
->>>>>>> Stashed changes
-=======
-        showToast("Settings saved successfully!", "success");
-    } catch(e) {
-        showToast("Error saving settings: " + e.message, "error");
->>>>>>> Stashed changes
     }
 };
 
@@ -640,9 +526,7 @@ async function fetchAndRenderActivity(list) {
     list.innerHTML = '<li>Loading activity...</li>';
 
     try {
-        // 1. Fetch recent users (using updatedAt as proxy)
-        // Note: If "updatedAt" index is missing, this might fail. 
-        // For dev, we'll catch and try without sort if needed, or just log it.
+        // 1. Fetch recent users
         let usersSnap = { docs: [] };
         try {
             const usersQuery = query(collection(db, "users"), orderBy("updatedAt", "desc"), limit(3));
@@ -667,8 +551,6 @@ async function fetchAndRenderActivity(list) {
         // 3. Fetch recent listings
         let listingsSnap = { docs: [] };
         try {
-            // Assuming listings have 'createdAt' or similar. If not, this might fail.
-            // We'll try 'createdAt' first.
             const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(3));
             listingsSnap = await getDocs(listingsQuery);
         } catch (e) {
@@ -682,7 +564,6 @@ async function fetchAndRenderActivity(list) {
 
         usersSnap.forEach(doc => {
             const data = doc.data();
-            // Try to parse date
             let time = new Date();
             if (data.updatedAt) time = new Date(data.updatedAt);
 
@@ -737,7 +618,6 @@ async function fetchAndRenderActivity(list) {
         list.innerHTML = '<li>Error loading activity stream.</li>';
     }
 }
-
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
