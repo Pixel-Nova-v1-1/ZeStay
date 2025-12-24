@@ -137,7 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const verificationBadge = document.getElementById('verificationBadge');
         if (verificationBadge) {
             verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+            if (data.isVerified) {
+                verificationBadge.style.flexShrink = '0';
+            }
         }
+
+        // Adjust Font Size to Fit
+        adjustProfileNameFontSize();
+        window.addEventListener('resize', adjustProfileNameFontSize);
 
         // Basic Info
         document.getElementById('displayLocation').textContent = data.location;
@@ -146,6 +153,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayOccupancy').textContent = data.occupancy;
         document.getElementById('displayLookingFor').textContent = data.lookingFor;
         document.getElementById('displayDescription').textContent = data.description;
+
+        // Verified Box in Basic Info
+        if (data.isVerified) {
+            const infoGrid = document.querySelector('.info-grid');
+            if (infoGrid) {
+                if (!infoGrid.querySelector('.verified-box')) {
+                    const verifiedBox = document.createElement('div');
+                    verifiedBox.className = 'info-item verified-box';
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                    `;
+                    infoGrid.appendChild(verifiedBox);
+                }
+            }
+        }
 
         // Images
         currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
@@ -201,6 +224,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+    }
+
+    function adjustProfileNameFontSize() {
+        const nameEl = document.getElementById('profileName');
+        if (!nameEl) return;
+
+        let fontSize = 26; // Start with max font size
+        nameEl.style.fontSize = fontSize + 'px';
+        nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
+
+        // Reduce font size until it fits
+        // We check if scrollWidth (content) > clientWidth (visible area)
+        while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
+            fontSize--;
+            nameEl.style.fontSize = fontSize + 'px';
+        }
     }
 
     // --- 2. Slider Logic ---

@@ -88,18 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
             verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
         }
 
-        document.getElementById('displayLocation').textContent = data.location || 'Not specified';
-        // Display User's Gender
-        document.getElementById('displayGender').textContent = data.userGender || data.gender || 'Not specified';
-        
-        document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
-        document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';
-        
-        // Display "Looking For" Gender
-        const lookingFor = data.lookingForGender || (data.gender && data.gender !== data.userGender ? data.gender : 'Any');
-        document.getElementById('displayLookingFor').textContent = lookingFor; 
-        
-        document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
+        document.getElementById('displayLocation').textContent = userData.location || 'Not specified';
+        document.getElementById('displayGender').textContent = userData.gender || 'Not specified';
+        document.getElementById('displayRent').textContent = userData.rent ? `₹ ${userData.rent}` : 'Not specified';
+        document.getElementById('displayOccupancy').textContent = userData.occupancy || 'Single';
+        document.getElementById('displayLookingFor').textContent = userData.gender ? `Same as gender (${userData.gender})` : 'Any'; // Inferring
+        document.getElementById('displayDescription').textContent = userData.description || 'No description provided.';
 
         // Populate Preferences (Highlights from Requirement)
         const prefContainer = document.getElementById('preferencesContainer');
@@ -166,7 +160,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             highlightContainer.innerHTML = '<p>No hobbies listed.</p>';
         }
+        // Adjust font size
+        setTimeout(adjustProfileNameFontSize, 0);
     }
+
+    function adjustProfileNameFontSize() {
+        const nameEl = document.getElementById('profileName');
+        if (!nameEl) return;
+
+        let fontSize = 26; // Start with max font size
+        nameEl.style.fontSize = fontSize + 'px';
+        nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
+
+        // Reduce font size until it fits
+        while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
+            fontSize--;
+            nameEl.style.fontSize = fontSize + 'px';
+        }
+    }
+
+
+    window.addEventListener('resize', adjustProfileNameFontSize);
 
     // --- Auth Logic (Firebase) ---
     onAuthStateChanged(auth, (user) => {

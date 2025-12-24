@@ -70,12 +70,28 @@ body {
     object-fit: cover;
 }
 
+.name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 30px;
+    width: 100%;
+    overflow: hidden;
+    flex-wrap: nowrap;
+}
+
 .profile-name {
     font-size: 26px;
     font-weight: 600;
-    margin-bottom: 30px;
+    margin-bottom: 0;
     text-align: center;
     color: #222;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 0 1 auto;
 }
 
 .action-buttons {
