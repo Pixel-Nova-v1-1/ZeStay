@@ -382,4 +382,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Google Maps Autocomplete ---
+    function initAutocomplete(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        const checkGoogle = setInterval(() => {
+            if (window.google && google.maps && google.maps.places) {
+                clearInterval(checkGoogle);
+                new google.maps.places.Autocomplete(input, {
+                    types: ['(cities)'],
+                    componentRestrictions: { country: 'in' }
+                });
+            }
+        }, 100);
+    }
+
+    initAutocomplete('reqLocation');
+    initAutocomplete('roomLocation');
+
 });

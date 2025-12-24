@@ -450,4 +450,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // But we can call it here too just in case, though it might be empty initially
     // init(); 
 
+    // --- Google Maps Autocomplete ---
+    function initMatchAutocomplete() {
+        const input = document.getElementById('matchSearchInput');
+        if (!input) return;
+
+        const checkGoogle = setInterval(() => {
+            if (window.google && google.maps && google.maps.places) {
+                clearInterval(checkGoogle);
+                const autocomplete = new google.maps.places.Autocomplete(input, {
+                    types: ['(cities)'],
+                    componentRestrictions: { country: 'in' }
+                });
+
+                autocomplete.addListener('place_changed', () => {
+                    // Trigger search/filter when place is selected
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                });
+            }
+        }, 100);
+    }
+
+    initMatchAutocomplete();
+
 });
