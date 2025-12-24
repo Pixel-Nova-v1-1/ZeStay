@@ -64,7 +64,8 @@ onAuthStateChanged(auth, async (user) => {
 
       // D. USER IS FULLY SET UP
       // If they are currently on a "Setup Page" (Login, Register, Preference), send them to the App.
-      if (PUBLIC_PAGES.includes(path) || path === "/register.html" || path === "/preference.html") {
+      // We allow landing page ("/" or "/index.html") to remain open even if logged in.
+      if (path.includes("regimob.html") || path === "/register.html" || path === "/preference.html") {
         // You can change this to "/ques.html" if that's specifically where they go next
         window.location.replace("/why.html");
       }
