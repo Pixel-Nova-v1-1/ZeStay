@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: "Flat Owner",
                         avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
                         location: flatData.location || "Location not specified",
+                        address: flatData.address || "",
                         gender: "Not Specified",
                         rent: flatData.rent || "N/A",
                         occupancy: flatData.occupancy || "Any",
@@ -148,6 +149,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Basic Info
         document.getElementById('displayLocation').textContent = data.location;
+
+        const addressEl = document.getElementById('displayAddress');
+        const addressContainer = document.getElementById('addressContainer');
+        if (addressEl && addressContainer) {
+            if (data.address) {
+                addressEl.textContent = data.address;
+                addressContainer.style.display = 'flex';
+            } else {
+                addressContainer.style.display = 'none';
+            }
+        }
+
         document.getElementById('displayGender').textContent = data.gender;
         document.getElementById('displayRent').textContent = data.rent;
         document.getElementById('displayOccupancy').textContent = data.occupancy;
