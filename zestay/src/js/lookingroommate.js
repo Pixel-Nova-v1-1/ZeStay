@@ -3,6 +3,9 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { startChat } from "./chat.js";
 
+// Global state to store owner ID
+let currentOwnerId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- Mock Data simulating functionality for Backend Integration ---
@@ -27,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         preferences: [
             { label: "Night Owl", img: 'https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png?ex=6947a58c&is=6946540c&hm=4beaa2241099fade45cc8db362da8dab01c34f66fe51eee157d6179bc41d956b&=&format=webp&quality=lossless&width=813&height=813' },
-            { label: "Studious", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa899ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813" },
+            { label: "Studious", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa89ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813" },
             { label: "Music Lover", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842876764979373/3.png?ex=6947a58b&is=6946540b&hm=2e57e6525773c585c332b6c2b7c712e736d1dc4dcf9d0e037d9a084bcde923b0&=&format=webp&quality=lossless&width=813&height=813" }
         ],
 
@@ -59,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (docSnap.exists()) {
                     const flatData = docSnap.data();
+
+                    // Capture Owner ID
+                    currentOwnerId = flatData.userId;
 
                     // Map Firestore data to UI structure
                     data = {
@@ -98,6 +104,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error("Error getting flat details:", error);
             }
+        } else if (id) {
+            // It's a User/Roommate ID
+            currentOwnerId = id;
+
+            // Fetch user data logic (simplified for now as mockData is used)
+            // In real app, we would fetch doc(db, "users", id) here too
+            try {
+                const userDoc = await getDoc(doc(db, "users", id));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    data = {
+                        ...data, // Keep existing mockData as base
+                        name: userData.name || data.name,
+                        avatar: userData.photoUrl || data.avatar,
+                        location: userData.location || data.location,
+                        gender: userData.gender || data.gender,
+                        isVerified: userData.isVerified,
+                        // For roommate profiles, rent, occupancy, lookingFor might come from a separate roommate_listing collection
+                        // For now, we'll keep mockData's values or fetch from a roommate_listing if available
+                        // This example focuses on user details for the profile section
+                    };
+                }
+            } catch (e) { console.error("Error fetching user", e); }
         }
 
         // Profile
@@ -274,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetName = document.getElementById('profileName').textContent;
                     const targetAvatar = document.getElementById('profileImage').src;
 
+                    console.log("Starting chat with:", { id: targetId, name: targetName, avatar: targetAvatar });
                     window.startChat({
                         id: targetId,
                         name: targetName,
