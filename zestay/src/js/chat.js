@@ -150,6 +150,23 @@ function initChatSystem() {
     if (e.key === 'Enter') handleSend();
   });
 
+  // Header Click Navigation
+  const headerInfo = document.querySelector('.chat-header-info');
+  if (headerInfo) {
+    headerInfo.addEventListener('click', () => {
+      if (activeTargetUser && !activeTargetUser.isBot && activeTargetUser.id) {
+        window.location.href = `lookingroommate.html?id=${activeTargetUser.id}`;
+      }
+    });
+  }
+  if (headerAvatar) {
+    headerAvatar.addEventListener('click', () => {
+      if (activeTargetUser && !activeTargetUser.isBot && activeTargetUser.id) {
+        window.location.href = `lookingroommate.html?id=${activeTargetUser.id}`;
+      }
+    });
+  }
+
   listBody.addEventListener('click', (e) => {
     const item = e.target.closest('.chat-item');
     if (!item) return;
@@ -339,7 +356,8 @@ function showConversation(user) {
   headerAvatar.alt = user.name;
   headerAvatar.classList.remove('hidden');
   chatTitle.textContent = user.name;
-  chatStatus.textContent = user.online ? 'Online' : 'Offline';
+  chatTitle.textContent = user.name;
+  // chatStatus.textContent = user.online ? 'Online' : 'Offline'; // Removed status
 
   listBody.classList.add('hidden');
   convoBody.classList.remove('hidden');

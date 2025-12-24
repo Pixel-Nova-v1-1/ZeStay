@@ -41,6 +41,12 @@
 .chat-header-info {
     flex-grow: 1;
     margin-left: 10px;
+    cursor: pointer;
+    /* Clickable */
+}
+
+.chat-header-info:hover h3 {
+    text-decoration: underline;
 }
 
 .chat-header-avatar {
@@ -50,6 +56,8 @@
     object-fit: cover;
     margin-left: 10px;
     border: 2px solid white;
+    cursor: pointer;
+    /* Clickable */
 }
 
 .chat-header-avatar.hidden {
