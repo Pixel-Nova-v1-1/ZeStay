@@ -1,7 +1,9 @@
-import { auth, db } from "../firebase";
+import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import { showToast } from "./toast.js";
+
+console.log("match.js loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
@@ -71,9 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userProfile) userProfile.style.display = 'none';
-            // If not logged in, maybe show some demo data or redirect? 
-            // For now, let's just show empty or ask to login
-            container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Please login to see matches.</p>';
+            
+            // Redirect to login if not authenticated
+            window.location.href = 'regimob.html?mode=login';
         }
     });
 
