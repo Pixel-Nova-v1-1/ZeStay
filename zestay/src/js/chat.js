@@ -96,7 +96,12 @@ function initChatSystem() {
       try {
         const docSnap = await getDoc(doc(db, 'users', user.uid));
         if (docSnap.exists()) {
-          currentProfile = docSnap.data();
+          const data = docSnap.data();
+          currentProfile = {
+            name: data.name || user.displayName || "User",
+            photoUrl: data.photoUrl || user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`
+          };
+        } else {
           currentProfile = {
             name: user.displayName || "User",
             photoUrl: user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`
@@ -104,7 +109,10 @@ function initChatSystem() {
         }
       } catch (e) {
         console.error("Error fetching profile:", e);
-        currentProfile = { name: "User", photoUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}` };
+        currentProfile = {
+          name: user.displayName || "User",
+          photoUrl: user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`
+        };
       }
 
       toggleBtn.style.display = 'flex';
@@ -599,8 +607,17 @@ function removeTypingIndicator(id) {
 function appendMessageToUI(text, isMe) {
   const bubble = document.createElement('div');
   bubble.className = `message ${isMe ? 'me' : 'them'}`;
-  bubble.innerHTML = `<div class="message-content"></div>`;
-  bubble.querySelector('.message-content').textContent = text;
+
+  let avatarHtml = '';
+  if (!isMe && activeTargetUser) {
+    avatarHtml = `<img src="${activeTargetUser.avatar}" alt="${activeTargetUser.name}" class="message-avatar">`;
+  }
+
+  bubble.innerHTML = `
+    ${avatarHtml}
+    <div class="message-content">${text}</div>
+  `;
+
   convoBody.appendChild(bubble);
   scrollConversationToBottom();
 }

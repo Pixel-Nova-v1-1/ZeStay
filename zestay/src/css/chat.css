@@ -174,7 +174,12 @@
 .message {
     margin-bottom: 15px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    /* Changed from column to row */
+    align-items: flex-end;
+    /* Align avatar at bottom */
+    gap: 8px;
+    /* Space between avatar and bubble */
     animation: slideInMessage 0.3s ease-out forwards;
 }
 
@@ -190,7 +195,8 @@
 }
 
 .message.me {
-    align-items: flex-end;
+    justify-content: flex-end;
+    /* Allow flex-end to work with row direction */
 }
 
 .message.me .message-content {
@@ -200,7 +206,7 @@
 }
 
 .message.them {
-    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .message.them .message-content {
@@ -208,6 +214,16 @@
     color: #333;
     border: 1px solid #f0f0f0;
     border-bottom-left-radius: 4px;
+}
+
+.message-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+    /* Slight adjust for bottom alignment */
+    border: 1px solid #eee;
 }
 
 .chat-footer {
