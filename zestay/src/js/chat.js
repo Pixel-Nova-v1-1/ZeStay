@@ -725,6 +725,16 @@ function toggleOptionsMenu(e) {
   const menu = document.querySelector('.chat-options-menu');
   if (menu) {
     menu.classList.toggle('hidden');
+
+    // Hide Delete Option if AI
+    const deleteBtn = document.getElementById('btnDeleteChat');
+    if (deleteBtn) {
+      if (activeTargetUser && activeTargetUser.isBot) {
+        deleteBtn.style.display = 'none';
+      } else {
+        deleteBtn.style.display = 'block';
+      }
+    }
   }
 }
 
@@ -817,6 +827,7 @@ async function submitReport() {
       reportedByName: (currentProfile && currentProfile.name) || "User",
       reportedByUid: currentUser.uid,
       reason: reason,
+      reportSource: 'chat',
       timestamp: Date.now(),
       status: 'pending'
     });

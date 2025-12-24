@@ -348,9 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // CHECK TARGET VERIFICATION
                     let targetVerified = false;
+                    let realTargetId = currentOwnerId || targetId; // Prefer resolved Owner ID
+
                     try {
-                        if (targetId) {
-                            const targetDoc = await getDoc(doc(db, "users", targetId));
+                        if (realTargetId) {
+                            const targetDoc = await getDoc(doc(db, "users", realTargetId));
                             if (targetDoc.exists() && targetDoc.data().isVerified) {
                                 targetVerified = true;
                             }
@@ -367,9 +369,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetName = document.getElementById('profileName').textContent;
                     const targetAvatar = document.getElementById('profileImage').src;
 
-                    console.log("Starting chat with:", { id: targetId, name: targetName, avatar: targetAvatar });
+                    console.log("Starting chat with:", { id: realTargetId, name: targetName, avatar: targetAvatar });
                     window.startChat({
-                        id: targetId,
+                        id: realTargetId,
                         name: targetName,
                         avatar: targetAvatar,
                         online: true,

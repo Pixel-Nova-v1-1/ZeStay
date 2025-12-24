@@ -37,12 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (reqDocSnap.exists()) {
                 const reqData = reqDocSnap.data();
-                
+
                 // 2. Fetch User Data
                 if (reqData.userId) {
                     const userDocRef = doc(db, "users", reqData.userId);
                     const userDocSnap = await getDoc(userDocRef);
-                    
+
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         // Merge Data: Requirement takes precedence for specific fields
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check if it maps to an icon, otherwise display generic
                 // The chips are text like "Clean & organized". 
                 // We can try to find a partial match or just display text.
-                
+
                 let image = 'public/images/star.png'; // Default icon
                 let label = prefItem;
 
@@ -121,10 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerPref.includes('guest')) image = 'public/images/guestfriendly.png';
                 else if (lowerPref.includes('party') || lowerPref.includes('social')) image = 'public/images/party.png'; // Assuming party image exists or use generic
                 else if (lowerPref.includes('work')) image = 'public/images/work.png'; // Assuming work image exists
-                
+
                 // If we don't have the specific images, we can just use a default style or try to use the existing map if keys match
                 // But since keys don't match, we'll just create a simple item.
-                
+
                 // If the item is just a string
                 const prefHTML = `
                     <div class="item-circle">
@@ -239,11 +239,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // CHECK TARGET VERIFICATION
                     let targetVerified = false;
+                    let realUserId = targetId;
+
                     try {
                         if (targetId) {
-                            const targetDoc = await getDoc(doc(db, "users", targetId));
-                            if (targetDoc.exists() && targetDoc.data().isVerified) {
-                                targetVerified = true;
+                            // 1. Check if it's a Requirement ID first
+                            const reqDoc = await getDoc(doc(db, "requirements", targetId));
+                            if (reqDoc.exists()) {
+                                realUserId = reqDoc.data().userId;
+                            }
+
+                            // 2. Fetch User Doc using resolved ID
+                            if (realUserId) {
+                                const targetDoc = await getDoc(doc(db, "users", realUserId));
+                                if (targetDoc.exists() && targetDoc.data().isVerified) {
+                                    targetVerified = true;
+                                }
                             }
                         }
                     } catch (e) {
@@ -259,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetAvatar = document.getElementById('profileImage').src;
 
                     window.startChat({
-                        id: targetId,
+                        id: realUserId, // Use resolved User ID
                         name: targetName,
                         avatar: targetAvatar,
                         online: true,
