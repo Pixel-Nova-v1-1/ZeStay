@@ -78,24 +78,59 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Finding your best matches...</p>';
 
         try {
-            const querySnapshot = await getDocs(collection(db, "users"));
-            const users = [];
+            // Fetch from 'requirements' collection instead of 'users'
+            const querySnapshot = await getDocs(collection(db, "requirements"));
+            
+            const matchesPromises = querySnapshot.docs.map(async (docSnapshot) => {
+                const reqData = docSnapshot.data();
+                const reqId = docSnapshot.id;
 
-            querySnapshot.forEach((doc) => {
-                if (doc.id !== currentUser.uid) {
-                    const otherUser = doc.data();
-                    const score = calculateMatchScore(currentUserData, otherUser);
-                    users.push({
-                        id: doc.id,
-                        ...otherUser,
-                        matchScore: score
-                    });
+                // Skip if it's the current user's own requirement
+                if (reqData.userId === currentUser.uid) return null;
+
+                let userData = {};
+                let matchScore = 0;
+
+                if (reqData.userId) {
+                    try {
+                        // Check if we already have this user in allUsers (optimization)
+                        // Note: allUsers is now being used to store the final list of matches (requirements + user data)
+                        // So we can't check it for cached users in the same way. 
+                        // But we can check if we've already fetched this user for another requirement if we had a cache.
+                        // For now, let's just fetch.
+                        
+                        const userDocRef = doc(db, "users", reqData.userId);
+                        const userDocSnap = await getDoc(userDocRef);
+                        
+                        if (userDocSnap.exists()) {
+                            userData = userDocSnap.data();
+                            // Calculate match score based on User Profiles (Personality + Preferences)
+                            // We could also use reqData.preferences if we wanted to match against specific requirement preferences
+                            matchScore = calculateMatchScore(currentUserData, userData);
+                        }
+                    } catch (err) {
+                        console.error("Error fetching user for requirement:", err);
+                    }
                 }
+
+                return {
+                    id: reqId, // Requirement ID
+                    ...reqData, // Requirement Data (rent, location, etc.)
+                    userName: userData.name || 'User',
+                    userPhoto: userData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (reqData.userId || 'User'),
+                    userGender: userData.gender || 'N/A',
+                    userPreferences: userData.preferences || [], // For tooltip
+                    userHobbies: userData.hobbies || [], // For tooltip
+                    isVerified: userData.isVerified || false,
+                    matchScore: matchScore
+                };
             });
 
+            const matches = (await Promise.all(matchesPromises)).filter(m => m !== null);
+
             // Sort by match score descending
-            users.sort((a, b) => b.matchScore - a.matchScore);
-            allUsers = users;
+            matches.sort((a, b) => b.matchScore - a.matchScore);
+            allUsers = matches; // Update global state (renaming variable might be good but keeping it for now to minimize changes)
             
             if (currentType === 'Roommates') {
                 init();
@@ -117,10 +152,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const querySnapshot = await getDocs(collection(db, "flats"));
-            const flats = [];
-            querySnapshot.forEach((doc) => {
-                flats.push({ id: doc.id, ...doc.data() });
+            
+            // Fetch user details for each flat to calculate match score and show profile
+            const flatPromises = querySnapshot.docs.map(async (docSnapshot) => {
+                const flatData = docSnapshot.data();
+                const flatId = docSnapshot.id;
+
+                if (currentUser && flatData.userId === currentUser.uid) return null;
+                
+                let ownerData = {};
+                let matchScore = 0;
+
+                if (flatData.userId) {
+                    try {
+                        // Check if we already have this user in allUsers (optimization)
+                        const existingUser = allUsers.find(u => u.id === flatData.userId);
+                        if (existingUser) {
+                            ownerData = existingUser;
+                            matchScore = existingUser.matchScore;
+                        } else {
+                            // Fetch user if not in allUsers
+                            if (currentUser && flatData.userId === currentUser.uid) {
+                                ownerData = currentUserData;
+                                matchScore = 100; 
+                            } else {
+                                const userDocRef = doc(db, "users", flatData.userId);
+                                const userDocSnap = await getDoc(userDocRef);
+                                if (userDocSnap.exists()) {
+                                    ownerData = userDocSnap.data();
+                                    if (currentUserData) {
+                                        matchScore = calculateMatchScore(currentUserData, ownerData);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching flat owner:", err);
+                    }
+                }
+
+                return {
+                    id: flatId,
+                    ...flatData,
+                    ownerName: ownerData.name || 'User',
+                    ownerPhoto: ownerData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (flatData.userId || 'User'),
+                    isVerified: ownerData.isVerified || false,
+                    matchScore: matchScore
+                };
             });
+
+            const flats = (await Promise.all(flatPromises)).filter(f => f !== null);
             
             // Sort by newest first
             flats.sort((a, b) => {
@@ -177,13 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'Roommates') {
 
             let interestsHTML = '';
-            // Use preferences as interests
-            const interests = item.preferences || [];
-            // Also add hobbies if available (assuming comma separated string or array)
+            // Use preferences from User Data (fetched in fetchMatches)
+            const interests = item.userPreferences || [];
+            // Also add hobbies if available
             let hobbies = [];
-            if (item.hobbies) {
-                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
-                 else hobbies = item.hobbies.split(',').map(s => s.trim());
+            if (item.userHobbies) {
+                 if (Array.isArray(item.userHobbies)) hobbies = item.userHobbies;
+                 else if (typeof item.userHobbies === 'string') hobbies = item.userHobbies.split(',').map(s => s.trim());
             }
             
             // Combine and take top 5
@@ -196,10 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const avatar = item.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.name;
-            const location = item.location || 'Location not specified';
-            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
-            const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
+            const avatar = item.userPhoto;
+            const location = item.location || 'Location not specified'; // From Requirement
+            const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified'; // From Requirement
+            // User requested: "take the name, gender and profile pic of the user"
+            // So we use item.userGender
+            
+            const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #2ecc71; font-size: 0.9em; margin-left: 5px;" title="Verified"></i>' : '';
 
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
@@ -208,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.name || 'User'}</h3>
+                        <h3>${item.userName}${verifiedIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
@@ -218,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="info-item">
                                 <span class="label">Gender</span>
-                                <span class="value">${item.gender || 'N/A'}</span>
+                                <span class="value">${item.userGender}</span>
                             </div>
                         </div>
                     </div>
@@ -236,20 +320,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
         } else if (type === 'Flats') {
-            const image = (item.photos && item.photos.length > 0) ? item.photos[0] : '/images/house-removebg-preview.png';
-            // console.log("Flat Image URL:", image); // Debugging
+            const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
             const location = item.location || 'Location not specified';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
             
+            const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #2ecc71; font-size: 0.9em; margin-left: 5px;" title="Verified"></i>' : '';
+
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
-                    <div class="card-avatar" style="border-radius: 10px; width: 100px; height: 100px; flex-shrink: 0;">
-                       <img src="${image}" alt="Flat Image" style="border-radius: 10px; object-fit: cover; width: 100%; height: 100%;">
+                    <div class="card-avatar">
+                       <img src="${avatar}" alt="Owner Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>Flat/Room</h3>
+                        <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
@@ -265,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="card-footer">
-                    <span class="match-score">New!</span>
+                    <span class="match-score">${item.matchScore}% match!</span>
                 </div>
             </div>`;
         } else {
@@ -281,7 +366,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Filter by Dropdown (Gender)
         // The dropdown has "Male", "Female", "Any"
         if (currentFilter.toLowerCase() !== 'any') {
-            filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
+            if (currentType === 'Roommates') {
+                filtered = filtered.filter(item => (item.userGender || '').toLowerCase() === currentFilter.toLowerCase());
+            } else {
+                // For Flats, we might filter by owner gender or flat preference? 
+                // Assuming owner gender for now as per previous logic, or maybe flat "looking for"?
+                // Previous logic used item.gender. 
+                // Flats data has 'gender' field (Looking For) from roomModal.
+                // But wait, roomModal has "Looking For" (gender) field.
+                // Let's check if flatsData has 'gender' field. Yes, from roomModal.
+                // But wait, I changed flatsData to include owner details.
+                // The flat doc itself has 'gender' (Looking For).
+                filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
+            }
         }
 
         // 2. Filter by Location (Search Input)

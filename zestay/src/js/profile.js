@@ -154,7 +154,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-email').value = data.email || "";
                 document.getElementById('display-occupation').value = data.occupation || "";
                 document.getElementById('display-dob').value = data.dob || "";
-                document.getElementById('display-hobbies').value = data.hobbies || "";
+                
+                // Set Hobbies
+                const hobbies = data.hobbies || "";
+                const hobbyList = Array.isArray(hobbies) ? hobbies : (typeof hobbies === 'string' ? hobbies.split(',') : []);
+                const hobbyOptions = document.querySelectorAll('#display-hobbies-container .hobby-option');
+                
+                hobbyOptions.forEach(opt => {
+                    if (hobbyList.includes(opt.dataset.value)) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
 
                 // Set Gender
                 if (data.gender) {
@@ -456,6 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             genderPillDisplay.classList.add('editing');
+            const hobbiesContainer = document.getElementById('display-hobbies-container');
+            if (hobbiesContainer) hobbiesContainer.classList.add('editing');
         });
 
         saveProfileBtn.addEventListener('click', async () => {
@@ -467,6 +481,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const newOccupation = document.getElementById('display-occupation').value;
             const activeGenderEl = genderPillDisplay.querySelector('.active');
             const newGender = activeGenderEl ? activeGenderEl.textContent : 'Male';
+            
+            const selectedHobbies = Array.from(document.querySelectorAll('#display-hobbies-container .hobby-option.selected'))
+                .map(opt => opt.dataset.value);
 
             try {
                 await updateDoc(doc(db, "users", currentUser.uid), {
@@ -474,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     occupation: newOccupation,
                     gender: newGender,
                     dob: document.getElementById('display-dob').value,
-                    hobbies: document.getElementById('display-hobbies').value
+                    hobbies: selectedHobbies
                 });
 
                 profileNameEl.textContent = newName;
@@ -496,6 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.style.borderColor = 'transparent';
                 });
                 genderPillDisplay.classList.remove('editing');
+                const hobbiesContainer = document.getElementById('display-hobbies-container');
+                if (hobbiesContainer) hobbiesContainer.classList.remove('editing');
 
             } catch (error) {
                 console.error("Error saving profile:", error);
@@ -513,6 +532,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const options = genderPillDisplay.querySelectorAll('.gender-option');
                 options.forEach(opt => opt.classList.remove('active'));
                 e.target.classList.add('active');
+            }
+        });
+    }
+
+    // Hobbies Selection
+    const hobbiesContainer = document.getElementById('display-hobbies-container');
+    if (hobbiesContainer) {
+        hobbiesContainer.addEventListener('click', (e) => {
+            if (!isEditing) return;
+            if (e.target.classList.contains('hobby-option')) {
+                e.target.classList.toggle('selected');
             }
         });
     }
@@ -583,7 +613,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderListingCard(docId, data, type) {
-        const avatar = data.userPhoto || (currentUser ? currentUser.photoURL : 'https://api.dicebear.com/9.x/avataaars/svg?seed=User');
         const location = data.location || 'Location not specified';
         const rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
         const typeLabel = type === 'flat' ? 'Room/Flat' : 'Roommate Requirement';
@@ -597,10 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.innerHTML = `
             <div class="card-content">
-                <div class="card-avatar">
-                   <img src="${avatar}" alt="Avatar">
-                </div>
-                <div class="card-details">
+                <div class="card-details" style="margin-left: 0;">
                     <h3>${typeLabel}</h3>
                     <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                     

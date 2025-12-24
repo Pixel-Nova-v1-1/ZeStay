@@ -1419,3 +1419,38 @@ textarea:focus {
     color: #555;
     text-align: center;
 }
+
+/* Hobbies Selection Pills */
+.hobbies-selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hobby-option {
+    padding: 8px 16px;
+    background-color: #f1f2f6;
+    border-radius: 20px;
+    cursor: default; /* Default to not clickable */
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    user-select: none;
+    color: #666;
+}
+
+/* Only clickable when editing */
+.hobbies-selection.editing .hobby-option {
+    cursor: pointer;
+}
+
+.hobbies-selection.editing .hobby-option:hover {
+    background-color: #e0e0e0;
+}
+
+.hobby-option.selected {
+    background-color: var(--primary-teal);
+    color: white;
+    border-color: var(--primary-teal);
+    box-shadow: 0 2px 5px rgba(0, 201, 183, 0.3);
+}
