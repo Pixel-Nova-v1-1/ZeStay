@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
-                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-message"></i></button>
+                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
         } else if (type === 'Flats') {
@@ -513,7 +513,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (container) {
         container.addEventListener('click', (e) => {
             const card = e.target.closest('.listing-card');
+            const chatBtn = e.target.closest('.btn-contact');
+
             if (card) {
+                // Check if Chat Button was clicked
+                if (chatBtn) {
+                    e.preventDefault();
+                    if (!currentUser) {
+                        window.location.href = 'regimob.html?mode=login';
+                        return;
+                    }
+
+                    const id = card.dataset.id;
+                    const type = card.dataset.type;
+
+                    if (type === 'Roommates') {
+                        // 1. Verification Check
+                        const user = allUsers.find(u => u.id === id);
+
+                        // Check Current User
+                        if (!currentUserData || !currentUserData.isVerified) {
+                            alert("You must be verified to start a chat.");
+                            return;
+                        }
+
+                        // Check Target User
+                        if (!user || !user.isVerified) {
+                            alert("You can only chat with verified users.");
+                            return;
+                        }
+
+                        if (user && window.startChat) {
+                            // 2. Map photoUrl to avatar for chat widget
+                            const targetUser = {
+                                ...user,
+                                avatar: user.photoUrl
+                            };
+                            window.startChat(targetUser);
+                        }
+                    } else {
+                        // For flats, maybe open chat with owner? 
+                        // Currently logic says "Roommates" type calls startChat.
+                        // Flat cards usually navigate. If we want chat on flats too, we need owner ID.
+                        // For now, let's strictly follow the "user press the chat icon" request which usually implies the user cards.
+                        // The button exists on Roommate cards. Flat cards have a different footer?
+                        // Line 270 Flat card footer: <span class="match-score">New!</span> (No button)
+                        // So only Roommate cards have the button.
+                    }
+                    return; // Prevent card click navigation
+                }
+
+                // Normal Card Click -> Navigation
                 // Check Auth
                 if (!currentUser) {
                     // Not logged in -> Redirect to Login

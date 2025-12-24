@@ -280,7 +280,6 @@ function renderList() {
             <div class="chat-info">
             <span class="chat-name">${c.name}</span>
             <div class="chat-preview" style="${c.unread > 0 ? 'font-weight:bold; color:#000;' : ''}">
-                ${c.isBot ? '<i class="fa-solid fa-robot"></i>' : '<i class="fa-regular fa-user"></i>'} 
                 ${c.preview.length > 30 ? c.preview.substring(0, 30) + '...' : c.preview}
             </div>
             </div>
@@ -774,6 +773,11 @@ async function deleteChat() {
       });
 
       alert("Chat deleted.");
+
+      // Close Menu
+      const menu = document.querySelector('.chat-options-menu');
+      if (menu) menu.classList.add('hidden');
+
       showListView();
     }
   } catch (e) {
