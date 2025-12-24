@@ -58,20 +58,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (docSnap.exists()) {
                     const flatData = docSnap.data();
-                    
+
                     // Map Firestore data to UI structure
                     data = {
-                        name: "Flat Owner", 
+                        name: "Flat Owner",
                         avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
                         location: flatData.location || "Location not specified",
-                        gender: "Not Specified", 
+                        gender: "Not Specified",
                         rent: flatData.rent || "N/A",
                         occupancy: flatData.occupancy || "Any",
                         lookingFor: flatData.gender || "Any",
                         description: flatData.description || "No description provided.",
                         images: flatData.photos || [],
-                        preferences: [], 
-                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })), 
+                        preferences: [],
+                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })),
                         highlights: flatData.highlights || []
                     };
 
@@ -107,7 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const verificationBadge = document.getElementById('verificationBadge');
         if (verificationBadge) {
             verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+            if (data.isVerified) {
+                verificationBadge.style.flexShrink = '0';
+            }
         }
+
+        // Adjust Font Size to Fit
+        adjustProfileNameFontSize();
+        window.addEventListener('resize', adjustProfileNameFontSize);
 
         // Basic Info
         document.getElementById('displayLocation').textContent = data.location;
@@ -116,6 +123,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayOccupancy').textContent = data.occupancy;
         document.getElementById('displayLookingFor').textContent = data.lookingFor;
         document.getElementById('displayDescription').textContent = data.description;
+
+        // Verified Box in Basic Info
+        if (data.isVerified) {
+            const infoGrid = document.querySelector('.info-grid');
+            if (infoGrid) {
+                if (!infoGrid.querySelector('.verified-box')) {
+                    const verifiedBox = document.createElement('div');
+                    verifiedBox.className = 'info-item verified-box';
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                    `;
+                    infoGrid.appendChild(verifiedBox);
+                }
+            }
+        }
 
         // Images
         currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
@@ -134,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
         } else {
-             prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
+            prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
         }
 
         // Amenities
@@ -150,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerLabel.includes('park')) iconClass = 'fa-car';
                 else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
                 else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
-                
+
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">
                         <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
@@ -171,6 +194,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+    }
+
+    function adjustProfileNameFontSize() {
+        const nameEl = document.getElementById('profileName');
+        if (!nameEl) return;
+
+        let fontSize = 26; // Start with max font size
+        nameEl.style.fontSize = fontSize + 'px';
+        nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
+
+        // Reduce font size until it fits
+        // We check if scrollWidth (content) > clientWidth (visible area)
+        while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
+            fontSize--;
+            nameEl.style.fontSize = fontSize + 'px';
+        }
     }
 
     // --- 2. Slider Logic ---
@@ -209,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const userProfile = document.getElementById('user-profile');
         const logoutBtn = document.getElementById('logoutBtn');
         const profileBtn = document.getElementById('matchProfileBtn');
-        
+
         if (user) {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfile) userProfile.style.display = 'flex';
@@ -218,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const docRef = doc(db, "users", user.uid);
                     const docSnap = await getDoc(docRef);
-                    
+
                     let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -230,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileBtn.style.overflow = 'hidden';
                     profileBtn.style.width = '45px';
                     profileBtn.style.height = '45px';
-                    
+
                     profileBtn.onclick = () => {
                         window.location.href = 'profile.html';
                     };
