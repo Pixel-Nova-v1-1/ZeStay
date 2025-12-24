@@ -1,21 +1,8 @@
 import { auth, db } from "../firebase";
 import { nhost } from "../nhost";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-<<<<<<< Updated upstream
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
-=======
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -770,28 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (listingsContainer.children.length === 0) {
                         listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
                     }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-                    alert("Listing deleted successfully.");
-=======
-                    
                     showToast("Listing deleted successfully.", "success");
->>>>>>> Stashed changes
-=======
-                    
-                    showToast("Listing deleted successfully.", "success");
->>>>>>> Stashed changes
-=======
-                    
-                    showToast("Listing deleted successfully.", "success");
->>>>>>> Stashed changes
-=======
-                    
-                    showToast("Listing deleted successfully.", "success");
->>>>>>> Stashed changes
                 } catch (error) {
                     console.error("Error deleting listing:", error);
                     showToast("Failed to delete listing.", "error");
@@ -1011,23 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             await updateDoc(doc(db, collectionName, docId), data);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-            alert("Listing updated successfully!");
-
-=======
-=======
-=======
-=======
-            
             showToast("Listing updated successfully!", "success");
->>>>>>> Stashed changes
-            
-            showToast("Listing updated successfully!", "success");
->>>>>>> Stashed changes
             
             showToast("Listing updated successfully!", "success");
 >>>>>>> Stashed changes
