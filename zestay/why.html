@@ -57,10 +57,10 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Location*</label>
+                        <label>City/State</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-location-dot icon"></i>
-                            <input type="text" name="location" id="reqLocation" placeholder="Add location">
+                            <input type="text" name="location" id="reqLocation" placeholder="City/State">
                         </div>
                     </div>
                 </div>
@@ -101,32 +101,6 @@
                         <button type="button" class="chip">Flexible routine</button>
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Are you Interested in PG?</label>
-                        <div class="toggle-group binary-select" data-group="pg">
-                            <button type="button" class="toggle-btn" data-value="yes">Yes</button>
-                            <button type="button" class="toggle-btn active" data-value="no">No</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Are you Interested in making <span class="highlight-text">Teams?</span></label>
-                        <div class="toggle-group binary-select" data-group="teams">
-                            <button type="button" class="toggle-btn" data-value="yes">Yes</button>
-                            <button type="button" class="toggle-btn active" data-value="no">No</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group full-width contact-visible-group">
-                    <label>Do you want to make your contact number visible to other users?</label>
-                    <div class="toggle-group binary-select contact-toggle" data-group="contact">
-                        <button type="button" class="toggle-btn pill active" data-value="yes">Yes! make it
-                            public</button>
-                        <button type="button" class="toggle-btn pill" data-value="no">No! keep it private</button>
-                    </div>
-                    <p class="note">NOTE: If your contact number is private, others can contact you only through chat.
-                    </p>
-                </div>
                 <div class="form-group full-width">
                     <label>Description*</label>
                     <textarea name="description"
@@ -158,11 +132,19 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Location*</label>
+                        <label>City/State</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-location-dot icon"></i>
-                            <input type="text" name="location" id="roomLocation" placeholder="Add location">
+                            <input type="text" name="location" id="roomLocation" placeholder="City/State">
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Full Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-map-pin icon"></i>
+                        <input type="text" name="address" placeholder="Enter full address">
                     </div>
                 </div>
 
@@ -213,18 +195,6 @@
                     </div>
                     <p class="note">Upload an image upto 10mb</p>
                 </div>
-
-                <div class="form-group full-width contact-visible-group">
-                    <label>Do you want to make your contact number visible to other users?</label>
-                    <div class="toggle-group binary-select contact-toggle" data-group="contact">
-                        <button type="button" class="toggle-btn pill active" data-value="yes">Yes! make it
-                            public</button>
-                        <button type="button" class="toggle-btn pill" data-value="no">No! keep it private</button>
-                    </div>
-                    <p class="note">NOTE: If your contact number is private, others can contact you only through chat.
-                    </p>
-                </div>
-
                 <div class="form-group full-width">
                     <label>Amenities</label>
                     <div class="amenities-grid">
