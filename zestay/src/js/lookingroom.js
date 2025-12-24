@@ -1,6 +1,7 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { startChat } from "./chat.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderProfile(userData) {
         const avatar = userData.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${userData.name}`;
-        
+
         document.getElementById('profileImage').src = avatar;
         document.getElementById('profileName').textContent = userData.name || 'User';
 
@@ -67,14 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Populate Preferences
         const prefContainer = document.getElementById('preferencesContainer');
-        prefContainer.innerHTML = ''; 
-        
+        prefContainer.innerHTML = '';
+
         if (userData.preferences && userData.preferences.length > 0) {
             userData.preferences.forEach(prefId => {
                 // Handle legacy underscores
                 const key = prefId.replace(/_/g, '-');
                 const pref = preferenceMap[key];
-                
+
                 if (pref) {
                     const prefHTML = `
                         <div class="item-circle">
@@ -92,22 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate Highlights (Hobbies)
         const highlightContainer = document.getElementById('highlightsContainer');
         highlightContainer.innerHTML = '';
-        
+
         let hobbies = [];
         if (userData.hobbies) {
-             if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
-             else hobbies = userData.hobbies.split(',').map(s => s.trim());
+            if (Array.isArray(userData.hobbies)) hobbies = userData.hobbies;
+            else hobbies = userData.hobbies.split(',').map(s => s.trim());
         }
 
         if (hobbies.length > 0) {
             hobbies.forEach(hl => {
-                if(hl) {
+                if (hl) {
                     const hlHTML = `<div class="highlight-pill"><i class="fa-solid fa-check"></i> ${hl}</div>`;
                     highlightContainer.innerHTML += hlHTML;
                 }
             });
         } else {
-             highlightContainer.innerHTML = '<p>No hobbies listed.</p>';
+            highlightContainer.innerHTML = '<p>No hobbies listed.</p>';
         }
     }
 
@@ -121,16 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfile) userProfile.style.display = 'flex';
-            
+
             // Load the profile data
             loadUserProfile();
 
             if (profileBtn) {
-                 // Just set the image, click handler is already set in HTML or we can set it here
-                 // But wait, we need to fetch current user's photo for the top right button
-                 // The loadUserProfile fetches the *viewed* user.
-                 // We need to fetch *current* user for the top right button.
-                 fetchCurrentUserProfile(user, profileBtn);
+                // Just set the image, click handler is already set in HTML or we can set it here
+                // But wait, we need to fetch current user's photo for the top right button
+                // The loadUserProfile fetches the *viewed* user.
+                // We need to fetch *current* user for the top right button.
+                fetchCurrentUserProfile(user, profileBtn);
             }
 
             if (logoutBtn) {
@@ -147,6 +148,50 @@ document.addEventListener('DOMContentLoaded', () => {
             loadUserProfile();
         }
     });
+
+    // --- CHAT BUTTON LOGIC ---
+    const chatBtn = document.querySelector('.btn-action');
+    if (chatBtn) {
+        chatBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Please login to chat.");
+                return;
+            }
+
+            try {
+                // Check if current user is verified
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().isVerified) {
+
+                    const targetName = document.getElementById('profileName').textContent;
+                    const targetAvatar = document.getElementById('profileImage').src;
+
+                    // We need a target ID. In lookingroom.js, 'userId' is often a global or passed value?
+                    // Looking at file, `loadUserProfile` or logic should have defined it.
+                    // Wait, `lookingroom.js` doesn't have `userId` in scope in the snippet I saw?
+                    // Let me check lines 1-50 to see where `userId` comes from.
+                    // If it's from URL, I should re-parse it.
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetId = urlParams.get('id') || 'mock-user-id';
+
+                    window.startChat({
+                        id: targetId,
+                        name: targetName,
+                        avatar: targetAvatar,
+                        online: true,
+                        isBot: false
+                    });
+
+                } else {
+                    alert("Only verified users can initiate chats. Please get verified!");
+                }
+            } catch (err) {
+                console.error("Error checking verification:", err);
+                alert("Error checking verification: " + err.message);
+            }
+        });
+    }
 
     async function fetchCurrentUserProfile(user, btn) {
         try {

@@ -629,3 +629,53 @@ if (document.readyState === 'loading') {
 } else {
   initChatSystem();
 }
+
+// Helper: Ensure no undefined avatar values
+const safeAvatar = (url, seed) => url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed || Date.now()}`;
+
+// Helper: Chat ID generator
+function getChatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
+
+// Exported startChat function
+export async function startChat(targetUser) {
+  if (!currentUser) {
+    alert("Please login to chat.");
+    return;
+  }
+  // Ensure widget is initialized
+  if (!chatWidget) initChatSystem();
+
+  openWidget();
+  showConversation(targetUser);
+
+  // Force Update Metadata
+  if (targetUser && targetUser.id) {
+    try {
+      const chatId = getChatId(currentUser.uid, targetUser.id);
+      const userMap = {};
+
+      // Current User Info
+      userMap[currentUser.uid] = {
+        name: (currentProfile && currentProfile.name) || "User",
+        avatar: safeAvatar((currentProfile && currentProfile.photoUrl) || currentUser.photoURL, currentUser.uid)
+      };
+
+      // Target Info
+      userMap[targetUser.id] = {
+        name: targetUser.name,
+        avatar: safeAvatar(targetUser.avatar, targetUser.id)
+      };
+
+      await setDoc(doc(db, "chats", chatId), {
+        participants: [currentUser.uid, targetUser.id],
+        userInfo: userMap
+      }, { merge: true });
+
+    } catch (e) {
+      console.error("Metadata update failed:", e);
+    }
+  }
+}
+window.startChat = startChat;
