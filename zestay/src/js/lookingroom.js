@@ -88,12 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
             verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
         }
 
-        document.getElementById('displayLocation').textContent = userData.location || 'Not specified';
-        document.getElementById('displayGender').textContent = userData.gender || 'Not specified';
-        document.getElementById('displayRent').textContent = userData.rent ? `₹ ${userData.rent}` : 'Not specified';
-        document.getElementById('displayOccupancy').textContent = userData.occupancy || 'Single';
-        document.getElementById('displayLookingFor').textContent = userData.gender ? `Same as gender (${userData.gender})` : 'Any'; // Inferring
-        document.getElementById('displayDescription').textContent = userData.description || 'No description provided.';
+        document.getElementById('displayLocation').textContent = data.location || 'Not specified';
+        document.getElementById('displayGender').textContent = data.gender || 'Not specified';
+        document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
+        document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';
+        document.getElementById('displayLookingFor').textContent = data.gender ? `Same as gender (${data.gender})` : 'Any'; // Inferring
+        document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
 
         // Verified/Unverified Box in Basic Info
         const infoGrid = document.querySelector('.info-grid');
