@@ -2,8 +2,11 @@ import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import { showToast } from "./toast.js";
+<<<<<<< Updated upstream
 
 console.log("match.js loaded");
+=======
+>>>>>>> Stashed changes
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
