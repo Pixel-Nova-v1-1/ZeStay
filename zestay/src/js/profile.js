@@ -1,7 +1,12 @@
 import { auth, db } from "../firebase";
 import { nhost } from "../nhost";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+<<<<<<< Updated upstream
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
+=======
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import { showToast, showConfirm } from "./toast.js";
+>>>>>>> Stashed changes
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -363,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error uploading avatar:", error);
-                alert("Failed to upload avatar: " + error.message);
+                showToast("Failed to upload avatar: " + error.message, "error");
                 profileAvatarEl.src = originalSrc; // Revert on error
             } finally {
                 spinner.style.display = 'none';
@@ -376,7 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRemovePhoto) {
         btnRemovePhoto.addEventListener('click', async () => {
             if (!currentUser) return;
-            if (!confirm("Are you sure you want to remove your profile photo?")) return;
+            const confirmed = await showConfirm("Are you sure you want to remove your profile photo?");
+            if (!confirmed) return;
 
             const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser.displayName || 'User'}`;
 
@@ -397,11 +403,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update UI
                 profileAvatarEl.src = defaultAvatar;
                 profileUploadModal.style.display = 'none';
-                alert("Profile photo removed.");
+                showToast("Profile photo removed.", "success");
 
             } catch (error) {
                 console.error("Error removing photo:", error);
-                alert("Failed to remove photo.");
+                showToast("Failed to remove photo.", "error");
             }
         });
     }
@@ -447,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error updating avatar:", error);
-                alert("Failed to update avatar.");
+                showToast("Failed to update avatar.", "error");
             }
         });
     });
@@ -498,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 profileNameEl.textContent = newName;
-                alert("Profile updated!");
+                showToast("Profile updated!", "success");
 
                 // Reset UI
                 isEditing = false;
@@ -521,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error saving profile:", error);
-                alert("Failed to save profile.");
+                showToast("Failed to save profile.", "error");
                 saveProfileBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
             }
         });
@@ -736,7 +742,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add Delete Event Listener
         const deleteBtn = card.querySelector('.btn-delete-listing');
         deleteBtn.addEventListener('click', async () => {
-            if (confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+            const confirmed = await showConfirm("Are you sure you want to delete this listing? This action cannot be undone.");
+            if (confirmed) {
                 try {
                     // Delete photos from Nhost if it's a flat and has photos
                     if (type === 'flat' && data.photos && Array.isArray(data.photos)) {
@@ -754,11 +761,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (listingsContainer.children.length === 0) {
                         listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
                     }
+<<<<<<< Updated upstream
 
                     alert("Listing deleted successfully.");
+=======
+                    
+                    showToast("Listing deleted successfully.", "success");
+>>>>>>> Stashed changes
                 } catch (error) {
                     console.error("Error deleting listing:", error);
-                    alert("Failed to delete listing.");
+                    showToast("Failed to delete listing.", "error");
                 }
             }
         });
@@ -975,9 +987,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             await updateDoc(doc(db, collectionName, docId), data);
+<<<<<<< Updated upstream
 
             alert("Listing updated successfully!");
 
+=======
+            
+            showToast("Listing updated successfully!", "success");
+            
+>>>>>>> Stashed changes
             // Close Modal & Refresh
             if (type === 'flat') roomModal.classList.remove('active');
             else reqModal.classList.remove('active');
@@ -986,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error updating listing:", error);
-            alert("Failed to update listing.");
+            showToast("Failed to update listing.", "error");
         } finally {
             submitBtn.innerText = type === 'flat' ? "Update Room" : "Update Requirement";
             submitBtn.disabled = false;
@@ -1053,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
 
             if (selectedIds.length < 5) {
-                alert(`Please select at least 5 preferences. You have selected ${selectedIds.length}.`);
+                showToast(`Please select at least 5 preferences. You have selected ${selectedIds.length}.`, "warning");
                 return;
             }
 
@@ -1077,11 +1095,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 preferencesGrid.style.display = 'grid';
                 editPreferencesGrid.style.display = 'none';
 
-                alert("Preferences updated!");
+                showToast("Preferences updated!", "success");
 
             } catch (error) {
                 console.error("Error saving preferences:", error);
-                alert("Failed to save preferences.");
+                showToast("Failed to save preferences.", "error");
                 savePrefsBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
             }
         });

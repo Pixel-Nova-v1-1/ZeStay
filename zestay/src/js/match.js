@@ -1,6 +1,7 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { showToast } from "./toast.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
@@ -44,7 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     imgSrc = currentUserData.photoUrl || imgSrc;
 
                     // Fetch matches after getting current user data
-                    await fetchMatches();
+                    if (currentType === 'Flats') {
+                        await fetchFlats();
+                    } else {
+                        await fetchMatches();
+                    }
                 }
 
                 if (matchProfileBtn) {
@@ -555,6 +560,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (locationsParam) {
             searchInput.value = locationsParam;
+            // Trigger filter immediately if data is already loaded, 
+            // but fetchMatches/fetchFlats will call init() anyway.
+            // However, we need to ensure the filter is applied after data load.
+            // The renderItems() calls getFilteredData() which reads searchInput.value.
+            // So just setting the value here is enough for the initial render.
         }
 
         // 3. Check URL for Type (Roommates vs Flats)
@@ -603,13 +613,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Check Current User
                         if (!currentUserData || !currentUserData.isVerified) {
-                            alert("You must be verified to start a chat.");
+                            showToast("You must be verified to start a chat.", "warning");
                             return;
                         }
 
                         // Check Target User
                         if (!user || !user.isVerified) {
-                            alert("You can only chat with verified users.");
+                            showToast("You can only chat with verified users.", "warning");
                             return;
                         }
 

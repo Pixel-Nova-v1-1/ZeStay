@@ -1,13 +1,25 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { nhost } from "../nhost";
+import { showToast } from "./toast.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
-    onAuthStateChanged(auth, (user) => {
+    let isVerified = false;
+
+    onAuthStateChanged(auth, async (user) => {
         currentUser = user;
-        if (!user) {
+        if (user) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    isVerified = userDoc.data().isVerified || false;
+                }
+            } catch (error) {
+                console.error("Error fetching user verification status:", error);
+            }
+        } else {
             // Optional: Redirect to login or show warning
             console.log("User not logged in");
         }
@@ -81,8 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             if (!currentUser) {
-                alert("Please login to post.");
+                showToast("Please login to post.", "warning");
                 window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            if (!isVerified) {
+                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
                 return;
             }
 
@@ -91,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    alert("You have already posted a room/flat. You can only post one.");
+                    showToast("You have already posted a room/flat. You can only post one.", "warning");
                     return;
                 }
             } catch (error) {
@@ -109,6 +126,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (openReqBtn && reqModal) {
         openReqBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showToast("Please login to post.", "warning");
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            if (!isVerified) {
+                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                return;
+            }
+
             reqModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             console.log("Req Modal Opened");
@@ -138,8 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openRoomBtn && roomModal) {
         openRoomBtn.addEventListener('click', async () => {
             if (!currentUser) {
-                alert("Please login to post.");
+                showToast("Please login to post.", "warning");
                 window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            if (!isVerified) {
+                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
                 return;
             }
 
@@ -148,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    alert("You have already posted a room/flat. You can only post one.");
+                    showToast("You have already posted a room/flat. You can only post one.", "warning");
                     return;
                 }
             } catch (error) {
@@ -237,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newFiles = Array.from(fileInput.files);
 
                 if (storedFiles.length + newFiles.length > 3) {
-                    alert("You can only upload a maximum of 3 photos in total.");
+                    showToast("You can only upload a maximum of 3 photos in total.", "warning");
                     fileInput.value = '';
                 } else {
                     storedFiles = storedFiles.concat(newFiles);
@@ -255,8 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             if (!currentUser) {
-                alert("Please login to post.");
+                showToast("Please login to post.", "warning");
                 window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            if (!isVerified) {
+                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
                 return;
             }
 
@@ -341,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 imageUrls.push(url);
                             } catch (err) {
                                 console.error("Image upload failed:", err);
-                                alert("Failed to upload one or more images. Please try again.");
+                                showToast("Failed to upload one or more images. Please try again.", "error");
                                 // Stop submission if upload fails
                                 throw err;
                             }
@@ -357,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add to Firestore
                 await addDoc(collection(db, collectionName), data);
 
-                alert('Submitted Successfully!');
+                showToast('Submitted Successfully!', "success");
                 
                 if (parentModal) {
                     parentModal.classList.remove('active');
@@ -374,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error submitting form:", error);
-                alert("Error submitting form: " + error.message);
+                showToast("Error submitting form: " + error.message, "error");
             } finally {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;

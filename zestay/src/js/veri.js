@@ -2,6 +2,7 @@ import { auth, db, storage } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { showToast } from "./toast.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     // Modal Elements
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnVerify.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!currentUser) {
-                alert("Please log in to request verification.");
+                showToast("Please log in to request verification.", "warning");
                 window.location.href = 'landing.html';
                 return;
             }
@@ -132,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleFile = (file, preview, placeholder, input) => {
         // Validate type
         if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file (JPG, PNG).');
+            showToast('Please upload an image file (JPG, PNG).', "warning");
             return;
         }
 
@@ -208,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             if (!currentUser) {
-                alert("You must be logged in.");
+                showToast("You must be logged in.", "warning");
                 return;
             }
 
@@ -218,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const selfie = document.getElementById('selfie').files[0];
 
             if (!idFront || !idBack || !selfie) {
-                alert('Please upload all required documents.');
+                showToast('Please upload all required documents.', "warning");
                 return;
             }
 
@@ -247,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     submittedAt: serverTimestamp()
                 });
 
-                alert('Verification request submitted successfully! An admin will review your details.');
+                showToast('Verification request submitted successfully! An admin will review your details.', "success");
                 closeModal();
                 form.reset();
                 // Reset file previews
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error submitting verification:", error);
-                alert("Error submitting verification request: " + error.message);
+                showToast("Error submitting verification request: " + error.message, "error");
             } finally {
                 btnSubmit.textContent = originalText;
                 btnSubmit.disabled = false;

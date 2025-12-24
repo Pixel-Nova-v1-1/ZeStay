@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail
 } from "firebase/auth";
+import { showToast } from "./toast.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
@@ -124,12 +125,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const password = passwordInput.value;
 
       if (!email) {
-        alert("Please enter your email");
+        showToast("Please enter your email", "warning");
         return;
       }
 
       if (!isResetMode && !password) {
-        alert("Please enter your password");
+        showToast("Please enter your password", "warning");
         return;
       }
 
@@ -139,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         if (isResetMode) {
           await sendPasswordResetEmail(auth, email);
-          alert("Password reset link sent to " + email);
+          showToast("Password reset link sent to " + email, "success");
           updateUI(); // Go back to login
           return;
         }
@@ -174,7 +175,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const user = auth.currentUser;
 
           if (user && !user.emailVerified) {
-            alert("Please verify your email first.");
+            showToast("Please verify your email first.", "warning");
             // Optionally resend verification email here
             return;
           }
@@ -184,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       } catch (error) {
         console.error(error);
-        alert(error.message);
+        showToast(error.message, "error");
         authActionBtn.disabled = false;
         authActionBtn.textContent = mode === "register" ? "Register" : "Login";
       }
@@ -197,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const user = auth.currentUser;
       if (user) {
         await sendEmailVerification(user);
-        alert("Verification link resent!");
+        showToast("Verification link resent!", "success");
       }
     });
   }
@@ -221,7 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = "register.html";
     } catch (error) {
       console.error("Verification failed", error);
-      alert("Verification failed or link expired.");
+      showToast("Verification failed or link expired.", "error");
     }
   }
 

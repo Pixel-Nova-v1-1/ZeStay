@@ -2,6 +2,7 @@ import { auth, db } from "../firebase";
 import { nhost } from "../nhost";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { showToast } from "./toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("registerForm");
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("hobbies").value = hobbyList.join(',');
             }
         } else {
-            alert("You must be logged in to access this page.");
+            showToast("You must be logged in to access this page.", "warning");
             window.location.href = "regimob.html?mode=login";
         }
     });
@@ -165,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Image upload failed:", error);
-            alert("Failed to upload image. Please try again.");
+            showToast("Failed to upload image. Please try again.", "error");
             filePreview.classList.add("hidden");
             filePreview.style.backgroundImage = '';
         }
@@ -210,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Error saving profile:", error);
-            alert("Failed to save profile. Please try again.");
+            showToast("Failed to save profile. Please try again.", "error");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";

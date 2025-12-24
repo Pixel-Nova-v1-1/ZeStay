@@ -1,6 +1,7 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
+import { showToast } from "./toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const submitBtn = document.getElementById("submitBtn");
@@ -42,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (answeredCount < questions.length) {
-                alert(`Please answer all questions. You answered ${answeredCount} of ${questions.length}.`);
+                showToast(`Please answer all questions. You answered ${answeredCount} of ${questions.length}.`, "warning");
                 return;
             }
 
@@ -55,12 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     onboardingCompleted: true
                 });
 
-                alert("Profile setup complete!");
+                showToast("Profile setup complete!", "success");
                 window.location.href = "index.html";
 
             } catch (error) {
                 console.error("Error saving score:", error);
-                alert("Failed to save your answers.");
+                showToast("Failed to save your answers.", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = "Submit";

@@ -1,6 +1,7 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { showToast } from "./toast.js";
 
 const preferencesData = [
     { id: 'night-owl', label: 'Night Owl', image: 'public/images/nightowl.png' },
@@ -73,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Submit
     window.submitPreferences = async () => {
         if (selectedPreferences.size < 5) {
-            alert(`Please select at least 5 preferences. You have selected ${selectedPreferences.size}.`);
+            showToast(`Please select at least 5 preferences. You have selected ${selectedPreferences.size}.`, "warning");
             return;
         }
 
@@ -90,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "ques.html";
         } catch (error) {
             console.error("Error saving preferences:", error);
-            alert("Failed to save preferences.");
+            showToast("Failed to save preferences.", "error");
         } finally {
             nextBtn.disabled = false;
             nextBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";
