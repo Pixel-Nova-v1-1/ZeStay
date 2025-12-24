@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, getDocs, updateDoc, increment } from "firebase/firestore";
 
 
 // --- ZESTAY KNOWLEDGE BASE ---
@@ -41,6 +41,7 @@ Key cities: Mumbai, Navi Mumbai, Pune, Delhi, Hyderabad.
 5.  **Verification Page:**
     - Secure yourself from scams.
     - Submit "Self Information", "ID Card" (Front/Back), and "Selfie" to get verified.
+    - **Note:** You can only have one active verification request at a time. If you have a pending request, you must wait for the admin's decision. You can only submit a new request if your previous one was rejected.
 6.  **Chat:**
     - Real-time messaging with potential flatmates.
     - You (Z) are available to help 24/7.
@@ -558,9 +559,71 @@ async function askGemini(userPrompt) {
 
   async function callGemini(apiKey, text) {
     if (!apiKey) throw new Error("Missing API Key");
+    // --- FETCH USER CONTEXT FOR AI ---
+    let userContext = `User Name: ${currentUser.displayName || 'User'}\n`;
+
+    try {
+      // Fetch User Profile for Verified Status
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        const uData = userDoc.data();
+        userContext += `Verification Status (Profile): ${uData.isVerified ? 'Verified' : 'Not Verified'}\n`;
+      }
+
+      // Fetch verification requests to get details (Pending/Rejected Reason)
+      // We fetch all for this user and sort client-side to avoid "Missing Index" errors
+      const vq = query(
+        collection(db, "verification_requests"),
+        where("userId", "==", currentUser.uid)
+      );
+
+      const vSnap = await getDocs(vq);
+      if (!vSnap.empty) {
+        // Sort by timestamp desc (or submittedAt/processedAt if timestamp missing)
+        const requests = vSnap.docs.map(d => d.data());
+        requests.sort((a, b) => {
+          const getMillis = (obj) => {
+            // Prioritize submittedAt to ensure chronological order of attempts
+            const ts = obj.submittedAt || obj.timestamp || obj.processedAt;
+
+            if (!ts) return 0;
+
+            // Handle Firestore Timestamp-like objects (checking .seconds first is safer)
+            if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+
+            if (typeof ts.toDate === 'function') return ts.toDate().getTime();
+            if (ts instanceof Date) return ts.getTime();
+            if (typeof ts === 'number') return ts;
+
+            return 0;
+          };
+          return getMillis(b) - getMillis(a); // Descending
+        });
+
+        const vData = requests[0];
+        userContext += `Latest Verification Request Status: ${vData.status}\n`;
+        if (vData.status === 'rejected') {
+          userContext += `Rejection Reason: ${vData.rejectionReason || 'No reason provided'}\n`;
+        }
+      } else {
+        userContext += `Latest Verification Request Status: None (User has not applied yet)\n`;
+      }
+
+    } catch (err) {
+      console.warn("Failed to fetch user context for AI:", err);
+      userContext += `Latest Verification Request Status: Error checking status (Internal)\n`;
+    }
+
+    const fullInstruction = ZESTAY_KNOWLEDGE_BASE + "\n\n**CURRENT USER CONTEXT:**\n" + userContext +
+      "\n**VERIFICATION RESPONSE RULES:**\n" +
+      "1. If status is 'pending', 'submitted', or 'under process', tell the user their application is **submitted and under process**.\n" +
+      "2. If status is 'None' (not submitted), tell them it is **not submitted** and explain how to apply: 'Go to the Verification Page, fill in your details, upload your ID and selfie, and submit'.\n" +
+      "3. If 'rejected', explain the reason provided above.\n" +
+      "4. If 'approved', tell them to check their profile notifications and badge.";
+
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const payload = {
-      system_instruction: { parts: [{ text: ZESTAY_KNOWLEDGE_BASE }] },
+      system_instruction: { parts: [{ text: fullInstruction }] },
       contents: [{ parts: [{ text: text }] }]
     };
     const response = await fetch(url, {

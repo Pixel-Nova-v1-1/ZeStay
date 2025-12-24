@@ -1,7 +1,7 @@
 import { auth, db } from "../firebase";
 import { nhost } from "../nhost";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -154,12 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-email').value = data.email || "";
                 document.getElementById('display-occupation').value = data.occupation || "";
                 document.getElementById('display-dob').value = data.dob || "";
-                
+
                 // Set Hobbies
                 const hobbies = data.hobbies || "";
                 const hobbyList = Array.isArray(hobbies) ? hobbies : (typeof hobbies === 'string' ? hobbies.split(',') : []);
                 const hobbyOptions = document.querySelectorAll('#display-hobbies-container .hobby-option');
-                
+
                 hobbyOptions.forEach(opt => {
                     if (hobbyList.includes(opt.dataset.value)) {
                         opt.classList.add('selected');
@@ -187,6 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Load Listings (My Profile Card)
                 loadUserListings(data, uid);
+
+                // Load Notifications
+                loadUserNotifications(uid);
 
                 isEditing = false;
                 editProfileBtn.style.display = 'block';
@@ -481,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newOccupation = document.getElementById('display-occupation').value;
             const activeGenderEl = genderPillDisplay.querySelector('.active');
             const newGender = activeGenderEl ? activeGenderEl.textContent : 'Male';
-            
+
             const selectedHobbies = Array.from(document.querySelectorAll('#display-hobbies-container .hobby-option.selected'))
                 .map(opt => opt.dataset.value);
 
@@ -575,14 +578,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadUserListings(userData, uid) {
         if (!listingsContainer) return;
-        
+
         listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">Loading listings...</p>';
 
         try {
             // Check for flats
             const flatsQuery = query(collection(db, "flats"), where("userId", "==", uid));
             const flatsSnapshot = await getDocs(flatsQuery);
-            
+
             // Check for requirements
             const reqQuery = query(collection(db, "requirements"), where("userId", "==", uid));
             const reqSnapshot = await getDocs(reqQuery);
@@ -609,6 +612,75 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error loading listings:", error);
             listingsContainer.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error loading listings.</p>';
+        }
+    }
+
+    async function loadUserNotifications(uid) {
+        const notifContainer = document.getElementById('notificationsContainer');
+        if (!notifContainer) return;
+
+        notifContainer.innerHTML = '<p style="text-align:center; width:100%;">Loading notifications...</p>';
+
+        try {
+            // Fetch all notifications for user (Client-side sort to avoid index issues)
+            const q = query(
+                collection(db, "notifications"),
+                where("userId", "==", uid)
+            );
+            const querySnapshot = await getDocs(q);
+
+            notifContainer.innerHTML = ''; // Clear loading
+
+            if (querySnapshot.empty) {
+                notifContainer.innerHTML = '<p class="empty-state">No new notifications.</p>';
+                return;
+            }
+
+            // Convert to array and sort
+            const notifications = [];
+            querySnapshot.forEach(doc => {
+                notifications.push(doc.data());
+            });
+
+            notifications.sort((a, b) => {
+                const tA = a.timestamp ? a.timestamp.seconds : 0;
+                const tB = b.timestamp ? b.timestamp.seconds : 0;
+                return tB - tA; // Descending
+            });
+
+            notifications.forEach(notif => {
+                const date = notif.timestamp ? notif.timestamp.toDate() : new Date();
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const iconClass = notif.type === 'success' ? 'fa-check' : (notif.type === 'error' ? 'fa-xmark' : 'fa-bell');
+                const bgClass = notif.type === 'success' ? '#2ecc71' : (notif.type === 'error' ? '#e74c3c' : 'var(--primary-teal)');
+
+                const item = document.createElement('div');
+                item.className = 'notification-item';
+                item.innerHTML = `
+                    <div class="notif-icon-circle" style="background: ${bgClass}">
+                        <i class="fa-solid ${iconClass}"></i>
+                    </div>
+                    <div class="notif-content">
+                        <h4>${notif.title}</h4>
+                        <p>${notif.message}</p>
+                        <span class="notif-date">${dateStr}</span>
+                        <span class="notif-time">${timeStr}</span>
+                    </div>
+                    ${!notif.read ? '<div class="notif-dot"></div>' : ''}
+                `;
+                notifContainer.appendChild(item);
+            });
+
+        } catch (error) {
+            console.error("Error loading notifications:", error);
+            // Fallback for missing index error on first run
+            if (error.code === 'failed-precondition') {
+                notifContainer.innerHTML = '<p style="text-align:center; width:100%;">Please create the required index in Firebase Console.</p>';
+            } else {
+                notifContainer.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error loading notifications.</p>';
+            }
         }
     }
 
@@ -677,12 +749,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const collectionName = type === 'flat' ? 'flats' : 'requirements';
                     await deleteDoc(doc(db, collectionName, docId));
                     card.remove();
-                    
+
                     // If no more cards, show empty message
                     if (listingsContainer.children.length === 0) {
                         listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
                     }
-                    
+
                     alert("Listing deleted successfully.");
                 } catch (error) {
                     console.error("Error deleting listing:", error);
@@ -738,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initEditAutocomplete() {
         const reqInput = document.getElementById('reqLocation');
         const roomInput = document.getElementById('roomLocation');
-        
+
         const checkGoogle = setInterval(() => {
             if (window.google && google.maps && google.maps.places) {
                 clearInterval(checkGoogle);
@@ -763,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEditModal(docId, data, type) {
         const modal = type === 'flat' ? roomModal : reqModal;
         const form = type === 'flat' ? roomForm : reqForm;
-        
+
         if (!modal || !form) return;
 
         // Set Doc ID
@@ -824,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'flat' && data.photos) {
             const existingPhotosDiv = document.getElementById('existingPhotos');
             if (existingPhotosDiv) {
-                existingPhotosDiv.innerHTML = data.photos.map(url => 
+                existingPhotosDiv.innerHTML = data.photos.map(url =>
                     `<img src="${url}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">`
                 ).join('');
             }
@@ -840,7 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = form.querySelector('input[name="docId"]').value;
         const collectionName = type === 'flat' ? 'flats' : 'requirements';
         const submitBtn = form.querySelector('.submit-btn');
-        
+
         submitBtn.innerText = "Updating...";
         submitBtn.disabled = true;
 
@@ -880,22 +952,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
                 const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
                 const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-                
+
                 const newImageUrls = [];
                 for (const file of fileInput.files) {
-                     const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
-                     const fd = new FormData();
-                     fd.append("bucket-id", "default");
-                     fd.append("file[]", file, fileName);
-                     
-                     const res = await fetch(uploadUrl, { method: 'POST', body: fd });
-                     if (res.ok) {
-                         const resData = await res.json();
-                         const fileMetadata = resData.processedFiles?.[0] || resData;
-                         newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
-                     }
+                    const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                    const fd = new FormData();
+                    fd.append("bucket-id", "default");
+                    fd.append("file[]", file, fileName);
+
+                    const res = await fetch(uploadUrl, { method: 'POST', body: fd });
+                    if (res.ok) {
+                        const resData = await res.json();
+                        const fileMetadata = resData.processedFiles?.[0] || resData;
+                        newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
+                    }
                 }
-                
+
                 // Fetch existing photos to append
                 const docSnap = await getDoc(doc(db, collectionName, docId));
                 const existingPhotos = docSnap.data().photos || [];
@@ -903,13 +975,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             await updateDoc(doc(db, collectionName, docId), data);
-            
+
             alert("Listing updated successfully!");
-            
+
             // Close Modal & Refresh
             if (type === 'flat') roomModal.classList.remove('active');
             else reqModal.classList.remove('active');
-            
+
             loadUserListings(currentUser, currentUser.uid); // Refresh list
 
         } catch (error) {
