@@ -89,6 +89,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('displayLocation').textContent = data.location || 'Not specified';
+
+        const addressEl = document.getElementById('displayAddress');
+        const addressContainer = document.getElementById('addressContainer');
+        if (addressEl && addressContainer) {
+            if (data.address) {
+                addressEl.textContent = data.address;
+                addressContainer.style.display = 'flex';
+            } else {
+                addressContainer.style.display = 'none';
+            }
+        }
+
         document.getElementById('displayGender').textContent = data.userGender || 'Not specified';
         document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
         document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';

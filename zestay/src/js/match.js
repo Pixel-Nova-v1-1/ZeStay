@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (type === 'Flats') {
             const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
             const location = item.location || 'Location not specified';
+            const address = item.address ? item.address + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
 
@@ -363,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-details">
                         <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
                             <div class="info-item">

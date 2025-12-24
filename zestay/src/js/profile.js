@@ -666,6 +666,14 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.addEventListener('click', async () => {
             if (confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
                 try {
+                    // Delete photos from Nhost if it's a flat and has photos
+                    if (type === 'flat' && data.photos && Array.isArray(data.photos)) {
+                        console.log("Deleting photos for flat:", docId);
+                        for (const photoUrl of data.photos) {
+                            await deleteOldNhostFile(photoUrl);
+                        }
+                    }
+
                     const collectionName = type === 'flat' ? 'flats' : 'requirements';
                     await deleteDoc(doc(db, collectionName, docId));
                     card.remove();
