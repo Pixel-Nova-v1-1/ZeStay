@@ -155,18 +155,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayDescription').textContent = data.description;
 
         // Verified Box in Basic Info
-        if (data.isVerified) {
-            const infoGrid = document.querySelector('.info-grid');
-            if (infoGrid) {
-                if (!infoGrid.querySelector('.verified-box')) {
-                    const verifiedBox = document.createElement('div');
-                    verifiedBox.className = 'info-item verified-box';
-                    verifiedBox.innerHTML = `
-                        <h4>Status</h4>
-                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
-                    `;
-                    infoGrid.appendChild(verifiedBox);
-                }
+        // Verified/Unverified Box in Basic Info
+        const infoGrid = document.querySelector('.info-grid');
+        if (infoGrid) {
+            let verifiedBox = infoGrid.querySelector('.verified-box');
+            if (!verifiedBox) {
+                verifiedBox = document.createElement('div');
+                verifiedBox.className = 'info-item verified-box';
+                infoGrid.appendChild(verifiedBox);
+            }
+
+            if (data.isVerified) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                `;
+            } else {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                `;
             }
         }
 

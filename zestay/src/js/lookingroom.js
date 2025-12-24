@@ -37,12 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (reqDocSnap.exists()) {
                 const reqData = reqDocSnap.data();
-                
+
                 // 2. Fetch User Data
                 if (reqData.userId) {
                     const userDocRef = doc(db, "users", reqData.userId);
                     const userDocSnap = await getDoc(userDocRef);
-                    
+
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         // Merge Data: Requirement takes precedence for specific fields
@@ -95,7 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayLookingFor').textContent = userData.gender ? `Same as gender (${userData.gender})` : 'Any'; // Inferring
         document.getElementById('displayDescription').textContent = userData.description || 'No description provided.';
 
-        // Populate Preferences (Highlights from Requirement)
+        // Verified/Unverified Box in Basic Info
+        const infoGrid = document.querySelector('.info-grid');
+        if (infoGrid) {
+            let verifiedBox = infoGrid.querySelector('.verified-box');
+            if (!verifiedBox) {
+                verifiedBox = document.createElement('div');
+                verifiedBox.className = 'info-item verified-box';
+                infoGrid.appendChild(verifiedBox);
+            }
+
+            if (userData.isVerified) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                `;
+            } else {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                `;
+            }
+        }
+
+        // Populate Preferences
         const prefContainer = document.getElementById('preferencesContainer');
         prefContainer.innerHTML = '';
 
@@ -107,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check if it maps to an icon, otherwise display generic
                 // The chips are text like "Clean & organized". 
                 // We can try to find a partial match or just display text.
-                
+
                 let image = 'public/images/star.png'; // Default icon
                 let label = prefItem;
 
@@ -121,10 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerPref.includes('guest')) image = 'public/images/guestfriendly.png';
                 else if (lowerPref.includes('party') || lowerPref.includes('social')) image = 'public/images/party.png'; // Assuming party image exists or use generic
                 else if (lowerPref.includes('work')) image = 'public/images/work.png'; // Assuming work image exists
-                
+
                 // If we don't have the specific images, we can just use a default style or try to use the existing map if keys match
                 // But since keys don't match, we'll just create a simple item.
-                
+
                 // If the item is just a string
                 const prefHTML = `
                     <div class="item-circle">
