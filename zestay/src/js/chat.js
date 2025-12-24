@@ -9,7 +9,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // --- ZESTAY KNOWLEDGE BASE ---
 const ZESTAY_KNOWLEDGE_BASE = `
-You are Zee, the official AI assistant for the Zestay website. 
+You are Z, the official AI assistant for the Zestay website. 
 Your goal is to help users find roommates, rooms, and navigate the platform.
 Use the following information to answer user questions accurately.
 
@@ -47,7 +47,7 @@ Key cities: Mumbai, Navi Mumbai, Pune, Delhi, Hyderabad.
     - Submit "Self Information", "ID Card" (Front/Back), and "Selfie" to get verified.
 6.  **Chat:**
     - Real-time messaging with potential flatmates.
-    - You (Zee) are available to help 24/7.
+    - You (Z) are available to help 24/7.
     - Chat history with AI is ephemeral (deleted after 24 hours).
 
 **DETAILED PROCESSES (HOW IT WORKS):**
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const demoChats = [
     {
       id: 'zestay-ai',
-      name: 'Zee (AI Assistant)',
+      name: 'Z (AI Assistant)',
       preview: 'How can I help you find a roommate?',
       time: 'Now',
       avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Zestay',
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add Welcome Message Always 
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = 'message them';
-    welcomeDiv.innerHTML = `<div class="message-content">“Hello! I’m Zee, your AI assistant—here to guide, explain, and support you. What would you like to explore today?”</div>`;
+    welcomeDiv.innerHTML = `<div class="message-content">“Hello! I’m Z, your AI assistant—here to guide, explain, and support you. What would you like to explore today?”</div>`;
     convoBody.appendChild(welcomeDiv);
 
     unsubscribeChatListener = onSnapshot(q, (snapshot) => {
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Check for QUOTA errors (429 or "quota" in text)
       if (error.message.includes('429') || error.message.toLowerCase().includes('quota') || error.message.toLowerCase().includes('resource exhausted')) {
-        errMsg = "Zee is tired and will answer your questions tomorrow.";
+        errMsg = "Z is tired and will answer your questions tomorrow.";
       }
 
       appendMessageToUI(errMsg, false);
