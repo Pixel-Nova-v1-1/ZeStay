@@ -8,6 +8,9 @@ import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } 
 import { showToast, showConfirm } from "./toast.js";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -770,8 +773,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
                     alert("Listing deleted successfully.");
+=======
+                    
+                    showToast("Listing deleted successfully.", "success");
+>>>>>>> Stashed changes
 =======
                     
                     showToast("Listing deleted successfully.", "success");
@@ -1006,12 +1014,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
             alert("Listing updated successfully!");
 
 =======
 =======
 =======
+=======
+            
+            showToast("Listing updated successfully!", "success");
+>>>>>>> Stashed changes
             
             showToast("Listing updated successfully!", "success");
 >>>>>>> Stashed changes
