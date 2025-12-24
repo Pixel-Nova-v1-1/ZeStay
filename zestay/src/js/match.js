@@ -300,8 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="value">${rent}</span>
                             </div>
                             <div class="info-item">
-                                <span class="label">Gender</span>
-                                <span class="value">${item.userGender}</span>
+                                <span class="label">Looking For</span>
+                                <span class="value">${item.gender ? item.gender.charAt(0).toUpperCase() + item.gender.slice(1) : 'Any'}</span>
                             </div>
                         </div>
                     </div>

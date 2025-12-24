@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('displayLocation').textContent = data.location || 'Not specified';
-        document.getElementById('displayGender').textContent = data.gender || 'Not specified';
+        document.getElementById('displayGender').textContent = data.userGender || 'Not specified';
         document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
         document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';
-        document.getElementById('displayLookingFor').textContent = data.gender ? `Same as gender (${data.gender})` : 'Any'; // Inferring
+        document.getElementById('displayLookingFor').textContent = data.lookingForGender || 'Any';
         document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
 
         // Verified/Unverified Box in Basic Info
