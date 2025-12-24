@@ -1,7 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { startChat } from "./chat.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -59,20 +58,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (docSnap.exists()) {
                     const flatData = docSnap.data();
-
+                    
                     // Map Firestore data to UI structure
                     data = {
-                        name: "Flat Owner",
+                        name: "Flat Owner", 
                         avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
                         location: flatData.location || "Location not specified",
-                        gender: "Not Specified",
+                        gender: "Not Specified", 
                         rent: flatData.rent || "N/A",
                         occupancy: flatData.occupancy || "Any",
                         lookingFor: flatData.gender || "Any",
                         description: flatData.description || "No description provided.",
                         images: flatData.photos || [],
-                        preferences: [],
-                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })),
+                        preferences: [], 
+                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })), 
                         highlights: flatData.highlights || []
                     };
 
@@ -135,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
         } else {
-            prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
+             prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
         }
 
         // Amenities
@@ -151,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerLabel.includes('park')) iconClass = 'fa-car';
                 else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
                 else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
-
+                
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">
                         <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
@@ -210,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const userProfile = document.getElementById('user-profile');
         const logoutBtn = document.getElementById('logoutBtn');
         const profileBtn = document.getElementById('matchProfileBtn');
-
+        
         if (user) {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfile) userProfile.style.display = 'flex';
@@ -219,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const docRef = doc(db, "users", user.uid);
                     const docSnap = await getDoc(docRef);
-
+                    
                     let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -231,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileBtn.style.overflow = 'hidden';
                     profileBtn.style.width = '45px';
                     profileBtn.style.height = '45px';
-
+                    
                     profileBtn.onclick = () => {
                         window.location.href = 'profile.html';
                     };
@@ -251,65 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userProfile) userProfile.style.display = 'none';
         }
     });
-
-    // --- CHAT BUTTON LOGIC ---
-    const chatBtn = document.querySelector('.btn-action');
-    if (chatBtn) {
-        chatBtn.addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if (!user) {
-                alert("Please login to chat.");
-                return;
-            }
-
-            // Check if current user is verified
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists() && userDoc.data().isVerified) {
-
-                    // Construct Target User Object
-                    // We need the ID of the person we are viewing. 
-                    // In loadData, we get 'id' from URL.
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const targetId = urlParams.get('id') || 'mock-user-id';
-                    // Note: If it's a flat, targetId might be flat ID, but we usually want Owner ID.
-                    // In the current loadData logic, 'data' is local variable.
-                    // Let's grab name/avatar from DOM as a fallback or simpler method
-                    const targetName = document.getElementById('profileName').textContent;
-                    const targetAvatar = document.getElementById('profileImage').src;
-
-                    // If we have a real ownerID stored on the element, that's better.
-                    // But for now, let's use the URL ID as the 'target' (assuming user ID)
-                    // If it is a listing ID, we might need to fetch the owner ID. 
-                    // For this implementation, let's assume the page is viewing a User Profile directly or we map it.
-
-                    // Actually, lookingroommate.html is often "Listing Details". 
-                    // If type=flat, id=flatId. 
-                    // We need to store the OWNER ID somewhere.
-                    // Let's check `loadData` again in original file... 
-                    // It fetches "users" doc if `flatData.userId` exists. 
-                    // We should probably store `ownerId` in a variable.
-
-                    // HACK: I will re-fetch or rely on the `id` from URL if it's a user profile page.
-                    // If it is a Roommate Listing, usually the ID *is* the User ID or linked to it.
-
-                    window.startChat({
-                        id: targetId,
-                        name: targetName,
-                        avatar: targetAvatar,
-                        online: true,
-                        isBot: false
-                    });
-
-                } else {
-                    alert("Only verified users can initiate chats. Please get verified!");
-                }
-            } catch (err) {
-                console.error("Error checking verification:", err);
-                alert("Error checking verification: " + err.message);
-            }
-        });
-    }
 
     // --- Report Modal Logic ---
     const reportBtn = document.querySelector('.btn-report');

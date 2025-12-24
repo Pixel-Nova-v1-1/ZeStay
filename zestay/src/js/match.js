@@ -233,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
-                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
                 </div>
             </div>`;
         } else if (type === 'Flats') {
@@ -267,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-footer">
                     <span class="match-score">New!</span>
-                    <button class="btn-contact" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></button>
                 </div>
             </div>`;
         } else {
