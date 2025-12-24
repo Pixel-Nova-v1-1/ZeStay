@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,15 +23,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Open Modal
     if (btnVerify) {
-        btnVerify.addEventListener('click', (e) => {
+        btnVerify.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!currentUser) {
                 alert("Please log in to request verification.");
                 window.location.href = 'landing.html';
                 return;
             }
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+            // Check for existing pending or approved requests
+            try {
+                const q = query(collection(db, "verification_requests"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                let hasPending = false;
+                let isVerified = false;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.status === 'pending') hasPending = true;
+                    if (data.status === 'approved') isVerified = true;
+                });
+
+                if (isVerified) {
+                    alert("You are already verified! You don't need to submit another request.");
+                    return;
+                }
+
+                if (hasPending) {
+                    alert("You already have a pending verification request. Please wait for the admin to review it.");
+                    return;
+                }
+
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+            } catch (error) {
+                console.error("Error checking verification status:", error);
+                alert("Error checking status. Please try again.");
+            }
         });
     }
 

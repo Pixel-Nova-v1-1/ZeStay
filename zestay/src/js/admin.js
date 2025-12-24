@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc } from "firebase/firestore";
 
 // DOM Elements
 const logoutBtn = document.getElementById('logoutBtn');
@@ -19,7 +19,7 @@ onAuthStateChanged(auth, async (user) => {
     // Check if user is admin
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists() || !userSnap.data().isAdmin) {
         alert("Access Denied: You do not have administrator privileges.");
         window.location.replace("/index.html");
@@ -57,8 +57,8 @@ navItems.forEach(item => {
 
 function loadTabContent(tab) {
     pageTitle.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
-    
-    switch(tab) {
+
+    switch (tab) {
         case 'dashboard':
             renderDashboard();
             break;
@@ -84,15 +84,15 @@ async function loadDashboardData() {
     try {
         const usersSnap = await getDocs(collection(db, "users"));
         const totalUsers = document.getElementById('totalUsers');
-        if(totalUsers) totalUsers.textContent = usersSnap.size;
+        if (totalUsers) totalUsers.textContent = usersSnap.size;
 
         const listingsSnap = await getDocs(collection(db, "listings"));
         const activeListings = document.getElementById('activeListings');
-        if(activeListings) activeListings.textContent = listingsSnap.size;
+        if (activeListings) activeListings.textContent = listingsSnap.size;
 
         const reportsSnap = await getDocs(collection(db, "reports"));
         const newReports = document.getElementById('newReports');
-        if(newReports) newReports.textContent = reportsSnap.size;
+        if (newReports) newReports.textContent = reportsSnap.size;
 
         renderActivityLog();
     } catch (error) {
@@ -129,11 +129,11 @@ function renderDashboard() {
 
 async function renderUsers() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Users...</h2></div>';
-    
+
     try {
         const q = query(collection(db, "users"), limit(20));
         const querySnapshot = await getDocs(q);
-        
+
         let html = `
         <div class="recent-activity">
             <h2>User Management</h2>
@@ -245,18 +245,36 @@ window.approveVerification = async (requestId, userId) => {
     if (!confirm("Are you sure you want to approve this user?")) return;
 
     try {
-        // 1. Update Request Status
+        // 1. Update Request
         await updateDoc(doc(db, "verification_requests", requestId), {
             status: "approved",
             processedAt: new Date()
         });
 
-        // 2. Update User Profile
-        await updateDoc(doc(db, "users", userId), {
-            isVerified: true
-        });
+        // Update User Profile
+        // Note: 'verificationRequests' is not defined in this scope.
+        // Assuming it's meant to be fetched or passed.
+        // For now, we'll fetch the request directly to get userId.
+        const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
+        const request = requestDoc.exists() ? requestDoc.data() : null;
 
-        alert("User verified successfully!");
+        if (request) {
+            await updateDoc(doc(db, "users", request.userId), {
+                isVerified: true
+            });
+
+            // Send Notification
+            await addDoc(collection(db, "notifications"), {
+                userId: request.userId,
+                title: "Verification Approved",
+                message: "Congratulations! Your profile has been verified.",
+                type: "success",
+                read: false,
+                timestamp: new Date()
+            });
+        }
+
+        alert("Request approved.");
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error approving:", error);
@@ -265,15 +283,32 @@ window.approveVerification = async (requestId, userId) => {
 };
 
 window.rejectVerification = async (requestId) => {
-    if (!confirm("Are you sure you want to reject this request?")) return;
+    const reason = prompt("Please enter the reason for rejection:");
+    if (reason === null) return; // User cancelled
 
     try {
         await updateDoc(doc(db, "verification_requests", requestId), {
             status: "rejected",
+            rejectionReason: reason,
             processedAt: new Date()
         });
 
-        alert("Request rejected.");
+        // Send Notification
+        const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
+        const request = requestDoc.exists() ? requestDoc.data() : null;
+
+        if (request) {
+            await addDoc(collection(db, "notifications"), {
+                userId: request.userId,
+                title: "Verification Rejected",
+                message: `Your verification request was rejected. Reason: ${reason}`,
+                type: "error",
+                read: false,
+                timestamp: new Date()
+            });
+        }
+
+        alert("Request rejected with reason: " + reason);
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error rejecting:", error);
@@ -283,11 +318,11 @@ window.rejectVerification = async (requestId) => {
 
 async function renderListings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Listings...</h2></div>';
-    
+
     try {
         const q = query(collection(db, "listings"), limit(20));
         const querySnapshot = await getDocs(q);
-        
+
         if (querySnapshot.empty) {
             contentArea.innerHTML = '<div class="recent-activity"><h2>Listings Management</h2><p>No listings found.</p></div>';
             return;
@@ -333,12 +368,12 @@ async function renderListings() {
 
 async function renderReports() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Reports...</h2></div>';
-    
+
     try {
         // Removed orderBy to prevent index issues for now
         const q = query(collection(db, "reports"), limit(20));
         const querySnapshot = await getDocs(q);
-        
+
         if (querySnapshot.empty) {
             contentArea.innerHTML = '<div class="recent-activity"><h2>Reports</h2><p>No reports found.</p></div>';
             return;
@@ -388,7 +423,7 @@ async function renderReports() {
 
 async function renderSettings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Settings...</h2></div>';
-    
+
     try {
         const settingsRef = doc(db, "config", "site_settings");
         const snap = await getDoc(settingsRef);
@@ -427,23 +462,23 @@ async function renderSettings() {
 
 // Window functions for actions
 window.deleteListing = async (id) => {
-    if(!confirm("Are you sure you want to delete this listing?")) return;
+    if (!confirm("Are you sure you want to delete this listing?")) return;
     try {
         await deleteDoc(doc(db, "listings", id));
         alert("Listing deleted.");
         renderListings();
-    } catch(e) {
+    } catch (e) {
         alert("Error: " + e.message);
     }
 };
 
 window.resolveReport = async (id) => {
-    if(!confirm("Mark this report as resolved?")) return;
+    if (!confirm("Mark this report as resolved?")) return;
     try {
         await updateDoc(doc(db, "reports", id), { status: 'resolved' });
         alert("Report resolved.");
         renderReports();
-    } catch(e) {
+    } catch (e) {
         alert("Error: " + e.message);
     }
 };
@@ -451,7 +486,7 @@ window.resolveReport = async (id) => {
 window.saveSettings = async () => {
     const maintenanceMode = document.getElementById('maintenanceMode').checked;
     const allowRegistrations = document.getElementById('allowRegistrations').checked;
-    
+
     try {
         await setDoc(doc(db, "config", "site_settings"), {
             maintenanceMode,
@@ -459,14 +494,14 @@ window.saveSettings = async () => {
             updatedAt: new Date()
         });
         alert("Settings saved successfully!");
-    } catch(e) {
+    } catch (e) {
         alert("Error saving settings: " + e.message);
     }
 };
 
 function renderActivityLog() {
     const list = document.getElementById('activityList');
-    if(!list) return;
+    if (!list) return;
 
     // Call the async worker
     fetchAndRenderActivity(list);
@@ -483,18 +518,18 @@ async function fetchAndRenderActivity(list) {
         try {
             const usersQuery = query(collection(db, "users"), orderBy("updatedAt", "desc"), limit(3));
             usersSnap = await getDocs(usersQuery);
-        } catch(e) {
+        } catch (e) {
             console.warn("User sort failed (missing index?), fetching unsorted");
             const usersQuery = query(collection(db, "users"), limit(3));
             usersSnap = await getDocs(usersQuery);
         }
-        
+
         // 2. Fetch recent reports
         let reportsSnap = { docs: [] };
         try {
             const reportsQuery = query(collection(db, "reports"), orderBy("timestamp", "desc"), limit(3));
             reportsSnap = await getDocs(reportsQuery);
-        } catch(e) {
+        } catch (e) {
             console.warn("Reports sort failed");
             const reportsQuery = query(collection(db, "reports"), limit(3));
             reportsSnap = await getDocs(reportsQuery);
@@ -507,7 +542,7 @@ async function fetchAndRenderActivity(list) {
             // We'll try 'createdAt' first.
             const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(3));
             listingsSnap = await getDocs(listingsQuery);
-        } catch(e) {
+        } catch (e) {
             console.warn("Listings sort failed");
             const listingsQuery = query(collection(db, "listings"), limit(3));
             listingsSnap = await getDocs(listingsQuery);
@@ -521,7 +556,7 @@ async function fetchAndRenderActivity(list) {
             // Try to parse date
             let time = new Date();
             if (data.updatedAt) time = new Date(data.updatedAt);
-            
+
             activities.push({
                 text: `User updated: ${data.email || 'Unknown'}`,
                 time: time
