@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoGrid.appendChild(verifiedBox);
             }
 
-            if (userData.isVerified) {
+            if (data.isVerified) {
                 verifiedBox.innerHTML = `
                     <h4>Status</h4>
                     <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
