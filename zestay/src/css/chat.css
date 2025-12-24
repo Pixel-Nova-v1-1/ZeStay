@@ -311,3 +311,115 @@
     align-items: center;
     border: 2px solid white;
 }
+
+/* Options Menu */
+.chat-options-menu {
+    position: absolute;
+    bottom: 70px;
+    left: 20px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    width: 150px;
+    z-index: 1001;
+    overflow: hidden;
+    animation: fadeIn 0.2s;
+}
+
+.chat-options-menu.hidden {
+    display: none;
+}
+
+.chat-option {
+    padding: 12px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.chat-option:hover {
+    background-color: #f5f5f5;
+    color: #00C4B4;
+}
+
+.chat-option.danger {
+    color: #ff4757;
+}
+
+.chat-option.danger:hover {
+    background-color: #ffe0e3;
+    color: #ff4757;
+}
+
+/* Report Modal */
+.chat-report-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.chat-report-modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.report-content {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.report-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.report-content textarea {
+    width: 100%;
+    height: 100px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-family: inherit;
+    resize: none;
+}
+
+.report-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.report-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.report-btn.cancel {
+    background: #f1f2f6;
+    color: #333;
+}
+
+.report-btn.submit {
+    background: #ff4757;
+    color: white;
+}

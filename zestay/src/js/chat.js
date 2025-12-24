@@ -375,6 +375,9 @@ function showConversation(user) {
       resetUnreadCount(user.chatDocId);
     }
   }
+
+  // Initialize Actions (Attach -> Options)
+  setTimeout(initChatActions, 100);
 }
 
 async function resetUnreadCount(chatDocId) {
@@ -658,6 +661,170 @@ const safeAvatar = (url, seed) => url || `https://api.dicebear.com/9.x/avataaars
 function getChatId(uid1, uid2) {
   return [uid1, uid2].sort().join("_");
 }
+// --- Chat Actions (Delete & Report) ---
+
+function initChatActions() {
+  // Replace Attach Button with Options Button if present
+  const attachBtn = document.querySelector('.chat-attach-btn');
+  if (attachBtn) {
+    attachBtn.className = 'chat-options-btn'; // Reassign class
+    attachBtn.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+    attachBtn.style.border = 'none';
+    attachBtn.style.background = 'none';
+    attachBtn.style.cursor = 'pointer';
+    attachBtn.style.fontSize = '18px';
+    attachBtn.style.color = '#777';
+
+    // Remove old listeners (by cloning)
+    const newBtn = attachBtn.cloneNode(true);
+    attachBtn.parentNode.replaceChild(newBtn, attachBtn);
+
+    newBtn.addEventListener('click', toggleOptionsMenu);
+  }
+
+  // Inject Menu into Chat Widget if not exists
+  if (chatWidget && !document.querySelector('.chat-options-menu')) {
+    const menu = document.createElement('div');
+    menu.className = 'chat-options-menu hidden';
+    menu.innerHTML = `
+            <div class="chat-option danger" id="btnDeleteChat">Delete Chat</div>
+            <div class="chat-option" id="btnReportUser">Report User</div>
+        `;
+    chatWidget.appendChild(menu);
+
+    document.getElementById('btnDeleteChat').addEventListener('click', deleteChat);
+    document.getElementById('btnReportUser').addEventListener('click', openReportModal);
+  }
+
+  // Inject Report Modal into Body if not exists
+  if (!document.querySelector('.chat-report-modal')) {
+    const modal = document.createElement('div');
+    modal.className = 'chat-report-modal hidden';
+    modal.innerHTML = `
+            <div class="report-content">
+                <h3>Report User</h3>
+                <textarea id="reportReason" placeholder="Describe the issue..."></textarea>
+                <div class="report-actions">
+                    <button class="report-btn cancel" id="btnCancelReport">Cancel</button>
+                    <button class="report-btn submit" id="btnSubmitReport">Submit</button>
+                </div>
+            </div>
+        `;
+    document.body.appendChild(modal);
+
+    document.getElementById('btnCancelReport').addEventListener('click', closeReportModal);
+    document.getElementById('btnSubmitReport').addEventListener('click', submitReport);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeReportModal();
+    });
+  }
+}
+
+function toggleOptionsMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.querySelector('.chat-options-menu');
+  if (menu) {
+    menu.classList.toggle('hidden');
+  }
+}
+
+// Close menu on outside click
+document.addEventListener('click', (e) => {
+  const menu = document.querySelector('.chat-options-menu');
+  const btn = document.querySelector('.chat-options-btn');
+  if (menu && !menu.classList.contains('hidden')) {
+    if (!menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      menu.classList.add('hidden');
+    }
+  }
+});
+
+async function deleteChat() {
+  if (!confirm("Are you sure you want to delete this chat? It will be removed from your list.")) return;
+
+  // Logic: Remove currentUser.uid from 'participants' array in Firestore
+  if (!activeTargetUser || !activeTargetUser.id || !currentUser) return;
+
+  if (activeTargetUser.isBot) {
+    // Local Delete for AI
+    const key = getLocalChatKey();
+    localStorage.removeItem(key);
+    showListView();
+    return;
+  }
+
+  try {
+    const chatId = getChatId(currentUser.uid, activeTargetUser.id);
+    const chatRef = doc(db, "chats", chatId);
+
+    // We use arrayRemove to remove only the current user
+    const { arrayRemove } = await import("firebase/firestore"); // Import dynamically or assume imported
+
+    // Wait, arrayRemove is not imported in main list. Let's add it to imports or just overwrite participants
+    // Better to overwrite participants manually to be safe if imports are tricky to edit effectively
+
+    const snap = await getDoc(chatRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const newParticipants = data.participants.filter(uid => uid !== currentUser.uid);
+
+      await updateDoc(chatRef, {
+        participants: newParticipants
+      });
+
+      alert("Chat deleted.");
+      showListView();
+    }
+  } catch (e) {
+    console.error("Error deleting chat:", e);
+    alert("Failed to delete chat.");
+  }
+}
+
+function openReportModal() {
+  const menu = document.querySelector('.chat-options-menu');
+  if (menu) menu.classList.add('hidden'); // Close menu
+
+  const modal = document.querySelector('.chat-report-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.getElementById('reportReason').value = ''; // Reset
+  }
+}
+
+function closeReportModal() {
+  const modal = document.querySelector('.chat-report-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitReport() {
+  const reason = document.getElementById('reportReason').value.trim();
+  if (!reason) {
+    alert("Please enter a reason.");
+    return;
+  }
+
+  if (!activeTargetUser || !currentUser) return;
+
+  try {
+    await addDoc(collection(db, "reports"), {
+      reportedUserId: activeTargetUser.id,
+      reportedByName: (currentProfile && currentProfile.name) || "User",
+      reportedByUid: currentUser.uid,
+      reason: reason,
+      timestamp: Date.now(),
+      status: 'pending'
+    });
+
+    alert("Report submitted successfully.");
+    closeReportModal();
+  } catch (e) {
+    console.error("Report error:", e);
+    alert("Failed to submit report.");
+  }
+}
+
 
 // Exported startChat function
 export async function startChat(targetUser) {
