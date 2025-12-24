@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="src/css/why.css">
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <!-- ================= GOOGLE MAPS + PLACES ================= -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places" defer></script>
 </head>
 
 <body>
@@ -58,7 +60,7 @@
                         <label>Location*</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-location-dot icon"></i>
-                            <input type="text" name="location" placeholder="Add location">
+                            <input type="text" name="location" id="reqLocation" placeholder="Add location">
                         </div>
                     </div>
                 </div>
@@ -159,7 +161,7 @@
                         <label>Location*</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-location-dot icon"></i>
-                            <input type="text" name="location" placeholder="Add location">
+                            <input type="text" name="location" id="roomLocation" placeholder="Add location">
                         </div>
                     </div>
                 </div>
