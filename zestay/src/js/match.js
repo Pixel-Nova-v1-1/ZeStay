@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Fetch from 'requirements' collection instead of 'users'
             const querySnapshot = await getDocs(collection(db, "requirements"));
-            
+
             const matchesPromises = querySnapshot.docs.map(async (docSnapshot) => {
                 const reqData = docSnapshot.data();
                 const reqId = docSnapshot.id;
@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         // So we can't check it for cached users in the same way. 
                         // But we can check if we've already fetched this user for another requirement if we had a cache.
                         // For now, let's just fetch.
-                        
+
                         const userDocRef = doc(db, "users", reqData.userId);
                         const userDocSnap = await getDoc(userDocRef);
-                        
+
                         if (userDocSnap.exists()) {
                             userData = userDocSnap.data();
                             // Calculate match score based on User Profiles (Personality + Preferences)
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sort by match score descending
             matches.sort((a, b) => b.matchScore - a.matchScore);
             allUsers = matches;
-            
+
             if (currentType === 'Roommates') {
                 init();
             }
@@ -152,14 +152,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const querySnapshot = await getDocs(collection(db, "flats"));
-            
+
             // Fetch user details for each flat to calculate match score and show profile
             const flatPromises = querySnapshot.docs.map(async (docSnapshot) => {
                 const flatData = docSnapshot.data();
                 const flatId = docSnapshot.id;
 
                 if (currentUser && flatData.userId === currentUser.uid) return null;
-                
+
                 let ownerData = {};
                 let matchScore = 0;
 
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Fetch user if not in allUsers
                             if (currentUser && flatData.userId === currentUser.uid) {
                                 ownerData = currentUserData;
-                                matchScore = 100; 
+                                matchScore = 100;
                             } else {
                                 const userDocRef = doc(db, "users", flatData.userId);
                                 const userDocSnap = await getDoc(userDocRef);
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     matchScore: matchScore
                 };
             });
-            
+
             const flats = (await Promise.all(flatPromises)).filter(f => f !== null);
 
             // Sort by newest first
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const style = `style="animation-delay: ${delay}s"`;
         // Store type and ID in data attributes for delegation
         const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
-        
+
         const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
 
         if (type === 'Roommates') {
@@ -265,8 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Also add hobbies if available
             let hobbies = [];
             if (item.hobbies) {
-                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
-                 else hobbies = item.hobbies.split(',').map(s => s.trim());
+                if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
+                else hobbies = item.hobbies.split(',').map(s => s.trim());
             }
 
             // Combine and take top 5
@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const location = item.location || 'Location not specified';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
-            
+
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
                 <div class="card-content">
@@ -548,10 +548,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         if (user && window.startChat) {
-                            // 2. Map photoUrl to avatar for chat widget
+                            // 2. Map Correct User Data for Chat (Requirement -> User)
                             const targetUser = {
-                                ...user,
-                                avatar: user.photoUrl
+                                id: user.userId, // Use the actual User ID, not the Requirement ID
+                                name: user.userName, // Use the resolved User Name
+                                avatar: user.userPhoto, // Use the resolved User Photo
+                                isVerified: user.isVerified
                             };
                             window.startChat(targetUser);
                         }
