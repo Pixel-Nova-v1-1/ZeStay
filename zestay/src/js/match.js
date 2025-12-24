@@ -225,27 +225,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculateMatchScore(user1, user2) {
-        // 1. Personality Score (50%)
+        // 1. Personality Score (33%)
         // Max difference approx 20 (5 questions * 4 max diff). 
-        // Let's say max diff is 20. 
         const s1 = user1.personalityScore || 0;
         const s2 = user2.personalityScore || 0;
         const diff = Math.abs(s1 - s2);
         // Normalize: 0 diff = 100%, 20 diff = 0%
-        // 100 - (diff * 5)
         let personalityMatch = Math.max(0, 100 - (diff * 5));
 
-        // 2. Preferences Match (50%)
+        // 2. Preferences Match (33%)
         const p1 = user1.preferences || [];
         const p2 = user2.preferences || [];
 
-        if (p1.length === 0) return Math.round(personalityMatch); // If no prefs, rely on personality
+        let prefMatch = 0;
+        if (p1.length > 0) {
+            const shared = p1.filter(p => p2.includes(p));
+            prefMatch = (shared.length / Math.max(p1.length, 1)) * 100;
+        } else {
+            // If no prefs, maybe neutral or rely on others? Let's say 50% or 0? 
+            // Keeping it 0 if empty, or maybe personalityMatch? 
+            // Let's keep it simple: 0 if no preferences defined.
+            prefMatch = 0;
+        }
 
-        const shared = p1.filter(p => p2.includes(p));
-        const prefMatch = (shared.length / Math.max(p1.length, 1)) * 100;
+        // 3. Hobbies Match (33%)
+        let h1 = user1.hobbies || [];
+        let h2 = user2.hobbies || [];
 
-        // Weighted Average
-        const finalScore = (personalityMatch * 0.5) + (prefMatch * 0.5);
+        // Normalize to array if string
+        if (typeof h1 === 'string') h1 = h1.split(',').map(s => s.trim().toLowerCase());
+        if (typeof h2 === 'string') h2 = h2.split(',').map(s => s.trim().toLowerCase());
+
+        // Ensure arrays
+        if (!Array.isArray(h1)) h1 = [];
+        if (!Array.isArray(h2)) h2 = [];
+
+        let hobbiesMatch = 0;
+        if (h1.length > 0) {
+            // Case insensitive comparison
+            const h2Lower = h2.map(h => h.toLowerCase());
+            const sharedHobbies = h1.filter(h => h2Lower.includes(h.toLowerCase()));
+            hobbiesMatch = (sharedHobbies.length / Math.max(h1.length, 1)) * 100;
+        }
+
+        // Weighted Average (33% each)
+        // If one is missing (e.g. no prefs), should we re-weight? 
+        // For now, simple average of 3.
+        const finalScore = (personalityMatch + prefMatch + hobbiesMatch) / 3;
         return Math.round(finalScore);
     }
 
