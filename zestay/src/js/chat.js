@@ -124,6 +124,9 @@ function initChatSystem() {
       userChats = [];
       if (unsubscribeListListener) unsubscribeListListener();
 
+      const badge = document.querySelector('.chat-badge');
+      if (badge) badge.style.display = 'none';
+
       toggleBtn.style.display = 'flex';
       if (!chatWidget.classList.contains('closed')) {
         showLoginPrompt();
