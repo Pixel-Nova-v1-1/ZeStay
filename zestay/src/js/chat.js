@@ -97,15 +97,14 @@ function initChatSystem() {
         const docSnap = await getDoc(doc(db, 'users', user.uid));
         if (docSnap.exists()) {
           currentProfile = docSnap.data();
-        } else {
           currentProfile = {
             name: user.displayName || "User",
-            profileImage: user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`
+            photoUrl: user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`
           };
         }
       } catch (e) {
         console.error("Error fetching profile:", e);
-        currentProfile = { name: "User", profileImage: `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}` };
+        currentProfile = { name: "User", photoUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}` };
       }
 
       toggleBtn.style.display = 'flex';
@@ -321,18 +320,7 @@ function showListView() {
   renderList();
 }
 
-// --- EXPORTED FUNCTION TO START CHAT ---
-export function startChat(targetUser) {
-  if (!currentUser) {
-    alert("Please login to chat.");
-    return;
-  }
-  if (!chatWidget) initChatSystem();
 
-  openWidget();
-  showConversation(targetUser);
-}
-window.startChat = startChat;
 
 
 function showConversation(user) {
@@ -415,9 +403,7 @@ function loadAIChatFromLocal() {
 }
 
 // --- Firebase Chat Logic ---
-function getChatId(uid1, uid2) {
-  return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
-}
+
 
 function loadUserChatFromDB(targetUserId) {
   if (!currentUser) return;
@@ -493,7 +479,7 @@ async function handleSend() {
       // Current User Info
       userMap[currentUser.uid] = {
         name: (currentProfile && currentProfile.name) || "User",
-        avatar: (currentProfile && currentProfile.profileImage) || safeAvatar(currentUser.photoURL),
+        avatar: (currentProfile && currentProfile.photoUrl) || safeAvatar(currentUser.photoURL),
       };
       // Target User Info (We have it in activeTargetUser if we opened the chat)
       if (activeTargetUser) {
@@ -629,3 +615,53 @@ if (document.readyState === 'loading') {
 } else {
   initChatSystem();
 }
+
+// Helper: Ensure no undefined avatar values
+const safeAvatar = (url, seed) => url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed || Date.now()}`;
+
+// Helper: Chat ID generator
+function getChatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
+
+// Exported startChat function
+export async function startChat(targetUser) {
+  if (!currentUser) {
+    alert("Please login to chat.");
+    return;
+  }
+  // Ensure widget is initialized
+  if (!chatWidget) initChatSystem();
+
+  openWidget();
+  showConversation(targetUser);
+
+  // Force Update Metadata
+  if (targetUser && targetUser.id) {
+    try {
+      const chatId = getChatId(currentUser.uid, targetUser.id);
+      const userMap = {};
+
+      // Current User Info
+      userMap[currentUser.uid] = {
+        name: (currentProfile && currentProfile.name) || "User",
+        avatar: safeAvatar((currentProfile && currentProfile.photoUrl) || currentUser.photoURL, currentUser.uid)
+      };
+
+      // Target Info
+      userMap[targetUser.id] = {
+        name: targetUser.name,
+        avatar: safeAvatar(targetUser.avatar, targetUser.id)
+      };
+
+      await setDoc(doc(db, "chats", chatId), {
+        participants: [currentUser.uid, targetUser.id],
+        userInfo: userMap
+      }, { merge: true });
+
+    } catch (e) {
+      console.error("Metadata update failed:", e);
+    }
+  }
+}
+window.startChat = startChat;

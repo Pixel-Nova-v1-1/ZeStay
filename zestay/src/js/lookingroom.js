@@ -1,6 +1,7 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { startChat } from "./chat.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -145,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     window.addEventListener('resize', adjustProfileNameFontSize);
 
     // --- Auth Logic (Firebase) ---
@@ -183,6 +185,63 @@ document.addEventListener('DOMContentLoaded', () => {
             loadUserProfile();
         }
     });
+
+    // --- CHAT BUTTON LOGIC ---
+    const chatBtn = document.querySelector('.btn-action');
+    if (chatBtn) {
+        chatBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Please login to chat.");
+                return;
+            }
+
+            try {
+                // Check if current user is verified
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().isVerified) {
+
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetId = urlParams.get('id');
+
+                    // CHECK TARGET VERIFICATION
+                    let targetVerified = false;
+                    try {
+                        if (targetId) {
+                            const targetDoc = await getDoc(doc(db, "users", targetId));
+                            if (targetDoc.exists() && targetDoc.data().isVerified) {
+                                targetVerified = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching target user:", e);
+                    }
+
+                    if (!targetVerified) {
+                        alert("The other user is not verified yet. You cannot message them.");
+                        return;
+                    }
+
+                    const targetName = document.getElementById('profileName').textContent;
+                    const targetAvatar = document.getElementById('profileImage').src;
+
+                    window.startChat({
+                        id: targetId,
+                        name: targetName,
+                        avatar: targetAvatar,
+                        online: true,
+                        isBot: false
+                    });
+
+                } else {
+                    alert("Only verified users can initiate chats. Please get verified!");
+                }
+            } catch (err) {
+                console.error("Error checking verification:", err);
+                alert("Error checking verification: " + err.message);
+            }
+        });
+    }
 
     async function fetchCurrentUserProfile(user, btn) {
         try {
