@@ -203,6 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerLabel.includes('park')) iconClass = 'fa-car';
                 else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
                 else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
+                else if (lowerLabel.includes('power')) iconClass = 'fa-battery-full';
+                else if (lowerLabel.includes('fridge')) iconClass = 'fa-snowflake';
+                else if (lowerLabel.includes('water') || lowerLabel.includes('ro')) iconClass = 'fa-bottle-water';
+                else if (lowerLabel.includes('kitchen')) iconClass = 'fa-fire-burner';
+                else if (lowerLabel.includes('cook')) iconClass = 'fa-kitchen-set';
+                else if (lowerLabel.includes('geyser')) iconClass = 'fa-faucet';
 
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">
