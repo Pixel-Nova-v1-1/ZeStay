@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomModal = document.getElementById('roomModal');
     const switchToRoomLink = document.getElementById('switchToRoomModal');
 
+    const verificationModal = document.getElementById('verificationModal');
+    const closeVerificationModal = document.getElementById('closeVerificationModal');
+
 
 
     toggleGroups.forEach(group => {
@@ -99,7 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!isVerified) {
-                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                // showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                verificationModal.classList.add('active');
                 return;
             }
 
@@ -133,7 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!isVerified) {
-                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                // showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                verificationModal.classList.add('active');
                 return;
             }
 
@@ -172,7 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!isVerified) {
-                showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                // showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
+                verificationModal.classList.add('active');
                 return;
             }
 
@@ -208,6 +214,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 roomModal.classList.remove('active');
                 document.body.style.overflow = '';
                 console.log("Room Modal Overlay Clicked");
+            }
+        });
+    }
+
+    // --- Verification Modal Logic ---
+    if (closeVerificationModal && verificationModal) {
+        closeVerificationModal.addEventListener('click', () => {
+            verificationModal.classList.remove('active');
+        });
+    }
+
+    if (verificationModal) {
+        verificationModal.addEventListener('click', (e) => {
+            if (e.target === verificationModal) {
+                verificationModal.classList.remove('active');
             }
         });
     }
@@ -344,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (parentModal.id === 'roomModal') {
                     collectionName = 'flats';
-                    
+
                     // Upload Photos to Nhost
                     if (storedFiles.length > 0) {
                         const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
@@ -355,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             try {
                                 // Create a unique file name with user ID to organize files
                                 const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
-                                
+
                                 const formData = new FormData();
                                 formData.append("bucket-id", "default");
                                 formData.append("file[]", file, fileName);
@@ -391,12 +412,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.userId = currentUser.uid;
                 data.userEmail = currentUser.email;
                 data.createdAt = serverTimestamp();
-                
+
                 // Add to Firestore
                 await addDoc(collection(db, collectionName), data);
 
                 showToast('Submitted Successfully!', "success");
-                
+
                 if (parentModal) {
                     parentModal.classList.remove('active');
                     document.body.style.overflow = '';
