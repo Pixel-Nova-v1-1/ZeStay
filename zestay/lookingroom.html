@@ -5,31 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Looking for a Roommate</title>
+    <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/lookingroom.css">
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
-    <header>
-        <div class="navbar">
-            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;"><span
-                        class="brand-text">ZeStay</span></a></div>
-            <nav class="nav-links">
-                <div class="nav-actions">
-                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
+                    <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
+                </a>
+            </div>
 
-                    <div id="auth-buttons">
-                        <a href="regimob.html?mode=login">Login</a>
-                        <a href="regimob.html?mode=register">Register</a>
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="why.html" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
+                    </a>
+
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
+                        <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
                     </div>
 
-                    <div id="user-profile" style="display:none; align-items:center; gap:10px;">
-                        <button id="matchProfileBtn"><i class="fa-regular fa-circle-user"></i></button>
-                        <button id="logoutBtn"
-                            style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">Logout</button>
+                    <div id="user-profile" class="user-profile" style="display:none;">
+                        <button class="btn-icon" id="matchProfileBtn">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </button>
                     </div>
                 </div>
             </nav>

@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Zestay</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/index.css">
     <link rel="stylesheet" href="src/css/profile.css">
     <link rel="stylesheet" href="src/css/chat.css">
@@ -17,17 +18,30 @@
 
 <body>
 
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
+                    <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
+                </a>
+            </div>
 
-    <header>
-        <div class="navbar">
-            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;"><span
-                        class="brand-text">ZeStay</span></a></div>
-            <nav class="nav-links">
-                <div class="nav-actions">
-                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
-                    <div id="user-profile" class="user-profile-header">
-                        <button class="btn-profile"><i class="fa-regular fa-circle-user"></i></button>
-                        <button id="logoutBtn" class="logout-btn-header">Logout</button>
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="why.html" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
+                    </a>
+
+                    <div id="user-profile" class="user-profile">
+                        <button class="btn-icon">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </button>
                     </div>
                 </div>
             </nav>

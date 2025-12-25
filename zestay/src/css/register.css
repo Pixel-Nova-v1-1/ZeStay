@@ -122,7 +122,8 @@ select {
     border: 1px solid #999;
     border-radius: 12px;
     font-size: 1rem;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
     color: #555;
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
