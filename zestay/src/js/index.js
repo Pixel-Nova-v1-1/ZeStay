@@ -69,14 +69,36 @@ function initLandingAutocomplete() {
     });
 }
 
-/* Wait for Google Maps script to load */
+// --- DYNAMIC GOOGLE MAPS LOADER ---
+function loadGoogleMaps() {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+        console.error("Google Maps API Key is missing in .env file");
+        return;
+    }
+
+    if (document.getElementById('google-maps-script')) {
+        // Already loaded, just init
+        initLandingAutocomplete();
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.defer = true;
+    script.async = true;
+    
+    script.onload = () => {
+        initLandingAutocomplete();
+    };
+
+    document.head.appendChild(script);
+}
+
+/* Load Maps on Page Load */
 window.addEventListener('load', () => {
-    const waitForGoogle = setInterval(() => {
-        if (window.google && google.maps && google.maps.places) {
-            clearInterval(waitForGoogle);
-            initLandingAutocomplete();
-        }
-    }, 100);
+    loadGoogleMaps();
 });
 
 /* =========================================================
