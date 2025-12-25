@@ -115,6 +115,8 @@ body {
     margin-bottom: 3rem;
     opacity: 0;
     animation: fadeInUp 0.8s ease-out 0.5s forwards;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 
@@ -156,6 +158,8 @@ body {
     font-size: 1rem;
     width: 100%;
     color: #333;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .input-group input::placeholder {
@@ -306,6 +310,8 @@ body {
     margin-bottom: 2rem;
     font-size: 0.95rem;
     line-height: 1.5;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .checkbox-group {

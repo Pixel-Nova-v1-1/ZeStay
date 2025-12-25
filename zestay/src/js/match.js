@@ -210,13 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const flats = (await Promise.all(flatPromises)).filter(f => f !== null);
 
-            // Sort by newest first
-            flats.sort((a, b) => {
-                if (a.createdAt && b.createdAt) {
-                    return b.createdAt.seconds - a.createdAt.seconds;
-                }
-                return 0;
-            });
+            // Sort by match score descending
+            flats.sort((a, b) => b.matchScore - a.matchScore);
 
             flatsData = flats;
 
@@ -238,7 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const s2 = user2.personalityScore || 0;
         const diff = Math.abs(s1 - s2);
         // Normalize: 0 diff = 100%, 20 diff = 0%
-        let personalityMatch = Math.max(0, 100 - (diff * 5));
+        // Boosted: Less penalty for differences (was * 5)
+        let personalityMatch = Math.max(0, 100 - (diff * 2));
 
         // 2. Preferences Match (33%)
         const p1 = user1.preferences || [];
@@ -247,12 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let prefMatch = 0;
         if (p1.length > 0) {
             const shared = p1.filter(p => p2.includes(p));
-            prefMatch = (shared.length / Math.max(p1.length, 1)) * 100;
+            // Boosted: Add base score of 30
+            prefMatch = Math.min(100, (shared.length / Math.max(p1.length, 1)) * 100 + 30);
         } else {
-            // If no prefs, maybe neutral or rely on others? Let's say 50% or 0? 
-            // Keeping it 0 if empty, or maybe personalityMatch? 
-            // Let's keep it simple: 0 if no preferences defined.
-            prefMatch = 0;
+            // Boosted: Default score if no preferences (was 0)
+            prefMatch = 60;
         }
 
         // 3. Hobbies Match (33%)
@@ -272,13 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Case insensitive comparison
             const h2Lower = h2.map(h => h.toLowerCase());
             const sharedHobbies = h1.filter(h => h2Lower.includes(h.toLowerCase()));
-            hobbiesMatch = (sharedHobbies.length / Math.max(h1.length, 1)) * 100;
+            // Boosted: Add base score of 30
+            hobbiesMatch = Math.min(100, (sharedHobbies.length / Math.max(h1.length, 1)) * 100 + 30);
+        } else {
+             // Boosted: Default score if no hobbies (was 0)
+             hobbiesMatch = 60;
         }
 
         // Weighted Average (33% each)
-        // If one is missing (e.g. no prefs), should we re-weight? 
-        // For now, simple average of 3.
-        const finalScore = (personalityMatch + prefMatch + hobbiesMatch) / 3;
+        let finalScore = (personalityMatch + prefMatch + hobbiesMatch) / 3;
+        
+        // Final Boost: Add 15 points to everything
+        finalScore = Math.min(100, finalScore + 15);
+        
         return Math.round(finalScore);
     }
 
@@ -314,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const avatar = item.userPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (item.userName || 'User');
             const location = item.location || 'Location not specified';
+            const address = item.address ? item.address + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
 
@@ -325,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-details">
                         <h3>${item.userName || 'User'}${verifiedIcon}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
                             <div class="info-item">
@@ -397,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-details">
                         <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
                             <div class="info-item">

@@ -14,6 +14,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedAvatarUrl = null;
     let selectedFile = null;
 
+    // --- DOB Validation Logic ---
+    const dobInput = document.getElementById("dob");
+    if (dobInput) {
+        const today = new Date();
+        const minAge = 18;
+        const maxAge = 100;
+
+        // Calculate max date (18 years ago)
+        const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+        // Calculate min date (100 years ago)
+        const minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
+        dobInput.setAttribute("max", maxDate);
+        dobInput.setAttribute("min", minDate);
+
+        // Add input listener to enforce validation on typing
+        dobInput.addEventListener('change', function() {
+            const value = new Date(this.value);
+            const min = new Date(minDate);
+            const max = new Date(maxDate);
+
+            if (value > max) {
+                showToast(`You must be at least ${minAge} years old.`, "warning");
+                this.value = maxDate;
+            } else if (value < min) {
+                showToast("Please enter a valid date of birth.", "warning");
+                this.value = minDate;
+            }
+        });
+    }
+
     // 1. Check Auth State & Pre-fill Email
     onAuthStateChanged(auth, async (user) => {
         if (user) {

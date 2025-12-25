@@ -5,16 +5,9 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* Hide old navbar - using new header */
 .navbar {
-    display: flex;
-    position: relative;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 50px;
-    background-color: white;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-    z-index: 100;
-
+    display: none;
 }
 
 .logo {
@@ -179,6 +172,8 @@ h1 {
     color: #333;
     width: 100%;
     background: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .filter-dropdown {
@@ -325,6 +320,8 @@ h1 {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .location i {
@@ -349,12 +346,14 @@ h1 {
     letter-spacing: 0.5px;
     color: #999;
     font-weight: 600;
+    font-family: 'Poppins', sans-serif;
 }
 
 .info-item .value {
     font-size: 15px;
     font-weight: 600;
     color: #333;
+    font-family: 'Poppins', sans-serif;
 }
 
 .card-footer {

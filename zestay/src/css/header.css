@@ -1,0 +1,219 @@
+/* ================= SHARED HEADER STYLES ================= */
+.main-header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+    box-shadow: 0 2px 20px rgba(0, 196, 180, 0.08);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0, 196, 180, 0.1);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 50px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.02);
+}
+
+.logo-img {
+    height: 45px;
+    width: auto;
+    transition: filter 0.3s ease;
+}
+
+.logo-link:hover .logo-img {
+    filter: brightness(1.1);
+}
+
+.logo-text {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, #00C4B4 0%, #00E5D0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.logo-ze {
+    color: inherit;
+}
+
+.logo-stay {
+    color: inherit;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00C4B4 0%, #00E5D0 100%);
+    color: white;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 196, 180, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 196, 180, 0.35);
+    background: linear-gradient(135deg, #00B0A6 0%, #00D4C0 100%);
+}
+
+.btn-primary i {
+    font-size: 14px;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-secondary {
+    color: #2c3e50;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-secondary:hover {
+    color: #00C4B4;
+    background-color: rgba(0, 196, 180, 0.05);
+}
+
+.btn-secondary.btn-register {
+    border: 2px solid #00C4B4;
+    color: #00C4B4;
+}
+
+.btn-secondary.btn-register:hover {
+    background-color: #00C4B4;
+    color: white;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-icon {
+    background: rgba(0, 196, 180, 0.1);
+    color: #00C4B4;
+    border: 2px solid #00C4B4;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 20px;
+}
+
+.btn-icon:hover {
+    background: #00C4B4;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-logout {
+    background: transparent;
+    color: #00C4B4;
+    border: 2px solid #00C4B4;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-logout:hover {
+    background: #00C4B4;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 12px 20px;
+    }
+
+    .logo-img {
+        height: 35px;
+    }
+
+    .logo-text {
+        font-size: 22px;
+    }
+
+    .header-actions {
+        gap: 10px;
+    }
+
+    .btn-primary span,
+    .btn-logout span {
+        display: none;
+    }
+
+    .btn-primary,
+    .btn-logout {
+        padding: 10px 12px;
+    }
+
+    .btn-secondary {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}

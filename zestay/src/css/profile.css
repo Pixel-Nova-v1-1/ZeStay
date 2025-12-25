@@ -193,6 +193,8 @@ body {
     outline: none;
     transition: all 0.3s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .profile-input:focus {
@@ -1136,6 +1138,8 @@ label {
     font-size: 1rem;
     outline: none;
     transition: border-color 0.3s;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .input-wrapper input:focus {
