@@ -66,11 +66,18 @@ body {
     font-size: 28px;
     font-weight: 700;
     line-height: 1;
-    background: linear-gradient(135deg, #00C4B4 0%, #00E5D0 100%);
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     letter-spacing: -0.5px;
+}
+
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .logo-ze {
