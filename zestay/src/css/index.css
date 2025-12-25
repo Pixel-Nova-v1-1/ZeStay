@@ -34,12 +34,20 @@ body {
     gap: 8px;
     text-decoration: none;
     color: inherit;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+#user-profile {
+    margin-top: 10px;
 }
 
 .logo-img {
     height: 40px;
     /* Adjust size as needed, e.g., 32px to 48px */
     width: auto;
+    margin-bottom: 9px;
 }
 
 .logo-text {
@@ -787,8 +795,17 @@ body {
     transition: color 0.3s ease;
 }
 
+
 .btn-profile:hover {
     color: #00C4B4;
+}
+
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
 }
 
 

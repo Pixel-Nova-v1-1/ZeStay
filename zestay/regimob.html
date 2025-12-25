@@ -21,7 +21,7 @@
 
         <div class="right-section">
             <div class="content-wrapper">
-                <h2 class="app-name">App Name</h2>
+                <h2 class="app-name"><span class="brand-text">ZeStay</span></h2>
 
                 <div class="form-container" style="display: none;">
                     <h1 class="title" id="authTitle">Continue with Email</h1>
@@ -88,6 +88,32 @@
                     </p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">Terms & Privacy</h2>
+            <p class="modal-subtitle">Please accept our terms and privacy policy to continue.</p>
+
+            <div class="checkbox-group">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="termsCheckbox">
+                    <span class="checkmark"></span>
+                    <span class="label-text">I accept the <a href="#" target="_blank">Terms and Conditions</a></span>
+                </label>
+            </div>
+
+            <div class="checkbox-group">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="privacyCheckbox">
+                    <span class="checkmark"></span>
+                    <span class="label-text">I accept the <a href="#" target="_blank">Privacy Policy</a></span>
+                </label>
+            </div>
+
+            <button id="termsContinueBtn" class="btn-otp" disabled>Continue</button>
         </div>
     </div>
 

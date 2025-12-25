@@ -526,6 +526,15 @@ textarea:focus {
     color: #555;
     text-align: center;
 }
+
 .scam-link {
     text-decoration: none;
+}
+
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
 }
