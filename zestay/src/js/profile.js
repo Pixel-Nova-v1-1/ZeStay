@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Update Navbar Profile Icon
-                const navProfileBtn = document.querySelector('.btn-profile');
+                const navProfileBtn = document.getElementById('headerProfileBtn');
                 if (navProfileBtn) {
                     const navImg = document.createElement('img');
                     navImg.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     navImg.style.height = '35px';
                     navImg.style.borderRadius = '50%';
                     navImg.style.objectFit = 'cover';
+                    navImg.style.border = '2px solid white';
                     navProfileBtn.innerHTML = '';
                     navProfileBtn.appendChild(navImg);
                 }
