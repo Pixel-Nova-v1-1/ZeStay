@@ -387,122 +387,122 @@
                         <i class="fa-solid fa-map-pin icon"></i>
                         <input type="text" name="fullAddress" placeholder="Enter full address">
                     </div>
-                </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Looking For</label>
-                        <div class="toggle-group single-select" data-group="gender">
-                            <button type="button" class="toggle-btn" data-value="male">Male</button>
-                            <button type="button" class="toggle-btn" data-value="female">Female</button>
-                            <button type="button" class="toggle-btn active" data-value="any">Any</button>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Looking For</label>
+                            <div class="toggle-group single-select" data-group="gender">
+                                <button type="button" class="toggle-btn" data-value="male">Male</button>
+                                <button type="button" class="toggle-btn" data-value="female">Female</button>
+                                <button type="button" class="toggle-btn active" data-value="any">Any</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Occupancy</label>
+                            <div class="toggle-group single-select" data-group="occupancy">
+                                <button type="button" class="toggle-btn active" data-value="single">Single</button>
+                                <button type="button" class="toggle-btn" data-value="shared">Shared</button>
+                                <button type="button" class="toggle-btn" data-value="any">Any</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Occupancy</label>
-                        <div class="toggle-group single-select" data-group="occupancy">
-                            <button type="button" class="toggle-btn active" data-value="single">Single</button>
-                            <button type="button" class="toggle-btn" data-value="shared">Shared</button>
-                            <button type="button" class="toggle-btn" data-value="any">Any</button>
+
+                    <div class="form-group full-width">
+                        <label>Choose Highlights of the Room</label>
+                        <div class="chips-container multi-select">
+                            <button type="button" class="chip active">Fully furnished</button>
+                            <button type="button" class="chip">Semi furnished</button>
+                            <button type="button" class="chip">Market nearby</button>
+                            <button type="button" class="chip">Park nearby</button>
+                            <button type="button" class="chip">Attached washroom</button>
+                            <button type="button" class="chip">Gated society</button>
+                            <button type="button" class="chip">No restriction</button>
+                            <button type="button" class="chip">Security guard</button>
+                            <button type="button" class="chip">Close to metro station</button>
+                            <button type="button" class="chip">Well ventilated</button>
+                            <button type="button" class="chip">Clean & hygienic</button>
+                            <button type="button" class="chip">Public transport nearby</button>
+                            <button type="button" class="chip">Spacious room</button>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group full-width">
-                    <label>Choose Highlights of the Room</label>
-                    <div class="chips-container multi-select">
-                        <button type="button" class="chip active">Fully furnished</button>
-                        <button type="button" class="chip">Semi furnished</button>
-                        <button type="button" class="chip">Market nearby</button>
-                        <button type="button" class="chip">Park nearby</button>
-                        <button type="button" class="chip">Attached washroom</button>
-                        <button type="button" class="chip">Gated society</button>
-                        <button type="button" class="chip">No restriction</button>
-                        <button type="button" class="chip">Security guard</button>
-                        <button type="button" class="chip">Close to metro station</button>
-                        <button type="button" class="chip">Well ventilated</button>
-                        <button type="button" class="chip">Clean & hygienic</button>
-                        <button type="button" class="chip">Public transport nearby</button>
-                        <button type="button" class="chip">Spacious room</button>
+                    <div class="form-group full-width">
+                        <label>Upload 3 Photos Of Your Room</label>
+                        <div class="upload-area">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <p>Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span></p>
+                            <input type="file" id="fileInput" name="roomPhotos" multiple hidden>
+                        </div>
+                        <p class="note">Upload an image upto 10mb</p>
+                        <div id="existingPhotos" style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;"></div>
                     </div>
-                </div>
 
-                <div class="form-group full-width">
-                    <label>Upload 3 Photos Of Your Room</label>
-                    <div class="upload-area">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <p>Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span></p>
-                        <input type="file" id="fileInput" name="roomPhotos" multiple hidden>
-                    </div>
-                    <p class="note">Upload an image upto 10mb</p>
-                    <div id="existingPhotos" style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;"></div>
-                </div>
+                    <!-- Contact Visibility Removed -->
 
-                <!-- Contact Visibility Removed -->
-
-                <div class="form-group full-width">
-                    <label>Amenities</label>
-                    <div class="amenities-grid">
-                        <div class="amenity-item">
-                            <div class="amenity-icon active"><i class="fa-solid fa-shirt"></i></div>
-                            <span>Washing Machine</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
-                            <span>Parking</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-snowflake"></i></div>
-                            <span>Fridge</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-elevator"></i></div>
-                            <span>Lift</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-wifi"></i></div>
-                            <span>WiFi</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-tv"></i></div>
-                            <span>TV</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-battery-full"></i></div>
-                            <span>Power Backup</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-bottle-water"></i></div>
-                            <span>24/7 Water Supply</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-wind"></i></div>
-                            <span>AC</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                            <span>Kitchen</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-kitchen-set"></i></div>
-                            <span>Cook</span>
-                        </div>
-                        <div class="amenity-item">
-                            <div class="amenity-icon"><i class="fa-solid fa-faucet"></i></div>
-                            <span>Geyser</span>
+                    <div class="form-group full-width">
+                        <label>Amenities</label>
+                        <div class="amenities-grid">
+                            <div class="amenity-item">
+                                <div class="amenity-icon active"><i class="fa-solid fa-shirt"></i></div>
+                                <span>Washing Machine</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
+                                <span>Parking</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-snowflake"></i></div>
+                                <span>Fridge</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-elevator"></i></div>
+                                <span>Lift</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-wifi"></i></div>
+                                <span>WiFi</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-tv"></i></div>
+                                <span>TV</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-battery-full"></i></div>
+                                <span>Power Backup</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-bottle-water"></i></div>
+                                <span>24/7 Water Supply</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-wind"></i></div>
+                                <span>AC</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                                <span>Kitchen</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+                                <span>Cook</span>
+                            </div>
+                            <div class="amenity-item">
+                                <div class="amenity-icon"><i class="fa-solid fa-faucet"></i></div>
+                                <span>Geyser</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group full-width">
-                    <label>Description*</label>
-                    <textarea name="description"
-                        placeholder="I am looking Roommate for my room.(This is a text box)"></textarea>
-                </div>
+                    <div class="form-group full-width">
+                        <label>Description*</label>
+                        <textarea name="description"
+                            placeholder="I am looking Roommate for my room.(This is a text box)"></textarea>
+                    </div>
 
-                <div class="form-footer">
-                    <button type="submit" class="submit-btn">Update Room</button>
-                </div>
+                    <div class="form-footer">
+                        <button type="submit" class="submit-btn">Update Room</button>
+                    </div>
             </form>
         </div>
     </div>

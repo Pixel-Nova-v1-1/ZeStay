@@ -156,7 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressContainer = document.getElementById('addressContainer');
         if (addressEl && addressContainer) {
             // Prioritize fullAddress -> address
-            const bestAddress = data.fullAddress || data.address;
+            // BUT: If it's a Roommate Requirement (type != 'flat'), user wants to HIDE specific address.
+            // Check 'type' from URL or inferred data.
+            const urlType = new URLSearchParams(window.location.search).get('type');
+
+            let bestAddress = '';
+            if (urlType === 'flat') {
+                bestAddress = data.fullAddress || data.address;
+            }
+            // If not flat, bestAddress stays empty, so container hides.
 
             if (bestAddress) {
                 addressEl.textContent = bestAddress;
