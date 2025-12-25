@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-details">
                         <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
-                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
                         
                         <div class="card-info-grid">
                             <div class="info-item">

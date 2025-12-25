@@ -722,8 +722,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderListingCard(docId, data, type) {
-        // Prioritize Full Address for display if available, else Location
-        const displayLocation = data.fullAddress || data.location || 'Location not specified';
+        // Standardized Display: Always show Location (City/State) only, as requested.
+        // Full Address is still saved but only shown on the detailed public page (for Flats).
+        const displayLocation = data.location || 'Location not specified';
         const rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
         const typeLabel = type === 'flat' ? 'Room/Flat' : 'Roommate Requirement';
         const gender = data.gender || 'Any';
