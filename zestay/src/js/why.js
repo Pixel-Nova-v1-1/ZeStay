@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Helper to check if user already has a listing in a SPECIFIC collection
+    async function checkExistingListing(uid, collectionName) {
+        try {
+            const q = query(collection(db, collectionName), where("userId", "==", uid));
+            const snapshot = await getDocs(q);
+            return !snapshot.empty;
+        } catch (error) {
+            console.error("Error checking existing listings:", error);
+            return false;
+        }
+    }
+
 
 
     const toggleGroups = document.querySelectorAll('.toggle-group');
@@ -81,8 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (switchToReqLink && roomModal && reqModal) {
-        switchToReqLink.addEventListener('click', (e) => {
+        switchToReqLink.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            if (!currentUser) return; // Should be handled by main flow but safe check
+
+            if (await checkExistingListing(currentUser.uid, 'requirements')) {
+                showToast("You have already posted a Room/Flat Application. You can only post one.", "warning");
+                return;
+            }
+
             roomModal.classList.remove('active');
             reqModal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -107,16 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            try {
-                const q = query(collection(db, "flats"), where("userId", "==", currentUser.uid));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    showToast("You have already posted a room/flat. You can only post one.", "warning");
-                    return;
-                }
-            } catch (error) {
-                console.error("Error checking existing flats:", error);
+            if (await checkExistingListing(currentUser.uid, 'flats')) {
+                showToast("You have already posted a Roommate Application. You can only post one.", "warning");
+                return;
             }
 
             reqModal.classList.remove('active');
@@ -129,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (openReqBtn && reqModal) {
-        openReqBtn.addEventListener('click', () => {
+        openReqBtn.addEventListener('click', async () => {
             if (!currentUser) {
                 showToast("Please login to post.", "warning");
                 window.location.href = 'regimob.html?mode=login';
@@ -139,6 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isVerified) {
                 // showToast("You must be a verified user to post a listing. Please verify your profile.", "warning");
                 verificationModal.classList.add('active');
+                return;
+            }
+
+            if (await checkExistingListing(currentUser.uid, 'requirements')) {
+                showToast("You have already posted a Room/Flat Application. You can only post one.", "warning");
                 return;
             }
 
@@ -182,16 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            try {
-                const q = query(collection(db, "flats"), where("userId", "==", currentUser.uid));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    showToast("You have already posted a room/flat. You can only post one.", "warning");
-                    return;
-                }
-            } catch (error) {
-                console.error("Error checking existing flats:", error);
+            if (await checkExistingListing(currentUser.uid, 'flats')) {
+                showToast("You have already posted a Roommate Application. You can only post one.", "warning");
+                return;
             }
 
             roomModal.classList.add('active');
@@ -235,12 +246,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    const uploadArea = document.querySelector('.upload-area');
-    let storedFiles = [];
-
-    if (uploadArea) {
-        const fileInput = uploadArea.querySelector('#fileInput');
+    // --- Refactored Upload Logic for Multiple Areas ---
+    function setupUploadArea(uploadArea) {
+        let storedFiles = [];
+        const fileInput = uploadArea.querySelector('input[type="file"]');
         const uploadText = uploadArea.querySelector('p');
+
+        // Attach storedFiles to the DOM element for retrieval during submit
+        uploadArea.getFiles = () => storedFiles;
+        uploadArea.clearFiles = () => {
+            storedFiles = [];
+            updateUploadUI();
+            if (fileInput) fileInput.value = '';
+        };
 
         const updateUploadUI = () => {
             if (storedFiles.length > 0) {
@@ -259,37 +277,23 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         uploadArea.addEventListener('click', (e) => {
-            // Check if remove button was clicked
             if (e.target.classList.contains('remove-file') || e.target.closest('.remove-file')) {
                 e.preventDefault();
                 e.stopPropagation();
-
                 const removeBtn = e.target.classList.contains('remove-file') ? e.target : e.target.closest('.remove-file');
                 const indexToRemove = parseInt(removeBtn.dataset.index);
-
                 storedFiles = storedFiles.filter((_, index) => index !== indexToRemove);
                 updateUploadUI();
-
-                // Also clear the actual input value so change event can fire again if same file is re-added immediately (though we store in array)
                 if (fileInput) fileInput.value = '';
                 return;
             }
-
-            // Otherwise trigger file input
-            if (fileInput) {
-                fileInput.click(); // This might recurse if we are not careful, but e.target check protects us
-            }
+            if (fileInput) fileInput.click();
         });
 
         if (fileInput) {
-            fileInput.addEventListener('click', (e) => {
-                // Prevent infinite loop if the click originated from the uploadArea listener
-                e.stopPropagation();
-            });
-
+            fileInput.addEventListener('click', (e) => e.stopPropagation());
             fileInput.addEventListener('change', () => {
                 const newFiles = Array.from(fileInput.files);
-
                 if (storedFiles.length + newFiles.length > 3) {
                     showToast("You can only upload a maximum of 3 photos in total.", "warning");
                     fileInput.value = '';
@@ -301,6 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    const uploadAreas = document.querySelectorAll('.upload-area');
+    uploadAreas.forEach(area => setupUploadArea(area));
 
 
 
@@ -363,51 +370,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 let collectionName = 'requirements'; // Default
                 let imageUrls = [];
 
+                // Retrieve files from the form's specific upload area
+                const formUploadArea = form.querySelector('.upload-area');
+                let filesToUpload = [];
+                if (formUploadArea && formUploadArea.getFiles) {
+                    filesToUpload = formUploadArea.getFiles();
+                }
+
                 if (parentModal.id === 'roomModal') {
                     collectionName = 'flats';
+                    // Validate Photos for Room Listing
+                    if (filesToUpload.length < 3) {
+                        showToast("Please upload exactly 3 photos of your room.", "warning");
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                }
 
-                    // Upload Photos to Nhost
-                    if (storedFiles.length > 0) {
-                        const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-                        const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-                        const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+                // Upload Photos to Nhost
+                if (filesToUpload.length > 0) {
+                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
 
-                        for (const file of storedFiles) {
-                            try {
-                                // Create a unique file name with user ID to organize files
-                                const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                    for (const file of filesToUpload) {
+                        try {
+                            const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                            const formData = new FormData();
+                            formData.append("bucket-id", "default");
+                            formData.append("file[]", file, fileName);
 
-                                const formData = new FormData();
-                                formData.append("bucket-id", "default");
-                                formData.append("file[]", file, fileName);
+                            const response = await fetch(uploadUrl, {
+                                method: 'POST',
+                                body: formData
+                            });
 
-                                const response = await fetch(uploadUrl, {
-                                    method: 'POST',
-                                    body: formData
-                                });
-
-                                if (!response.ok) {
-                                    const errorText = await response.text();
-                                    throw new Error(`Upload failed: ${response.status} ${errorText}`);
-                                }
-
-                                const responseData = await response.json();
-                                const fileMetadata = responseData.processedFiles?.[0] || responseData;
-
-                                // Construct Public URL
-                                const url = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
-                                console.log("Uploaded Image URL:", url);
-                                imageUrls.push(url);
-                            } catch (err) {
-                                console.error("Image upload failed:", err);
-                                showToast("Failed to upload one or more images. Please try again.", "error");
-                                // Stop submission if upload fails
-                                throw err;
+                            if (!response.ok) {
+                                const errorText = await response.text();
+                                throw new Error(`Upload failed: ${response.status} ${errorText}`);
                             }
+
+                            const responseData = await response.json();
+                            const fileMetadata = responseData.processedFiles?.[0] || responseData;
+                            const url = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
+                            imageUrls.push(url);
+                        } catch (err) {
+                            console.error("Image upload failed:", err);
+                            showToast("Failed to upload one or more images.", "error");
+                            throw err;
                         }
                     }
-                    data.photos = imageUrls;
                 }
+                data.photos = imageUrls;
 
                 data.userId = currentUser.uid;
                 data.userEmail = currentUser.email;
@@ -423,12 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.style.overflow = '';
                 }
 
-                // Reset Form
                 form.reset();
-                storedFiles = [];
-                if (uploadArea) {
-                    const uploadText = uploadArea.querySelector('p');
-                    if (uploadText) uploadText.innerHTML = 'Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span>';
+                // Clear files in the specific upload area
+                if (formUploadArea && formUploadArea.clearFiles) {
+                    formUploadArea.clearFiles();
                 }
 
             } catch (error) {
