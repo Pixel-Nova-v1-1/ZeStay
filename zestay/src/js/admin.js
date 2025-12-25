@@ -3,6 +3,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
 
+
 // DOM Elements
 const logoutBtn = document.getElementById('logoutBtn');
 const adminEmailSpan = document.getElementById('adminEmail');
@@ -260,6 +261,7 @@ window.approveVerification = async (requestId, userId) => {
         const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
         const request = requestDoc.exists() ? requestDoc.data() : null;
 
+
         if (request) {
             await updateDoc(doc(db, "users", request.userId), {
                 isVerified: true
@@ -285,6 +287,8 @@ window.approveVerification = async (requestId, userId) => {
 };
 
 window.rejectVerification = async (requestId) => {
+    const confirmed = await showConfirm("Are you sure you want to reject this request?");
+    if (!confirmed) return;
     const reason = prompt("Please enter the reason for rejection:");
     if (reason === null) return; // User cancelled
 
@@ -310,13 +314,14 @@ window.rejectVerification = async (requestId) => {
             });
         }
 
-        showToast("Request rejected with reason: " + reason, "info");
+        showToast("Request rejected.", "info");
         renderVerificationRequests(); // Refresh list
     } catch (error) {
         console.error("Error rejecting:", error);
         showToast("Error rejecting request: " + error.message, "error");
     }
 };
+
 
 async function renderListings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Listings...</h2></div>';
@@ -332,28 +337,31 @@ async function renderListings() {
 
         let html = `
         <div class="recent-activity">
-            <h2>Listings Management</h2>
+            <h2>All Listings</h2>
             <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Price</th>
+                        <th>Type</th>
                         <th>Location</th>
+                        <th>Price</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-        `;
+                <tbody>`;
 
         querySnapshot.forEach((doc) => {
-            const item = doc.data();
+            const data = doc.data();
             html += `
                 <tr>
-                    <td>${item.title || 'Untitled'}</td>
-                    <td>$${item.price || '0'}</td>
-                    <td>${item.location || 'Unknown'}</td>
+                    <td>${data.title || 'Untitled'}</td>
+                    <td>${data.type || 'N/A'}</td>
+                    <td>${data.location || 'N/A'}</td>
+                    <td>₹${data.price || data.rent || 0}</td>
                     <td>
-                        <button onclick="window.deleteListing('${doc.id}')" class="btn btn-danger">Delete</button>
+                        <button onclick="deleteListing('${doc.id}')" class="btn-reject" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `;
@@ -432,7 +440,7 @@ async function renderSettings() {
         const data = snap.exists() ? snap.data() : { maintenanceMode: false, allowRegistrations: true };
 
         contentArea.innerHTML = `
-            <div class="recent-activity">
+        <div class="recent-activity">
                 <h2>Admin Settings</h2>
                 <div style="margin-top: 20px; max-width: 500px;">
                     <div class="settings-group">
@@ -465,24 +473,24 @@ async function renderSettings() {
 // Window functions for actions
 window.deleteListing = async (id) => {
     const confirmed = await showConfirm("Are you sure you want to delete this listing?");
-    if(!confirmed) return;
+    if (!confirmed) return;
     try {
         await deleteDoc(doc(db, "listings", id));
         showToast("Listing deleted.", "success");
         renderListings();
-    } catch(e) {
+    } catch (e) {
         showToast("Error: " + e.message, "error");
     }
 };
 
 window.resolveReport = async (id) => {
     const confirmed = await showConfirm("Mark this report as resolved?");
-    if(!confirmed) return;
+    if (!confirmed) return;
     try {
         await updateDoc(doc(db, "reports", id), { status: 'resolved' });
         showToast("Report resolved.", "success");
         renderReports();
-    } catch(e) {
+    } catch (e) {
         showToast("Error: " + e.message, "error");
     }
 };
@@ -498,7 +506,7 @@ window.saveSettings = async () => {
             updatedAt: new Date()
         });
         showToast("Settings saved successfully!", "success");
-    } catch(e) {
+    } catch (e) {
         showToast("Error saving settings: " + e.message, "error");
     }
 };
@@ -515,9 +523,7 @@ async function fetchAndRenderActivity(list) {
     list.innerHTML = '<li>Loading activity...</li>';
 
     try {
-        // 1. Fetch recent users (using updatedAt as proxy)
-        // Note: If "updatedAt" index is missing, this might fail. 
-        // For dev, we'll catch and try without sort if needed, or just log it.
+        // 1. Fetch recent users
         let usersSnap = { docs: [] };
         try {
             const usersQuery = query(collection(db, "users"), orderBy("updatedAt", "desc"), limit(3));
@@ -542,8 +548,6 @@ async function fetchAndRenderActivity(list) {
         // 3. Fetch recent listings
         let listingsSnap = { docs: [] };
         try {
-            // Assuming listings have 'createdAt' or similar. If not, this might fail.
-            // We'll try 'createdAt' first.
             const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(3));
             listingsSnap = await getDocs(listingsQuery);
         } catch (e) {
@@ -557,7 +561,6 @@ async function fetchAndRenderActivity(list) {
 
         usersSnap.forEach(doc => {
             const data = doc.data();
-            // Try to parse date
             let time = new Date();
             if (data.updatedAt) time = new Date(data.updatedAt);
 
@@ -612,7 +615,6 @@ async function fetchAndRenderActivity(list) {
         list.innerHTML = '<li>Error loading activity stream.</li>';
     }
 }
-
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;

@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <!-- ================= GOOGLE MAPS + PLACES ================= -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
+        defer></script>
 </head>
 
 <body>
@@ -112,6 +113,23 @@
                     </p>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- Verification Alert Modal -->
+    <div class="modal-overlay" id="verificationModal">
+        <div class="modal-card" style="max-width: 400px; text-align: center; padding: 30px;">
+            <button class="close-btn" id="closeVerificationModal"><i class="fa-solid fa-xmark"></i></button>
+            <div style="margin-bottom: 20px;">
+                <div
+                    style="width: 80px; height: 80px; background: #ffebee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="fa-solid fa-user-shield" style="font-size: 32px; color: #d32f2f;"></i>
+                </div>
+            </div>
+            <h2 style="margin-bottom: 10px; color: #333;">Verification Required</h2>
+            <p style="color: #666; margin-bottom: 25px;">You need to verify your profile before you can post a
+                requirement or a room listing. It helps us keep the community safe!</p>
+            <a href="veri.html" class="submit-btn"
+                style="text-decoration: none; display: inline-block; width: 100%;">Verify Now</a>
         </div>
     </div>
     <!-- Room Modal -->

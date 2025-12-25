@@ -32,10 +32,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   const subtitle = document.getElementById("authSubtitle");
   const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
+  // --- NEW: Handle Email Link Verification Immediately ---
+  if (oobCode) {
+    // Hide the main form and verification section
+    // formContainer is hidden by default in HTML now to prevent flash
+    verificationSection.style.display = "none";
+
+    // specific container for verification messages
+    const statusDiv = document.createElement("div");
+    statusDiv.style.textAlign = "center";
+    statusDiv.style.marginTop = "60px";
+    statusDiv.innerHTML = `
+      <div class="icon-circle" style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #2e7d32;"></i>
+      </div>
+      <h2 style="margin-bottom: 10px;">Verifying your email...</h2>
+      <p style="color: #666;">Please wait checking your link.</p>
+    `;
+    document.querySelector(".right-section .content-wrapper").appendChild(statusDiv);
+
+    try {
+      await applyActionCode(auth, oobCode);
+
+      // Success Message
+      statusDiv.innerHTML = `
+        <div class="icon-circle" style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+           <i class="fa-solid fa-check" style="font-size: 32px; color: #2e7d32;"></i>
+        </div>
+        <h2 style="margin-bottom: 10px;">Email Verified!</h2>
+        <p style="color: #666;">Continuing with registration process...</p>
+      `;
+
+      // Brief delay then check auth state for redirect
+      setTimeout(() => {
+        if (auth.currentUser) {
+          window.location.href = "register.html";
+        } else {
+          // If not logged in (e.g. different browser), prompt to login to continue
+          statusDiv.innerHTML = `
+                <div class="icon-circle" style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                   <i class="fa-solid fa-check" style="font-size: 32px; color: #2e7d32;"></i>
+                </div>
+                <h2 style="margin-bottom: 10px;">Email Verified!</h2>
+                <p style="color: #666; margin-bottom: 20px;">Please login to continue your registration.</p>
+                <button id="loginToContinueBtn" class="btn-otp" style="width: auto; padding: 0 40px;">Login to Continue</button>
+              `;
+          document.getElementById("loginToContinueBtn").addEventListener("click", () => {
+            window.location.href = "regimob.html?mode=login&next=register.html";
+          });
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error("Verification failed", error);
+      statusDiv.innerHTML = `
+         <div class="icon-circle" style="margin: 0 auto 20px; width: 80px; height: 80px; background: #ffebee; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+           <i class="fa-solid fa-xmark" style="font-size: 32px; color: #c62828;"></i>
+        </div>
+        <h2 style="margin-bottom: 10px;">Verification Failed</h2>
+        <p style="color: #666;">The link is invalid or has expired.</p>
+        <button onclick="window.location.href='regimob.html?mode=login'" class="btn-otp" style="margin-top:20px; width:auto; padding: 0 30px;">Back to Login</button>
+      `;
+      showToast("Verification failed or link expired.", "error");
+    }
+    return; // STOP execution here, do not run invalid form logic
+  }
+
+
   let isResetMode = false;
 
   // Helper to update UI based on mode
   function updateUI() {
+    // Show form container for normal usage
+    formContainer.style.display = "block";
+
     // Reset reset mode if switching between login/register
     isResetMode = false;
     if (passwordInput) passwordInput.closest('.input-group').style.display = "flex";
@@ -157,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           // 2. Send Verification Email
           const actionCodeSettings = {
-            url: window.location.origin + '/regimob.html?mode=login',
+            url: window.location.origin + '/regimob.html?mode=register',
             handleCodeInApp: true
           };
           await sendEmailVerification(user, actionCodeSettings);
@@ -180,8 +250,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
           }
 
-          // Redirect to home or dashboard
-          window.location.href = "index.html";
+          // Redirect logic
+          const nextParams = new URLSearchParams(window.location.search);
+          const nextUrl = nextParams.get("next");
+
+          if (nextUrl) {
+            window.location.href = nextUrl;
+          } else {
+            window.location.href = "index.html";
+          }
         }
       } catch (error) {
         console.error(error);
@@ -215,16 +292,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Handle Email Verification Link Click (if user opens link in same browser/tab)
-  if (oobCode) {
-    try {
-      await applyActionCode(auth, oobCode);
-      // If verified, redirect immediately
-      window.location.href = "register.html";
-    } catch (error) {
-      console.error("Verification failed", error);
-      showToast("Verification failed or link expired.", "error");
-    }
-  }
+  // Logic moved to top of file
+
 
   // Listen for auth state changes
   onAuthStateChanged(auth, (user) => {
