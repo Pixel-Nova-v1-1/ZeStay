@@ -422,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>` : ''}
                     </div>
+                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
         } else {
@@ -609,9 +610,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const id = card.dataset.id;
                     const type = card.dataset.type;
 
-                    if (type === 'Roommates') {
+                    if (type === 'Roommates' || type === 'Flats') {
                         // 1. Verification Check
-                        const user = allUsers.find(u => u.id === id);
+                        const item = type === 'Roommates'
+                            ? allUsers.find(u => u.id === id)
+                            : flatsData.find(f => f.id === id);
 
                         // Check Current User
                         if (!currentUserData || !currentUserData.isVerified) {
@@ -620,29 +623,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         // Check Target User
-                        if (!user || !user.isVerified) {
+                        if (!item || !item.isVerified) {
                             showToast("You can only chat with verified users.", "warning");
                             return;
                         }
 
-                        if (user && window.startChat) {
-                            // 2. Map Correct User Data for Chat (Requirement -> User)
+                        if (item && window.startChat) {
+                            // 2. Map Correct User Data for Chat (Requirement/Flat -> User)
                             const targetUser = {
-                                id: user.userId, // Use the actual User ID, not the Requirement ID
-                                name: user.userName, // Use the resolved User Name
-                                avatar: user.userPhoto, // Use the resolved User Photo
-                                isVerified: user.isVerified
+                                id: item.userId, // Use the actual User ID
+                                name: type === 'Roommates' ? item.userName : item.ownerName, // Use the resolved User Name
+                                avatar: type === 'Roommates' ? item.userPhoto : item.ownerPhoto, // Use the resolved User Photo
+                                isVerified: item.isVerified
                             };
                             window.startChat(targetUser);
                         }
-                    } else {
-                        // For flats, maybe open chat with owner? 
-                        // Currently logic says "Roommates" type calls startChat.
-                        // Flat cards usually navigate. If we want chat on flats too, we need owner ID.
-                        // For now, let's strictly follow the "user press the chat icon" request which usually implies the user cards.
-                        // The button exists on Roommate cards. Flat cards have a different footer?
-                        // Line 270 Flat card footer: <span class="match-score">New!</span> (No button)
-                        // So only Roommate cards have the button.
                     }
                     return; // Prevent card click navigation
                 }
