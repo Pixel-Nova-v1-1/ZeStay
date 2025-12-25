@@ -978,13 +978,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await updateDoc(doc(db, collectionName, docId), data);
             showToast("Listing updated successfully!", "success");
-            
-            showToast("Listing updated successfully!", "success");
->>>>>>> Stashed changes
-            
-            showToast("Listing updated successfully!", "success");
-            
->>>>>>> Stashed changes
             // Close Modal & Refresh
             if (type === 'flat') roomModal.classList.remove('active');
             else reqModal.classList.remove('active');

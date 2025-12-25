@@ -24,10 +24,40 @@ body {
 }
 
 .logo {
-    font-size: 24px;
-    font-weight: 500;
-    color: #00C4B4;
+    display: flex;
+    align-items: center;
+}
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-img {
+    height: 40px;
+    /* Adjust size as needed, e.g., 32px to 48px */
+    width: auto;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.logo-ze {
+    color: inherit;
+}
+
+.logo-stay {
+    color: inherit;
 }
 
 .nav-links {
