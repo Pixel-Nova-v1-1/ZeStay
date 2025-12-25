@@ -143,34 +143,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (preferences.length > 0) {
             preferences.forEach(prefItem => {
-                // Check if it maps to an icon, otherwise display generic
-                // The chips are text like "Clean & organized". 
-                // We can try to find a partial match or just display text.
-
-                let image = 'public/images/star.png'; // Default icon
+                let iconClass = 'fa-star'; // Default icon
                 let label = prefItem;
 
-                // Simple mapping attempt (can be expanded)
                 const lowerPref = prefItem.toLowerCase();
-                if (lowerPref.includes('clean')) image = 'public/images/cleaner.png';
-                else if (lowerPref.includes('quiet') || lowerPref.includes('calm')) image = 'public/images/quiet.png';
-                else if (lowerPref.includes('music')) image = 'public/images/music.png';
-                else if (lowerPref.includes('pet')) image = 'public/images/petlover.png';
-                else if (lowerPref.includes('sport')) image = 'public/images/sporty.png';
-                else if (lowerPref.includes('guest')) image = 'public/images/guestfriendly.png';
-                else if (lowerPref.includes('party') || lowerPref.includes('social')) image = 'public/images/party.png'; // Assuming party image exists or use generic
-                else if (lowerPref.includes('work')) image = 'public/images/work.png'; // Assuming work image exists
+                
+                // --- Mapping Logic ---
+                if (lowerPref.includes('clean')) iconClass = 'fa-broom';
+                else if (lowerPref.includes('quiet') || lowerPref.includes('calm')) iconClass = 'fa-volume-xmark';
+                else if (lowerPref.includes('music')) iconClass = 'fa-music';
+                else if (lowerPref.includes('pet')) iconClass = 'fa-paw';
+                else if (lowerPref.includes('sport')) iconClass = 'fa-basketball';
+                else if (lowerPref.includes('guest')) iconClass = 'fa-users';
+                else if (lowerPref.includes('party') || lowerPref.includes('social')) iconClass = 'fa-champagne-glasses';
+                else if (lowerPref.includes('work') || lowerPref.includes('studious') || lowerPref.includes('freelancer')) iconClass = 'fa-briefcase';
+                else if (lowerPref.includes('night')) iconClass = 'fa-moon';
+                else if (lowerPref.includes('early')) iconClass = 'fa-sun';
+                else if (lowerPref.includes('wanderer') || lowerPref.includes('travel')) iconClass = 'fa-plane';
+                else if (lowerPref.includes('non-alcoholic')) iconClass = 'fa-wine-glass-empty';
+                else if (lowerPref.includes('non-smoker')) iconClass = 'fa-ban-smoking';
+                
+                // New mappings for Requirement Chips
+                else if (lowerPref.includes('easy going')) iconClass = 'fa-face-smile';
+                else if (lowerPref.includes('long-term')) iconClass = 'fa-calendar-check';
+                else if (lowerPref.includes('short-term')) iconClass = 'fa-hourglass-half';
+                else if (lowerPref.includes('student') || lowerPref.includes('college')) iconClass = 'fa-graduation-cap';
+                else if (lowerPref.includes('minimal')) iconClass = 'fa-leaf';
+                else if (lowerPref.includes('privacy')) iconClass = 'fa-user-shield';
+                else if (lowerPref.includes('first-time')) iconClass = 'fa-key';
+                else if (lowerPref.includes('flexible')) iconClass = 'fa-clock';
+                else if (lowerPref.includes('balanced')) iconClass = 'fa-scale-balanced';
 
-                // If we don't have the specific images, we can just use a default style or try to use the existing map if keys match
-                // But since keys don't match, we'll just create a simple item.
-
-                // If the item is just a string
                 const prefHTML = `
                     <div class="item-circle">
-                        <div class="circle-icon" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-star" style="color: #666;"></i>
+                        <div class="circle-icon" style="background: #e0f7fa; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; border-radius: 50%;">
+                            <i class="fa-solid ${iconClass}" style="color: #006064; font-size: 1.2rem;"></i>
                         </div>
-                        <span class="item-label">${label}</span>
+                        <span class="item-label" style="margin-top: 5px; font-size: 0.85rem; text-align: center;">${label}</span>
                     </div>
                 `;
                 prefContainer.innerHTML += prefHTML;

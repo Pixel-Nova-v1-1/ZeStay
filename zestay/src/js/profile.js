@@ -1201,7 +1201,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Explicitly capture Full Address
             const faInput = form.querySelector('input[name="fullAddress"]');
-            if (faInput) data.fullAddress = faInput.value;
+            if (faInput) {
+                data.fullAddress = faInput.value;
+                // Also update legacy 'address' field to keep in sync
+                data.address = faInput.value;
+            }
 
             for (let [key, value] of formData.entries()) {
                 if (key !== 'roomPhotos' && key !== 'docId' && key !== 'location' && key !== 'fullAddress') { // Skip special or already handled

@@ -357,7 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (type === 'Flats') {
             const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
             const location = item.location || 'Location not specified';
-            const address = item.address ? item.address + ', ' : '';
+            const bestAddress = item.fullAddress || item.address;
+            const address = bestAddress ? bestAddress + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
 
