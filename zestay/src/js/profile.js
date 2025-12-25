@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dobInput.setAttribute("min", minDate);
 
         // Add input listener to enforce validation on typing
-        dobInput.addEventListener('change', function() {
+        dobInput.addEventListener('change', function () {
             const value = new Date(this.value);
             const min = new Date(minDate);
             const max = new Date(maxDate);
@@ -275,26 +275,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Helper: Update User Info in All chats
-    async function updateUserInChats(uid, newPhotoUrl) {
+    async function updateUserInChats(uid, updates) {
         try {
-            console.log("Updating chats for user:", uid);
+            console.log("Updating chats for user:", uid, updates);
             // Query all chats where this user is a participant
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
             const querySnapshot = await getDocs(q);
 
             const updatePromises = querySnapshot.docs.map(docSnap => {
                 const chatData = docSnap.data();
-                // We need to update userInfo.<uid>.avatar
-                // Note: In Firestore, to update a nested field in a map, we use dot notation "userInfo.uid.avatar"
-                return updateDoc(doc(db, "chats", docSnap.id), {
-                    [`userInfo.${uid}.avatar`]: newPhotoUrl
-                });
+
+                // Construct update map for nested fields
+                const firestoreUpdate = {};
+                if (updates.photoUrl) {
+                    firestoreUpdate[`userInfo.${uid}.avatar`] = updates.photoUrl;
+                }
+                if (updates.name) {
+                    firestoreUpdate[`userInfo.${uid}.name`] = updates.name;
+                }
+
+                return updateDoc(doc(db, "chats", docSnap.id), firestoreUpdate);
             });
 
             await Promise.all(updatePromises);
-            console.log(`Updated ${updatePromises.length} chats with new avatar.`);
+            console.log(`Updated ${updatePromises.length} chats with new info.`);
         } catch (error) {
-            console.error("Error updating chats with new avatar:", error);
+            console.error("Error updating chats with new info:", error);
         }
     }
 
@@ -411,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     // --- SYNC CHATS ---
-                    updateUserInChats(currentUser.uid, downloadURL);
+                    updateUserInChats(currentUser.uid, { photoUrl: downloadURL });
 
                     return downloadURL;
                 };
@@ -458,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 // --- SYNC CHATS ---
-                updateUserInChats(currentUser.uid, defaultAvatar);
+                updateUserInChats(currentUser.uid, { photoUrl: defaultAvatar });
 
                 // Update UI
                 profileAvatarEl.src = defaultAvatar;
@@ -508,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 // --- SYNC CHATS ---
-                updateUserInChats(currentUser.uid, selectedUrl);
+                updateUserInChats(currentUser.uid, { photoUrl: selectedUrl });
 
                 // Update UI
                 profileAvatarEl.src = selectedUrl;
@@ -565,6 +571,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     dob: document.getElementById('display-dob').value,
                     hobbies: selectedHobbies
                 });
+
+                // --- SYNC CHATS ---
+                await updateUserInChats(currentUser.uid, { name: newName });
 
                 profileNameEl.textContent = newName;
                 showToast("Profile updated!", "success");
