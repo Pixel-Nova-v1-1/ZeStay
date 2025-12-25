@@ -120,6 +120,8 @@ body {
 .subtitle {
     font-size: 1.1rem;
     color: var(--text-light);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 

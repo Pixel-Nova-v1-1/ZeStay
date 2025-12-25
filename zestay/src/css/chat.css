@@ -254,6 +254,8 @@
     padding: 10px 15px;
     font-size: 14px;
     outline: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 .chat-attach-btn,

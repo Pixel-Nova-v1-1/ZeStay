@@ -7,7 +7,8 @@
     <title>Zestay</title>
 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/index.css">
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -16,33 +17,34 @@
 <body>
 
     <!-- ================= HEADER ================= -->
-    <header>
-        <div class="navbar">
-            <div class="logo">
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
                 <a href="index.html" class="logo-link">
                     <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
                     <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
                 </a>
             </div>
 
-            <nav class="nav-links">
-                <div class="nav-actions">
-                    <a href="#" id="postListingBtn" class="btn-post">
-                        <i class="fa-solid fa-plus"></i> Post Listing
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="#" id="postListingBtn" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
                     </a>
 
-                    <div id="auth-buttons">
-                        <a href="regimob.html?mode=login">Login</a>
-                        <a href="regimob.html?mode=register">Register</a>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
+                        <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
                     </div>
 
-                    <div id="user-profile" style="display:none; align-items:center; gap:10px;">
-                        <button class="btn-profile" id="landingProfileBtn">
+                    <div id="user-profile" class="user-profile" style="display:none;">
+                        <button class="btn-icon" id="landingProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
                         </button>
-                        <button id="logoutBtn"
-                            style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">
-                            Logout
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
                         </button>
                     </div>
                 </div>
@@ -55,8 +57,8 @@
         <div class="hero-content">
             <h1>
                 Find Your Perfect <br>
-                <span class="highlight">Flatmate</span> or
-                <span class="highlight">Room</span>
+                <span class="highlight"><span class="cursive-text">Flatmate</span></span> or
+                <span class="highlight"><span class="cursive-text">Room</span></span>
             </h1>
 
             <p class="subtitle">
