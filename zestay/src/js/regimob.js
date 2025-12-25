@@ -226,11 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const user = userCredential.user;
 
           // 2. Send Verification Email
-          const actionCodeSettings = {
-            url: window.location.origin + '/regimob.html?mode=register',
-            handleCodeInApp: true
-          };
-          await sendEmailVerification(user, actionCodeSettings);
+          await sendEmailVerification(user);
 
           // 3. Show Verification UI
           formContainer.style.display = "none";
