@@ -94,8 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressEl = document.getElementById('displayAddress');
         const addressContainer = document.getElementById('addressContainer');
         if (addressEl && addressContainer) {
-            if (data.address) {
-                addressEl.textContent = data.address;
+            // Prioritize fullAddress -> address -> location (if explicit) -> hide
+            const bestAddress = data.fullAddress || data.address;
+
+            if (bestAddress) {
+                addressEl.textContent = bestAddress;
                 addressContainer.style.display = 'flex';
             } else {
                 addressContainer.style.display = 'none';

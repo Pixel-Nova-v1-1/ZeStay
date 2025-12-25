@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: "Flat Owner",
                         avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
                         location: flatData.location || "Location not specified",
+                        fullAddress: flatData.fullAddress || "",
                         address: flatData.address || "",
                         gender: "Not Specified",
                         rent: flatData.rent || "N/A",
@@ -154,8 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressEl = document.getElementById('displayAddress');
         const addressContainer = document.getElementById('addressContainer');
         if (addressEl && addressContainer) {
-            if (data.address) {
-                addressEl.textContent = data.address;
+            // Prioritize fullAddress -> address
+            const bestAddress = data.fullAddress || data.address;
+
+            if (bestAddress) {
+                addressEl.textContent = bestAddress;
                 addressContainer.style.display = 'flex';
             } else {
                 addressContainer.style.display = 'none';
