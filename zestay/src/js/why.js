@@ -4,7 +4,34 @@ import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc
 import { nhost } from "../nhost";
 import { showToast } from "./toast.js";
 
+// --- DYNAMIC GOOGLE MAPS LOADER ---
+function loadGoogleMaps() {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+        console.error("Google Maps API Key is missing in .env file");
+        return;
+    }
+
+    if (document.getElementById('google-maps-script')) return; // Already loaded
+
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.defer = true;
+    script.async = true;
+    
+    script.onload = () => {
+        // Initialize autocomplete only after script loads
+        initAutocomplete('reqLocation');
+        initAutocomplete('roomLocation');
+    };
+
+    document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    loadGoogleMaps();
+
     let currentUser = null;
     let isVerified = false;
 
@@ -388,6 +415,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // Double-check for existing listing to prevent duplication
+                if (await checkExistingListing(currentUser.uid, collectionName)) {
+                    showToast("You have already posted a listing in this category. Duplicates are not allowed.", "error");
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+
                 // Upload Photos to Nhost
                 if (filesToUpload.length > 0) {
                     const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
@@ -455,22 +490,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Google Maps Autocomplete ---
-    function initAutocomplete(inputId) {
+    // Moved initialization logic to loadGoogleMaps callback to ensure API is ready
+    window.initAutocomplete = function(inputId) {
         const input = document.getElementById(inputId);
         if (!input) return;
 
-        const checkGoogle = setInterval(() => {
-            if (window.google && google.maps && google.maps.places) {
-                clearInterval(checkGoogle);
-                new google.maps.places.Autocomplete(input, {
-                    types: ['(cities)'],
-                    componentRestrictions: { country: 'in' }
-                });
-            }
-        }, 100);
-    }
-
-    initAutocomplete('reqLocation');
-    initAutocomplete('roomLocation');
+        if (window.google && google.maps && google.maps.places) {
+             new google.maps.places.Autocomplete(input, {
+                types: ['(cities)'],
+                componentRestrictions: { country: 'in' }
+            });
+        }
+    };
 
 });

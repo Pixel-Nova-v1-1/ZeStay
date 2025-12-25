@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
 
 
@@ -138,7 +138,10 @@ async function renderUsers() {
 
         let html = `
         <div class="recent-activity">
-            <h2>User Management</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>User Management</h2>
+                <button onclick="window.cleanDuplicates()" class="btn btn-warning" style="background-color: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Clean Duplicates</button>
+            </div>
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -160,6 +163,7 @@ async function renderUsers() {
                     <td>${user.isVerified ? '<span style="color:var(--success)">Yes</span>' : 'No'}</td>
                     <td>
                         <button class="btn btn-danger">Ban</button>
+                        <button onclick="window.deleteUser('${doc.id}')" class="btn btn-danger" style="background-color: #dc3545; margin-left: 5px;">Delete</button>
                     </td>
                 </tr>
             `;
@@ -471,6 +475,129 @@ async function renderSettings() {
 }
 
 // Window functions for actions
+window.deleteUser = async (userId) => {
+    const confirmed = await showConfirm("Are you sure you want to PERMANENTLY delete this user and all their data? This cannot be undone.");
+    if (!confirmed) return;
+
+    try {
+        // 1. Fetch User Data (to get email for other cleanups)
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.exists() ? userSnap.data() : null;
+        const userEmail = userData ? userData.email : null;
+
+        // 1.5 Try to delete from Firebase Auth (via Backend/API)
+        try {
+            // Try the Vercel API route first (Production/Vercel Dev)
+            let apiUrl = '/api/delete-user';
+            
+            // If running locally without Vercel Dev, you might need the full localhost URL
+            if (window.location.hostname === 'localhost' && window.location.port !== '') {
+                 // Optional: Check if we are on standard Vite port (5173) vs Vercel port
+                 // For now, we'll try the relative path. If it fails (404), we could try localhost:3000
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: userId })
+            });
+            
+            // If relative path failed (e.g. 404 because not on Vercel), try local backend
+            if (!response.ok && response.status === 404) {
+                 console.log("API route not found, trying local backend...");
+                 const localResponse = await fetch('http://localhost:3000/delete-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: userId })
+                });
+                const localResult = await localResponse.json();
+                if (localResult.success) console.log("User deleted via local backend.");
+            } else {
+                const result = await response.json();
+                if (result.success) {
+                    console.log("User deleted from Auth via API.");
+                } else {
+                    console.warn("API auth deletion failed:", result.error);
+                }
+            }
+        } catch (err) {
+            console.warn("Auth deletion API failed. Skipping.", err);
+        }
+
+        // 1.6 Mark as Deleted (Blacklist) - Fallback if backend fails or isn't running
+        await setDoc(doc(db, "deleted_users", userId), {
+            email: userEmail,
+            deletedAt: serverTimestamp(),
+            reason: "Admin deleted"
+        });
+
+        // 2. Delete User Document
+        await deleteDoc(userRef);
+
+        // 3. Delete Listings
+        const listingsQuery = query(collection(db, "listings"), where("userId", "==", userId));
+        const listingsSnap = await getDocs(listingsQuery);
+        const listingDeletions = listingsSnap.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(listingDeletions);
+
+        // 4. Delete Flats
+        const flatsQuery = query(collection(db, "flats"), where("userId", "==", userId));
+        const flatsSnap = await getDocs(flatsQuery);
+        const flatsDeletions = flatsSnap.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(flatsDeletions);
+
+        // 5. Delete Requirements
+        const reqQuery = query(collection(db, "requirements"), where("userId", "==", userId));
+        const reqSnap = await getDocs(reqQuery);
+        const reqDeletions = reqSnap.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(reqDeletions);
+
+        // 6. Delete Verification Requests
+        const veriQuery = query(collection(db, "verification_requests"), where("userId", "==", userId));
+        const veriSnap = await getDocs(veriQuery);
+        const veriDeletions = veriSnap.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(veriDeletions);
+
+        // 7. Delete Notifications
+        const notifQuery = query(collection(db, "notifications"), where("userId", "==", userId));
+        const notifSnap = await getDocs(notifQuery);
+        const notifDeletions = notifSnap.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(notifDeletions);
+
+        // 8. Delete Reports (by this user)
+        if (userEmail) {
+             const reportsQuery = query(collection(db, "reports"), where("reportedByEmail", "==", userEmail));
+             const reportsSnap = await getDocs(reportsQuery);
+             const reportDeletions = reportsSnap.docs.map(doc => deleteDoc(doc.ref));
+             await Promise.all(reportDeletions);
+        }
+
+        // 9. Delete Chats and Messages
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        const chatsSnap = await getDocs(chatsQuery);
+        
+        const chatDeletions = chatsSnap.docs.map(async (chatDoc) => {
+            const chatId = chatDoc.id;
+            // Delete messages for this chat
+            const msgsQuery = query(collection(db, "messages"), where("chatId", "==", chatId));
+            const msgsSnap = await getDocs(msgsQuery);
+            const msgDeletions = msgsSnap.docs.map(m => deleteDoc(m.ref));
+            await Promise.all(msgDeletions);
+            
+            // Delete the chat document itself
+            return deleteDoc(chatDoc.ref);
+        });
+        await Promise.all(chatDeletions);
+
+        showToast("User and all associated data deleted successfully.", "success");
+        renderUsers(); // Refresh list
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        showToast("Error deleting user: " + error.message, "error");
+    }
+};
+
 window.deleteListing = async (id) => {
     const confirmed = await showConfirm("Are you sure you want to delete this listing?");
     if (!confirmed) return;
@@ -508,6 +635,61 @@ window.saveSettings = async () => {
         showToast("Settings saved successfully!", "success");
     } catch (e) {
         showToast("Error saving settings: " + e.message, "error");
+    }
+};
+
+window.cleanDuplicates = async () => {
+    const confirmed = await showConfirm("This will scan ALL users and remove duplicates (keeping the most recent one). Continue?");
+    if (!confirmed) return;
+
+    showToast("Scanning for duplicates...", "info");
+
+    try {
+        // Fetch ALL users
+        const snapshot = await getDocs(collection(db, "users"));
+        const users = [];
+        snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data(), ref: doc.ref }));
+
+        // Group by email
+        const emailMap = {};
+        users.forEach(u => {
+            if (u.email) {
+                if (!emailMap[u.email]) emailMap[u.email] = [];
+                emailMap[u.email].push(u);
+            }
+        });
+
+        let deletedCount = 0;
+
+        for (const email in emailMap) {
+            const group = emailMap[email];
+            if (group.length > 1) {
+                // Sort by createdAt or updatedAt desc (keep newest)
+                group.sort((a, b) => {
+                    const timeA = a.updatedAt || a.createdAt || 0;
+                    const timeB = b.updatedAt || b.createdAt || 0;
+                    
+                    const tA = (timeA && typeof timeA.toMillis === 'function') ? timeA.toMillis() : new Date(timeA).getTime();
+                    const tB = (timeB && typeof timeB.toMillis === 'function') ? timeB.toMillis() : new Date(timeB).getTime();
+                    
+                    return tB - tA; // Descending (Newest first)
+                });
+
+                // Keep [0], delete rest
+                const toDelete = group.slice(1);
+                for (const u of toDelete) {
+                    await deleteDoc(u.ref);
+                    deletedCount++;
+                }
+            }
+        }
+
+        showToast(`Cleanup complete. Removed ${deletedCount} duplicate users.`, "success");
+        renderUsers();
+
+    } catch (error) {
+        console.error("Error cleaning duplicates:", error);
+        showToast("Error: " + error.message, "error");
     }
 };
 

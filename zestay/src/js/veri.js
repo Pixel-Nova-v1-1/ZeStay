@@ -229,6 +229,32 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = true;
 
             try {
+                // Check for existing pending or approved requests to prevent duplication
+                const q = query(collection(db, "verification_requests"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                let hasPending = false;
+                let isVerified = false;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.status === 'pending') hasPending = true;
+                    if (data.status === 'approved') isVerified = true;
+                });
+
+                if (isVerified) {
+                    showToast("You are already verified!", "warning");
+                    btnSubmit.textContent = originalText;
+                    btnSubmit.disabled = false;
+                    return;
+                }
+
+                if (hasPending) {
+                    showToast("You already have a pending verification request.", "warning");
+                    btnSubmit.textContent = originalText;
+                    btnSubmit.disabled = false;
+                    return;
+                }
+
                 // 2. Compress Images to Base64 (Bypasses CORS and Storage buckets)
                 const idFrontBase64 = await compressImage(idFront);
                 const idBackBase64 = await compressImage(idBack);
