@@ -242,6 +242,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Helper: Update User Info in All chats
+    async function updateUserInChats(uid, newPhotoUrl) {
+        try {
+            console.log("Updating chats for user:", uid);
+            // Query all chats where this user is a participant
+            const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
+            const querySnapshot = await getDocs(q);
+
+            const updatePromises = querySnapshot.docs.map(docSnap => {
+                const chatData = docSnap.data();
+                // We need to update userInfo.<uid>.avatar
+                // Note: In Firestore, to update a nested field in a map, we use dot notation "userInfo.uid.avatar"
+                return updateDoc(doc(db, "chats", docSnap.id), {
+                    [`userInfo.${uid}.avatar`]: newPhotoUrl
+                });
+            });
+
+            await Promise.all(updatePromises);
+            console.log(`Updated ${updatePromises.length} chats with new avatar.`);
+        } catch (error) {
+            console.error("Error updating chats with new avatar:", error);
+        }
+    }
+
+
     // Option 1: Upload Photo
     if (btnUploadPhoto) {
         btnUploadPhoto.addEventListener('click', () => {
@@ -352,6 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         photoUrl: downloadURL,
                         profileOption: 'upload'
                     });
+
+                    // --- SYNC CHATS ---
+                    updateUserInChats(currentUser.uid, downloadURL);
+
                     return downloadURL;
                 };
 
@@ -395,6 +424,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     photoUrl: defaultAvatar,
                     profileOption: 'default'
                 });
+
+                // --- SYNC CHATS ---
+                updateUserInChats(currentUser.uid, defaultAvatar);
 
                 // Update UI
                 profileAvatarEl.src = defaultAvatar;
@@ -442,6 +474,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     photoUrl: selectedUrl,
                     profileOption: 'avatar'
                 });
+
+                // --- SYNC CHATS ---
+                updateUserInChats(currentUser.uid, selectedUrl);
 
                 // Update UI
                 profileAvatarEl.src = selectedUrl;
@@ -687,14 +722,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderListingCard(docId, data, type) {
-        const location = data.location || 'Location not specified';
+        // Prioritize Full Address for display if available, else Location
+        const displayLocation = data.fullAddress || data.location || 'Location not specified';
         const rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
         const typeLabel = type === 'flat' ? 'Room/Flat' : 'Roommate Requirement';
         const gender = data.gender || 'Any';
 
         const card = document.createElement('div');
         card.className = 'listing-card';
-        card.style.maxWidth = '600px'; // Increased size
+        card.style.maxWidth = '600px';
         card.style.margin = '10px auto';
         card.style.position = 'relative';
 
@@ -702,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-content">
                 <div class="card-details" style="margin-left: 0;">
                     <h3>${typeLabel}</h3>
-                    <p class="location"><i class="fa-solid fa-location-dot"></i> ${location}</p>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> ${displayLocation}</p>
                     
                     <div class="card-info-grid">
                         <div class="info-item">
@@ -803,6 +839,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (icon) icon.classList.toggle('active');
             });
         });
+
+        // Upload Area Logic
+        const uploadArea = modal.querySelector('.upload-area');
+        const fileInput = modal.querySelector('input[type="file"]');
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', (e) => {
+                // Prevent recursive click if bubbling
+                if (e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    // Check Limit
+                    const activeExisting = currentEditPhotos.filter(url => !photosToDelete.has(url));
+                    const currentCount = activeExisting.length + newPhotoFiles.length;
+                    const filesToAdd = Array.from(fileInput.files);
+
+                    if (currentCount + filesToAdd.length > 3) {
+                        showToast(`You can only have up to 3 photos. Please remove some first.`, "error");
+                        fileInput.value = ''; // Reset
+                        return;
+                    }
+
+                    // Add to newPhotoFiles
+                    filesToAdd.forEach(file => newPhotoFiles.push(file));
+
+                    // Render
+                    renderAllEditPhotos();
+
+                    showToast(`${filesToAdd.length} new photo(s) selected`, "info");
+                    fileInput.value = ''; // Reset to allow selecting same file again if needed or clean state
+                }
+            });
+        }
     }
 
     if (reqModal) initModalUI(reqModal);
@@ -834,11 +906,21 @@ document.addEventListener('DOMContentLoaded', () => {
     initEditAutocomplete();
 
 
+    // Track photos to delete and new photos to add
+    let photosToDelete = new Set();
+    let currentEditPhotos = []; // Existing URLs
+    let newPhotoFiles = []; // New File objects
+
     function openEditModal(docId, data, type) {
         const modal = type === 'flat' ? roomModal : reqModal;
         const form = type === 'flat' ? roomForm : reqForm;
 
         if (!modal || !form) return;
+
+        // Reset State
+        photosToDelete.clear();
+        currentEditPhotos = data.photos || [];
+        newPhotoFiles = [];
 
         // Set Doc ID
         form.querySelector('input[name="docId"]').value = docId;
@@ -846,6 +928,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate Fields
         if (data.rent) form.querySelector('input[name="rent"]').value = data.rent;
         if (data.location) form.querySelector('input[name="location"]').value = data.location;
+
+        // Smarter Population for Full Address
+        const faInput = form.querySelector('input[name="fullAddress"]');
+        if (faInput) {
+            faInput.value = data.fullAddress || data.address || data.location || '';
+        }
+
         if (data.description) form.querySelector('textarea[name="description"]').value = data.description;
 
         // Populate Toggles
@@ -864,9 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setToggle('gender', data.gender);
         setToggle('occupancy', data.occupancy);
-        setToggle('pg', data.pg);
-        setToggle('teams', data.teams);
-        setToggle('contact', data.contact);
+        // Deprecated fields removed
 
         // Populate Chips (Highlights/Preferences)
         const chipsContainer = form.querySelector('.chips-container');
@@ -894,17 +981,152 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Show Existing Photos (for Room)
-        if (type === 'flat' && data.photos) {
-            const existingPhotosDiv = document.getElementById('existingPhotos');
-            if (existingPhotosDiv) {
-                existingPhotosDiv.innerHTML = data.photos.map(url =>
-                    `<img src="${url}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">`
-                ).join('');
-            }
+        // Show Photos (for Room)
+        if (type === 'flat') {
+            renderAllEditPhotos();
         }
 
         modal.classList.add('active');
+    }
+
+    // Unified Render Function
+    function renderAllEditPhotos() {
+        const existingPhotosDiv = document.getElementById('existingPhotos');
+        const uploadArea = document.querySelector('.upload-area');
+        if (!existingPhotosDiv) return;
+
+        existingPhotosDiv.innerHTML = '';
+
+        // Calculate total valid photos
+        const activeExisting = currentEditPhotos.filter(url => !photosToDelete.has(url));
+        const totalCount = activeExisting.length + newPhotoFiles.length;
+
+        // 1. Render Existing Photos
+        activeExisting.forEach(url => {
+            const wrapper = createPhotoPreview(url, false, () => {
+                photosToDelete.add(url);
+                renderAllEditPhotos();
+            });
+            existingPhotosDiv.appendChild(wrapper);
+        });
+
+        // 2. Render New Photos
+        newPhotoFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // Check if this file is still in the array (async safety)
+                if (newPhotoFiles[index] !== file) return;
+
+                const wrapper = createPhotoPreview(e.target.result, true, () => {
+                    newPhotoFiles.splice(index, 1);
+                    renderAllEditPhotos();
+                });
+                // Find correct position? We just append, order might jitter slightly on re-render but fine.
+                // Actually reader is async, so order isn't guaranteed unless we pre-read. 
+                // For simplicity, we just append content. 
+                // Better approach: Create wrapper immediately, set src later.
+            }
+            // Sync creation for order:
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '60px';
+            wrapper.style.height = '60px';
+            wrapper.className = 'photo-preview-wrapper';
+
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            deleteBtn.type = 'button';
+            deleteBtn.style.position = 'absolute';
+            deleteBtn.style.top = '-5px';
+            deleteBtn.style.right = '-5px';
+            deleteBtn.style.background = '#e74c3c';
+            deleteBtn.style.color = '#fff';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.borderRadius = '50%';
+            deleteBtn.style.width = '20px';
+            deleteBtn.style.height = '20px';
+            deleteBtn.style.display = 'flex';
+            deleteBtn.style.alignItems = 'center';
+            deleteBtn.style.justifyContent = 'center';
+            deleteBtn.style.fontSize = '10px';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.onclick = () => {
+                newPhotoFiles.splice(index, 1);
+                renderAllEditPhotos();
+            };
+
+            const img = document.createElement('img');
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '5px';
+            img.style.border = '2px solid #2ecc71'; // Green for new
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(deleteBtn);
+            existingPhotosDiv.appendChild(wrapper);
+
+            const r = new FileReader();
+            r.onload = (e) => img.src = e.target.result;
+            r.readAsDataURL(file);
+        });
+
+        // 3. Handle Upload Area State
+        // Note: The click listener is in initModalUI, we can't easily remove it. 
+        // But we can check count inside the click handler or visually disable it.
+        if (uploadArea) {
+            if (totalCount >= 3) {
+                uploadArea.classList.add('disabled'); // Add CSS for this?
+                uploadArea.style.opacity = '0.5';
+                uploadArea.style.pointerEvents = 'none';
+                uploadArea.querySelector('p').innerText = "Limit Reached (3/3)";
+            } else {
+                uploadArea.classList.remove('disabled');
+                uploadArea.style.opacity = '1';
+                uploadArea.style.pointerEvents = 'auto';
+                uploadArea.querySelector('p').innerHTML = 'Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span>';
+            }
+        }
+    }
+
+    function createPhotoPreview(src, isNew, onDelete) {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '60px';
+        wrapper.style.height = '60px';
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '5px';
+        if (isNew) img.style.border = '2px solid #2ecc71';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        deleteBtn.type = 'button';
+        deleteBtn.style.position = 'absolute';
+        deleteBtn.style.top = '-5px';
+        deleteBtn.style.right = '-5px';
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.color = '#fff';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.width = '20px';
+        deleteBtn.style.height = '20px';
+        deleteBtn.style.display = 'flex';
+        deleteBtn.style.alignItems = 'center';
+        deleteBtn.style.justifyContent = 'center';
+        deleteBtn.style.fontSize = '10px';
+        deleteBtn.style.cursor = 'pointer';
+
+        deleteBtn.onclick = onDelete;
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(deleteBtn);
+        return wrapper;
     }
 
     // Handle Form Submission (Update)
@@ -941,39 +1163,51 @@ document.addEventListener('DOMContentLoaded', () => {
             data.amenities = amenities;
 
             // Collect Inputs
+            const locationInput = form.querySelector('input[name="location"]');
+            if (locationInput) data.location = locationInput.value;
+
+            // Explicitly capture Full Address
+            const faInput = form.querySelector('input[name="fullAddress"]');
+            if (faInput) data.fullAddress = faInput.value;
+
             for (let [key, value] of formData.entries()) {
-                if (key !== 'roomPhotos' && key !== 'docId') {
+                if (key !== 'roomPhotos' && key !== 'docId' && key !== 'location' && key !== 'fullAddress') { // Skip special or already handled
                     data[key] = value;
                 }
             }
 
-            // Handle Photo Upload (New Photos)
-            // Note: This implementation appends new photos. Deleting old ones is not implemented in this simple version.
-            const fileInput = form.querySelector('input[type="file"]');
-            if (fileInput && fileInput.files.length > 0) {
-                const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-                const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-                const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+            // Handle Photos (Update Room)
+            if (type === 'flat') {
+                // 1. Process Deletions
+                for (const urlToDelete of photosToDelete) {
+                    await deleteOldNhostFile(urlToDelete);
+                }
+                const remainingPhotos = currentEditPhotos.filter(url => !photosToDelete.has(url));
 
+                // 2. Process New Uploads (Using newPhotoFiles array)
                 const newImageUrls = [];
-                for (const file of fileInput.files) {
-                    const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
-                    const fd = new FormData();
-                    fd.append("bucket-id", "default");
-                    fd.append("file[]", file, fileName);
+                if (newPhotoFiles.length > 0) {
+                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
+                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
 
-                    const res = await fetch(uploadUrl, { method: 'POST', body: fd });
-                    if (res.ok) {
-                        const resData = await res.json();
-                        const fileMetadata = resData.processedFiles?.[0] || resData;
-                        newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
+                    for (const file of newPhotoFiles) {
+                        const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
+                        const fd = new FormData();
+                        fd.append("bucket-id", "default");
+                        fd.append("file[]", file, fileName);
+
+                        const res = await fetch(uploadUrl, { method: 'POST', body: fd });
+                        if (res.ok) {
+                            const resData = await res.json();
+                            const fileMetadata = resData.processedFiles?.[0] || resData;
+                            newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
+                        }
                     }
                 }
 
-                // Fetch existing photos to append
-                const docSnap = await getDoc(doc(db, collectionName, docId));
-                const existingPhotos = docSnap.data().photos || [];
-                data.photos = [...existingPhotos, ...newImageUrls];
+                // 3. Final Photo List
+                data.photos = [...remainingPhotos, ...newImageUrls];
             }
 
             await updateDoc(doc(db, collectionName, docId), data);
@@ -992,6 +1226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
         }
     };
+
 
     if (reqForm) reqForm.addEventListener('submit', (e) => handleUpdate(e, 'requirement'));
     if (roomForm) roomForm.addEventListener('submit', (e) => handleUpdate(e, 'flat'));
