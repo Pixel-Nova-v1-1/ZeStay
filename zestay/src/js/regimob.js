@@ -143,6 +143,57 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initial UI Setup
   updateUI();
 
+  // --- TERMS & CONDITIONS MODAL LOGIC ---
+  const termsModal = document.getElementById("termsModal");
+  const termsCheckbox = document.getElementById("termsCheckbox");
+  const privacyCheckbox = document.getElementById("privacyCheckbox");
+  const termsContinueBtn = document.getElementById("termsContinueBtn");
+
+  function checkTerms() {
+    if (termsCheckbox.checked && privacyCheckbox.checked) {
+      termsContinueBtn.disabled = false;
+    } else {
+      termsContinueBtn.disabled = true;
+    }
+  }
+
+  if (termsModal && termsCheckbox && privacyCheckbox && termsContinueBtn) {
+    // Show modal only if in register mode
+    if (mode === 'register') {
+      termsModal.style.display = "flex";
+    } else {
+      termsModal.style.display = "none";
+    }
+
+    termsCheckbox.addEventListener("change", checkTerms);
+    privacyCheckbox.addEventListener("change", checkTerms);
+
+    termsContinueBtn.addEventListener("click", () => {
+      termsModal.style.display = "none";
+    });
+  }
+
+  // Update modal visibility when switching modes
+  const authToggleLinkElement = document.getElementById("authToggleLink");
+  if (authToggleLinkElement) {
+    authToggleLinkElement.addEventListener("click", () => {
+      // Logic inside click handler already updates 'mode'
+      // We need to check the new mode after a slight delay or by checking the updated mode
+      setTimeout(() => {
+        if (mode === 'register') {
+          // Reset checkboxes when reappearing? Optional.
+          // termsCheckbox.checked = false;
+          // privacyCheckbox.checked = false;
+          // checkTerms();
+          termsModal.style.display = "flex";
+        } else {
+          termsModal.style.display = "none";
+        }
+      }, 100);
+    });
+  }
+
+
   // Forgot Password Handler
   if (forgotPasswordLink) {
     forgotPasswordLink.addEventListener('click', (e) => {

@@ -259,7 +259,8 @@ h1 {
 }
 
 .listing-card {
-    background-color: #F4FBF9; /* Subtle mint/teal tint */
+    background-color: #F4FBF9;
+    /* Subtle mint/teal tint */
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -293,7 +294,7 @@ h1 {
     background-color: #ffffff;
     overflow: hidden;
     border: 3px solid #ffffff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .card-avatar img {
@@ -387,7 +388,8 @@ h1 {
 }
 
 .match-score::before {
-    content: '\f004'; /* FontAwesome Heart */
+    content: '\f004';
+    /* FontAwesome Heart */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
     font-size: 12px;
@@ -656,4 +658,12 @@ h1 {
     color: #666;
     background: transparent;
     border: 1px dashed #ccc;
+}
+
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
 }
