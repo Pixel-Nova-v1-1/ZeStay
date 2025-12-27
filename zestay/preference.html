@@ -7,7 +7,7 @@
     <title>Pick Your Preferences</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/preference.css">
@@ -15,11 +15,13 @@
 
 <body>
 
-    <div class="bg-shape shape-top-left"></div>
-    <div class="bg-shape shape-top-right"></div>
-    <div class="bg-shape circle-outline-top-right"></div>
-    <div class="bg-shape bubble-bottom-right-1"></div>
-    <div class="bg-shape bubble-bottom-right-2"></div>
+    <div class="img">
+        <img src="public/images/cloverdesign.png" alt="Decoration">
+    </div>
+    <div class="bg-shape top-right-circle-outline"></div>
+    <div class="bg-shape top-right-circle-solid"></div>
+    <div class="bg-shape right-small-circle-1"></div>
+    <div class="bg-shape right-small-circle-2"></div>
 
     <div class="container">
         <header class="page-header">
@@ -28,7 +30,8 @@
         </header>
 
         <div class="preference-grid" id="preferenceGrid">
-            </div>
+
+        </div>
 
         <div class="actions fade-in-up delay-3">
             <button id="nextBtn" class="next-btn">
@@ -37,7 +40,7 @@
         </div>
     </div>
 
-    <script type="module" src="/src/js/preference.js"></script>
+    <script type="module" src="src/js/preference.js"></script>
 </body>
 
 </html>

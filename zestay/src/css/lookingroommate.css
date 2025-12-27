@@ -8,10 +8,20 @@
 body {
     background-color: #d3f9f6;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     min-height: 100vh;
-    padding: 40px;
     color: #333;
+}
+
+/* Override font for specific text elements */
+
+
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
 }
 
 @keyframes fadeInUp {
@@ -32,6 +42,8 @@ body {
     max-width: 1200px;
     gap: 30px;
     align-items: flex-start;
+    margin: 40px auto;
+    padding: 0 40px;
 }
 
 .sidebar {
@@ -47,7 +59,7 @@ body {
     opacity: 0;
     animation: fadeInUp 0.6s ease-out forwards;
     position: sticky;
-    top: 40px;
+    top: 100px;
 }
 
 .profile-img-container {
@@ -70,12 +82,28 @@ body {
     object-fit: cover;
 }
 
+.name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 30px;
+    width: 100%;
+    overflow: hidden;
+    flex-wrap: nowrap;
+}
+
 .profile-name {
     font-size: 26px;
     font-weight: 600;
-    margin-bottom: 30px;
+    margin-bottom: 0;
     text-align: center;
     color: #222;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 0 1 auto;
 }
 
 .action-buttons {
@@ -147,6 +175,8 @@ body {
     padding: 15px 20px;
     border-radius: 12px;
     width: fit-content;
+
+    font-weight: 400;
 }
 
 .location-text i {
@@ -236,7 +266,7 @@ body {
     gap: 25px;
 }
 
-.info-item {
+.info-grid .info-item {
     background-color: #f8f9fa;
     padding: 15px;
     border-radius: 12px;
@@ -245,20 +275,21 @@ body {
     transition: border-color 0.3s;
 }
 
-.info-item:hover {
+.info-grid .info-item:hover {
     border-color: #00c4b4;
 }
 
-.info-item h4 {
+.info-grid .info-item h4 {
     font-size: 14px;
     color: #7f8c8d;
     margin-bottom: 8px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+
 }
 
-.info-item p {
+.info-grid .info-item p {
     font-size: 18px;
     font-weight: 600;
     color: #2c3e50;
@@ -266,9 +297,10 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
+
 }
 
-.info-item p i {
+.info-grid .info-item p i {
     color: #00c4b4;
 }
 
@@ -339,6 +371,7 @@ body {
     text-align: center;
     color: #555;
     font-weight: 500;
+
 }
 
 
@@ -361,6 +394,7 @@ body {
     color: #444;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     transition: all 0.2s;
+
 }
 
 .highlight-pill:hover {
@@ -382,6 +416,8 @@ body {
     line-height: 1.8;
     color: #444;
     border-left: 4px solid #00c4b4;
+
+    font-weight: 400;
 }
 
 .report-section {
@@ -756,6 +792,8 @@ body {
     font-size: 14px;
     color: #666;
     margin-bottom: 25px;
+
+    font-weight: 400;
 }
 
 .modal-actions {
