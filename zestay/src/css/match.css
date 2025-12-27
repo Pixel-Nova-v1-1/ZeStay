@@ -302,7 +302,8 @@ h1 {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Changed from center to flex-start */
+    min-height: 120px; /* Ensure minimum height for consistency */
 }
 
 .card-details h3 {
@@ -311,6 +312,9 @@ h1 {
     margin-bottom: 8px;
     color: #1a1a1a;
     letter-spacing: -0.5px;
+    white-space: nowrap; /* Prevent name wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .location {
@@ -318,14 +322,22 @@ h1 {
     color: #666;
     margin-bottom: 15px;
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Align icon to top if text wraps */
     gap: 6px;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
+    min-height: 42px; /* Fixed height for 2 lines of text approx */
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
 }
 
 .location i {
     color: #00C4B4;
+    margin-top: 3px; /* Adjust icon alignment */
+    flex-shrink: 0;
 }
 
 .card-info-grid {
