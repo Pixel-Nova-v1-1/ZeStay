@@ -1,3 +1,11 @@
+import { auth, db } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { startChat } from "./chat.js";
+import { showToast } from "./toast.js";
+
+// Global state to store owner ID
+let currentOwnerId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -23,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         preferences: [
             { label: "Night Owl", img: 'https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png?ex=6947a58c&is=6946540c&hm=4beaa2241099fade45cc8db362da8dab01c34f66fe51eee157d6179bc41d956b&=&format=webp&quality=lossless&width=813&height=813' },
-            { label: "Studious", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa899ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813" },
+            { label: "Studious", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa89ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813" },
             { label: "Music Lover", img: "https://media.discordapp.net/attachments/1447539234528428034/1451842876764979373/3.png?ex=6947a58b&is=6946540b&hm=2e57e6525773c585c332b6c2b7c712e736d1dc4dcf9d0e037d9a084bcde923b0&=&format=webp&quality=lossless&width=813&height=813" }
         ],
 
@@ -41,29 +49,156 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 1. Populate Data ---
-    function loadData() {
-        // Typically checks URL params here
+    async function loadData() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        // if (id) { fetch ... } else { use mockData }
+        const type = urlParams.get('type');
 
-        // For now, use mockData directly
-        const data = mockData;
+        let data = mockData;
+
+        if (id && type === 'flat') {
+            try {
+                const docRef = doc(db, "flats", id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const flatData = docSnap.data();
+
+                    // Capture Owner ID
+                    currentOwnerId = flatData.userId;
+
+                    // Map Firestore data to UI structure
+                    data = {
+                        name: "Flat Owner",
+                        avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Owner",
+                        location: flatData.location || "Location not specified",
+                        fullAddress: flatData.fullAddress || "",
+                        address: flatData.address || "",
+                        gender: "Not Specified",
+                        rent: flatData.rent || "N/A",
+                        occupancy: flatData.occupancy || "Any",
+                        lookingFor: flatData.gender || "Any",
+                        description: flatData.description || "No description provided.",
+                        images: flatData.photos || [],
+                        preferences: [],
+                        amenities: (flatData.amenities || []).map(am => ({ label: am, icon: 'fa-check' })),
+                        highlights: flatData.highlights || []
+                    };
+
+                    // Fetch Owner Name if userId exists
+                    if (flatData.userId) {
+                        try {
+                            const userDoc = await getDoc(doc(db, "users", flatData.userId));
+                            if (userDoc.exists()) {
+                                const userData = userDoc.data();
+                                data.name = userData.name || "Flat Owner";
+                                data.avatar = userData.photoUrl || data.avatar;
+                                data.isVerified = userData.isVerified;
+                                data.gender = userData.gender || "Not Specified";
+                            }
+                        } catch (e) {
+                            console.log("Could not fetch owner details");
+                        }
+                    }
+
+                } else {
+                    console.log("No such flat document!");
+                }
+            } catch (error) {
+                console.error("Error getting flat details:", error);
+            }
+        } else if (id) {
+            // It's a User/Roommate ID
+            currentOwnerId = id;
+
+            // Fetch user data logic (simplified for now as mockData is used)
+            // In real app, we would fetch doc(db, "users", id) here too
+            try {
+                const userDoc = await getDoc(doc(db, "users", id));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    data = {
+                        ...data, // Keep existing mockData as base
+                        name: userData.name || data.name,
+                        avatar: userData.photoUrl || data.avatar,
+                        location: userData.location || data.location,
+                        gender: userData.gender || data.gender,
+                        isVerified: userData.isVerified,
+                        // For roommate profiles, rent, occupancy, lookingFor might come from a separate roommate_listing collection
+                        // For now, we'll keep mockData's values or fetch from a roommate_listing if available
+                        // This example focuses on user details for the profile section
+                    };
+                }
+            } catch (e) { console.error("Error fetching user", e); }
+        }
 
         // Profile
         document.getElementById('profileName').textContent = data.name;
         document.getElementById('profileImage').src = data.avatar;
 
+        // Verification Badge
+        const verificationBadge = document.getElementById('verificationBadge');
+        if (verificationBadge) {
+            verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+            if (data.isVerified) {
+                verificationBadge.style.flexShrink = '0';
+            }
+        }
+
+        // Adjust Font Size to Fit
+        adjustProfileNameFontSize();
+        window.addEventListener('resize', adjustProfileNameFontSize);
+
         // Basic Info
         document.getElementById('displayLocation').textContent = data.location;
+
+        const addressEl = document.getElementById('displayAddress');
+        const addressContainer = document.getElementById('addressContainer');
+        if (addressEl && addressContainer) {
+            // Prioritize fullAddress -> address
+            // Show address if available, regardless of type
+            const bestAddress = data.fullAddress || data.address;
+
+            if (bestAddress) {
+                addressEl.textContent = bestAddress;
+                addressContainer.style.display = 'flex';
+            } else {
+                addressContainer.style.display = 'none';
+            }
+        }
+
         document.getElementById('displayGender').textContent = data.gender;
         document.getElementById('displayRent').textContent = data.rent;
         document.getElementById('displayOccupancy').textContent = data.occupancy;
         document.getElementById('displayLookingFor').textContent = data.lookingFor;
         document.getElementById('displayDescription').textContent = data.description;
 
+        // Verified Box in Basic Info
+        // Verified/Unverified Box in Basic Info
+        const infoGrid = document.querySelector('.info-grid');
+        if (infoGrid) {
+            let verifiedBox = infoGrid.querySelector('.verified-box');
+            if (!verifiedBox) {
+                verifiedBox = document.createElement('div');
+                verifiedBox.className = 'info-item verified-box';
+                infoGrid.appendChild(verifiedBox);
+            }
+
+            if (data.isVerified) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                `;
+            } else {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                `;
+            }
+        }
+
         // Images
-        currentImages = data.images;
+        currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
         updateSlider(0);
 
         // Preferences
@@ -78,6 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             });
+        } else {
+            prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
         }
 
         // Amenities
@@ -85,9 +222,24 @@ document.addEventListener('DOMContentLoaded', () => {
         amenitiesContainer.innerHTML = '';
         if (data.amenities && data.amenities.length > 0) {
             data.amenities.forEach(am => {
+                let iconClass = am.icon || 'fa-check';
+                const lowerLabel = am.label.toLowerCase();
+                if (lowerLabel.includes('wifi')) iconClass = 'fa-wifi';
+                else if (lowerLabel.includes('wash')) iconClass = 'fa-shirt';
+                else if (lowerLabel.includes('ac') || lowerLabel.includes('air')) iconClass = 'fa-wind';
+                else if (lowerLabel.includes('park')) iconClass = 'fa-car';
+                else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
+                else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
+                else if (lowerLabel.includes('power')) iconClass = 'fa-battery-full';
+                else if (lowerLabel.includes('fridge')) iconClass = 'fa-snowflake';
+                else if (lowerLabel.includes('water') || lowerLabel.includes('ro')) iconClass = 'fa-bottle-water';
+                else if (lowerLabel.includes('kitchen')) iconClass = 'fa-fire-burner';
+                else if (lowerLabel.includes('cook')) iconClass = 'fa-kitchen-set';
+                else if (lowerLabel.includes('geyser')) iconClass = 'fa-faucet';
+
                 amenitiesContainer.innerHTML += `
                     <div class="item-circle">
-                        <div class="amenity-icon"><i class="fa-solid ${am.icon}"></i></div>
+                        <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
                         <span class="item-label">${am.label}</span>
                     </div>
                 `;
@@ -105,6 +257,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+    }
+
+    function adjustProfileNameFontSize() {
+        const nameEl = document.getElementById('profileName');
+        if (!nameEl) return;
+
+        let fontSize = 26; // Start with max font size
+        nameEl.style.fontSize = fontSize + 'px';
+        nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
+
+        // Reduce font size until it fits
+        // We check if scrollWidth (content) > clientWidth (visible area)
+        while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
+            fontSize--;
+            nameEl.style.fontSize = fontSize + 'px';
+        }
     }
 
     // --- 2. Slider Logic ---
@@ -137,39 +305,119 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
 
-    // --- Profile Button Logic ---
-    // --- Profile Button Logic ---
-    const profileBtn = document.getElementById('matchProfileBtn');
-    if (profileBtn) {
-        // Load Avatar
-        const storedProfile = localStorage.getItem('userProfile');
-        if (storedProfile) {
-            try {
-                const data = JSON.parse(storedProfile);
-                let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User'; // Default
+    // --- Auth Logic (Firebase) ---
+    onAuthStateChanged(auth, async (user) => {
+        const authButtons = document.getElementById('auth-buttons');
+        const userProfile = document.getElementById('user-profile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileBtn = document.getElementById('matchProfileBtn');
 
-                if (data.profileOption === 'upload' && data.uploadedAvatar) {
-                    imgSrc = data.uploadedAvatar;
-                } else if (data.profileOption === 'avatar' && data.avatarId) {
-                    if (!data.avatarId.startsWith('http')) {
-                        imgSrc = `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.avatarId}`;
-                    } else {
-                        imgSrc = data.avatarId;
+        if (user) {
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
+
+            if (profileBtn) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+
+                    let imgSrc = 'https://api.dicebear.com/9.x/avataaars/svg?seed=User';
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        imgSrc = data.photoUrl || imgSrc;
                     }
+
+                    profileBtn.innerHTML = `<img src="${imgSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
+                    profileBtn.style.padding = '0';
+                    profileBtn.style.overflow = 'hidden';
+                    profileBtn.style.width = '45px';
+                    profileBtn.style.height = '45px';
+
+                    profileBtn.onclick = () => {
+                        window.location.href = 'profile.html';
+                    };
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
                 }
-
-                profileBtn.innerHTML = `<img src="${imgSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white;">`;
-                profileBtn.style.padding = '0';
-                profileBtn.style.overflow = 'hidden';
-                profileBtn.style.width = '45px';
-                profileBtn.style.height = '45px';
-            } catch (e) {
-                console.error("Error parsing user profile:", e);
             }
-        }
 
-        profileBtn.addEventListener('click', () => {
-            window.location.href = 'profile.html';
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await signOut(auth);
+                    window.location.reload();
+                };
+            }
+        } else {
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userProfile) userProfile.style.display = 'none';
+        }
+    });
+
+    // --- CHAT BUTTON LOGIC ---
+    const chatBtn = document.querySelector('.btn-action');
+    if (chatBtn) {
+        chatBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Please login to chat.", "warning");
+                return;
+            }
+
+            // Check if current user is verified
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().isVerified) {
+
+                    // Construct Target User Object
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetId = currentOwnerId || urlParams.get('id');
+
+                    if (!targetId || targetId === 'mock-user-id') {
+                        console.warn("No valid target ID found for chat.");
+                        // Fallback for demo? Or block? 
+                        // For now, let's allow mock-user if locally testing, but in prod we need real ID.
+                        // But for verification check, we need a real ID to fetch.
+                    }
+
+                    // CHECK TARGET VERIFICATION
+                    let targetVerified = false;
+                    let realTargetId = currentOwnerId || targetId; // Prefer resolved Owner ID
+
+                    try {
+                        if (realTargetId) {
+                            const targetDoc = await getDoc(doc(db, "users", realTargetId));
+                            if (targetDoc.exists() && targetDoc.data().isVerified) {
+                                targetVerified = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching target user:", e);
+                    }
+
+                    if (!targetVerified) {
+                        showToast("The other user is not verified yet. You cannot message them.", "warning");
+                        return;
+                    }
+
+                    const targetName = document.getElementById('profileName').textContent;
+                    const targetAvatar = document.getElementById('profileImage').src;
+
+                    console.log("Starting chat with:", { id: realTargetId, name: targetName, avatar: targetAvatar });
+                    window.startChat({
+                        id: realTargetId,
+                        name: targetName,
+                        avatar: targetAvatar,
+                        online: true,
+                        isBot: false
+                    });
+
+                } else {
+                    showToast("Only verified users can initiate chats. Please get verified!", "warning");
+                }
+            } catch (err) {
+                console.error("Error checking verification:", err);
+                showToast("Error checking verification: " + err.message, "error");
+            }
         });
     }
 
@@ -210,18 +458,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Backend Integration Placeholder
-    function submitReport(reason) {
-        // TODO: Backend integration point
-        console.log("Report Submitted:", {
-            listingId: "CURRENT_LISTING_ID", // Replace with actual ID
-            reason: reason,
-            timestamp: new Date().toISOString(),
-            user: localStorage.getItem('userProfile') ? JSON.parse(localStorage.getItem('userProfile')).name : 'Anonymous'
-        });
+    async function submitReport(reason) {
+        if (!auth.currentUser) {
+            showToast("Please login to report.", "warning");
+            return;
+        }
 
-        alert(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`);
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const type = urlParams.get('type'); // 'flat' or undefined (roommate)
+
+        if (!id) {
+            showToast("Cannot report: No listing ID found.", "error");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "reports"), {
+                reportedEntityId: id,
+                reportedEntityType: type === 'flat' ? 'flat' : 'roommate_listing',
+                reason: reason,
+                reportedBy: auth.currentUser.uid,
+                reportedByEmail: auth.currentUser.email,
+                timestamp: serverTimestamp(),
+                status: 'pending'
+            });
+
+            showToast(`Thank you for your feedback! Reported as: ${reason === 'occupied' ? 'Occupied' : 'Wrong Information'}`, "success");
+        } catch (error) {
+            console.error("Error submitting report:", error);
+            showToast("Failed to submit report. Please try again.", "error");
+        }
     }
-
-
 
 });

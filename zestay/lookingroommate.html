@@ -5,20 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Looking for Roommate</title>
+    <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/lookingroommate.css">
+    <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
-    <header>
-        <div class="navbar">
-            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
-            <nav class="nav-links">
-                <div class="nav-actions">
-                    <a href="why.html" class="btn-post"><i class="fa-solid fa-plus"></i> Post Listing</a>
-                    <button id="matchProfileBtn"><i class="fa-regular fa-circle-user"></i></button>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
+                    <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="why.html" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
+                    </a>
+
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
+                        <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
+                    </div>
+
+                    <div id="user-profile" class="user-profile" style="display:none;">
+                        <button class="btn-icon" id="matchProfileBtn">
+                            <i class="fa-regular fa-circle-user"></i>
+                        </button>
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -30,9 +55,12 @@
             <div class="profile-img-container">
                 <img id="profileImage" src="https://api.dicebear.com/9.x/avataaars/svg?seed=User" alt="Profile">
             </div>
-            <h2 class="profile-name" id="profileName">Name of person</h2>
+            <div class="name-container" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <h2 class="profile-name" id="profileName">Name of person</h2>
+                <i class="fa-solid fa-circle-check" id="verificationBadge"
+                    style="color: #2ecc71; display: none; font-size: 1.2rem;" title="Verified User"></i>
+            </div>
             <div class="action-buttons">
-                <button class="btn-action"><i class="fa-solid fa-phone"></i> Call</button>
                 <button class="btn-action"><i class="fa-solid fa-comments"></i> Chat</button>
             </div>
         </aside>
@@ -46,6 +74,10 @@
                 <div class="location-text">
                     <i class="fa-solid fa-location-dot"></i>
                     <span id="displayLocation">Navi Mumbai, Maharashtra</span>
+                </div>
+                <div class="location-text" id="addressContainer" style="display:none; margin-top: 10px;">
+                    <i class="fa-solid fa-map-pin"></i>
+                    <span id="displayAddress"></span>
                 </div>
                 <div class="divider"></div>
             </section>
@@ -82,7 +114,7 @@
                     </div>
                     <div class="info-item">
                         <h4>Approx. Rent</h4>
-                        <p>₹ <span id="displayRent">6767</span></p>
+                        <p>₹ <span id="displayRent"></span></p>
                     </div>
                     <div class="info-item">
                         <h4>Occupancy</h4>
@@ -172,7 +204,7 @@
     <footer class="finally">
         <div class="footer-content">
             <div class="footer-section">
-                <h2 class="footer-logo">App Name</h2>
+                <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
                 <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
                 <div class="social-icons">
                     <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
@@ -215,7 +247,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <p>&copy; 2025 ZeStay. All rights reserved.</p>
             <div class="footer-legal">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
@@ -229,7 +261,7 @@
         <div class="modal-content">
             <button class="close-modal">&times;</button>
             <div class="modal-img-container">
-                <img src="https://media.discordapp.net/attachments/1063139368367468605/1197463688827998248/image-removebg-preview_6.png?ex=66f66cce&is=66f51b4e&hm=25b74681f26a11e8605481d6d0340794931988ef43973a06764d8a264a778e7f&=&format=webp&quality=lossless&width=450&height=392"
+                <img src="https://cdn-icons-png.flaticon.com/512/4201/4201973.png"
                     alt="Report Illustration">
             </div>
             <h2>Found Wrong Information?</h2>
@@ -249,7 +281,40 @@
 
 
 
-    <script src="src/js/lookingroommate.js"></script>
+
+    <!-- ================= CHAT WIDGET ================= -->
+    <div id="chatWidget" class="chat-widget closed">
+        <div class="chat-header">
+            <button id="chatBackBtn" class="chat-back-btn hidden">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden">
+            <div class="chat-header-info">
+                <h3 id="chatTitle">Messages</h3>
+                <span id="chatStatus" class="chat-status"></span>
+            </div>
+            <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
+        </div>
+
+        <div id="chatListBody" class="chat-body list-view"></div>
+        <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
+
+        <div id="chatFooter" class="chat-footer hidden">
+            <button class="chat-attach-btn"><i class="fa-solid fa-paperclip"></i></button>
+            <input type="text" id="chatInput" placeholder="Message...">
+            <button id="chatSendBtn" class="chat-send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <button id="chatToggleBtn" class="chat-toggle-btn">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span class="chat-badge">4</span>
+    </button>
+
+    <script type="module" src="src/js/lookingroommate.js"></script>
+    <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>

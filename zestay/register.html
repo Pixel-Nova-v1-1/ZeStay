@@ -7,7 +7,7 @@
     <title>Register Page</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/register.css">
 </head>
@@ -15,7 +15,9 @@
 <body>
 
     <div class="img">
-        </div>
+        <img src="public/images/cloverdesign.png"
+            alt="Decoration">
+    </div>
     <div class="bg-shape top-right-circle-outline"></div>
     <div class="bg-shape top-right-circle-solid"></div>
     <div class="bg-shape right-small-circle-1"></div>
@@ -40,7 +42,8 @@
 
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" placeholder="Loading..." required readonly style="background-color: #f0f0f0; cursor: not-allowed; color: #888;">
+                    <input type="email" id="email" name="email" placeholder="Email" required readonly
+                        style="background-color: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <div class="form-group">
@@ -54,22 +57,23 @@
                         <option value="" disabled selected>Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
-                        <option value="Non-binary">Non-binary</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="hobbies">Hobbies:</label>
-                    <select id="hobbies" name="hobbies">
-                        <option value="" disabled selected>Select Hobby</option>
-                        <option value="reading">Reading</option>
-                        <option value="traveling">Traveling</option>
-                        <option value="gaming">Gaming</option>
-                        <option value="sports">Sports</option>
-                        <option value="music">Music</option>
-                        <option value="cooking">Cooking</option>
-                    </select>
+                    <label>Hobbies:</label>
+                    <div class="hobbies-selection" id="hobbies-container">
+                        <div class="hobbies-label-text">Hobbies</div>
+                        <div class="hobby-option" data-value="reading">Reading</div>
+                        <div class="hobby-option" data-value="traveling">Traveling</div>
+                        <div class="hobby-option" data-value="gaming">Gaming</div>
+                        <div class="hobby-option" data-value="sports">Sports</div>
+                        <div class="hobby-option" data-value="music">Music</div>
+                        <div class="hobby-option" data-value="cooking">Cooking</div>
+                    </div>
+                    <!-- Hidden input to store comma-separated values for form submission compatibility if needed, 
+                         though we will likely gather data directly from the DOM in JS -->
+                    <input type="hidden" id="hobbies" name="hobbies">
                 </div>
             </div>
 
@@ -91,14 +95,22 @@
                     </div>
 
                     <div class="avatar-grid" id="avatarGrid">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" alt="Avatar 1" class="avatar-option" data-value="Devjith">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" alt="Avatar 2" class="avatar-option" data-value="Aditya">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh" alt="Avatar 3" class="avatar-option" data-value="Anirudh">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi" alt="Avatar 4" class="avatar-option" data-value="Tanvi">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra" alt="Avatar 5" class="avatar-option" data-value="Rudra">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith" alt="Avatar 6" class="avatar-option" data-value="Advaith">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel" alt="Avatar 7" class="avatar-option" data-value="Pixel">
-                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova" alt="Avatar 8" class="avatar-option" data-value="Nova">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" alt="Avatar 1"
+                            class="avatar-option" data-value="Devjith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" alt="Avatar 2"
+                            class="avatar-option" data-value="Aditya">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh" alt="Avatar 3"
+                            class="avatar-option" data-value="Anirudh">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi" alt="Avatar 4"
+                            class="avatar-option" data-value="Tanvi">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra" alt="Avatar 5"
+                            class="avatar-option" data-value="Rudra">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith" alt="Avatar 6"
+                            class="avatar-option" data-value="Advaith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel" alt="Avatar 7"
+                            class="avatar-option" data-value="Pixel">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova" alt="Avatar 8"
+                            class="avatar-option" data-value="Nova">
                     </div>
                 </div>
             </div>
@@ -111,6 +123,7 @@
         </form>
     </div>
 
-    <script type="module" src="/src/js/register.js"></script>
+    <script type="module" src="src/js/register.js"></script>
 </body>
+
 </html>
