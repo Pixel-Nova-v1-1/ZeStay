@@ -1,130 +1,105 @@
-import { auth, db } from "../firebase.js";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { showToast } from "./toast.js";
 
-document.addEventListener('DOMContentLoaded', () => {
+const preferencesData = [
+    { id: 'night-owl', label: 'Night Owl', image: 'public/images/nightowl.png' },
+    { id: 'early-bird', label: 'Early Bird', image: 'public/images/earlybird.png' },
+    { id: 'music-lover', label: 'Music Lover', image: 'public/images/music.png' },
+    { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'public/images/quiet.png' },
+    { id: 'pet-lover', label: 'Pet Lover', image: 'public/images/petlover.png' },
+    { id: 'studious', label: 'Studious', image: 'public/images/studious.png' },
+    { id: 'sporty', label: 'Sporty', image: 'public/images/sporty.png' },
+    { id: 'guest-friendly', label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
+    { id: 'wanderer', label: 'Wanderer', image: 'public/images/wanderer.png' },
+    { id: 'clean-centric', label: 'Clean centric', image: 'public/images/cleaner.png' },
+    { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
+    { id: 'non-smoker', label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
+];
 
-    const preferencesData = [
-        { id: 'night-owl', label: 'Night Owl', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842878392242309/1.png?ex=6947a58c&is=6946540c&hm=4beaa2241099fade45cc8db362da8dab01c34f66fe51eee157d6179bc41d956b&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'early-bird', label: 'Early Bird', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842877566095521/2.png?ex=6947a58b&is=6946540b&hm=4eefa0218a3d0c48f5219543083593a8ccf22a9c23908cea4ca9207b6b63298c&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'music-lover', label: 'Music Lover', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842876764979373/3.png?ex=6947a58b&is=6946540b&hm=2e57e6525773c585c332b6c2b7c712e736d1dc4dcf9d0e037d9a084bcde923b0&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842875880112282/4.png?ex=6947a58b&is=6946540b&hm=a48f35e7b922f190832469503d3297d32fc1cbe662af54b81e1324ae3a7d8a29&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'pet-lover', label: 'Pet Lover', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842874877677628/5.png?ex=6947a58b&is=6946540b&hm=e3f121878387af876f317ad49a28448f624119b324538a31ed699b91ea374417&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'studious', label: 'Studious', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842867218874500/6.png?ex=6947a589&is=69465409&hm=367bc3ede70cef222877705958cfcfaa899ec5bcec94312dc96c746b89e5c211&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'sporty', label: 'Sporty', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842866501521469/7.png?ex=6947a589&is=69465409&hm=b5d5751857454bee6c4d7b2f2588b6db7b2e09b534eb20a989db8656698caf90&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'guest-friendly', label: 'Guest Friendly', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842865788616824/8.png?ex=6947a589&is=69465409&hm=2b211f2b7f2753156273fffe44f119b8381d9f93dbea5f357d99ae8914189e87&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'wanderer', label: 'Wanderer', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842865184641186/9.png?ex=6947a588&is=69465408&hm=700bdeb38db6608322e166b5c9082b9969bf0572c6c96c677bd23dac4bb4a466&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'clean-centric', label: 'Clean centric', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842864391655454/10.png?ex=6947a588&is=69465408&hm=a0b8956aa9787ce2ac68f47c11d54c5088c9bfec2e5b7038d243dc58856d0d86&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842886642438155/11.png?ex=6947a58e&is=6946540e&hm=193067eb44a6bfdeab2c90572ca381eb3ffa7dd6eb0176e069827f5fa07ee152&=&format=webp&quality=lossless&width=813&height=813' },
-        { id: 'non-smoker', label: 'Non-smoker', image: 'https://media.discordapp.net/attachments/1447539234528428034/1451842885996773417/12.png?ex=6947a58d&is=6946540d&hm=f6bdb9d69c407be0a9abe0ea66b4ab3def35790ca12acec6b4161fd51824ef63&=&format=webp&quality=lossless&width=813&height=813' }
-    ];
+const selectedPreferences = new Set();
 
-    const grid = document.getElementById('preferenceGrid');
-    const nextBtn = document.getElementById('nextBtn');
-    const subtitle = document.querySelector('.subtitle');
-    
-    const selectedPreferences = new Set();
-    const MIN_SELECTION = 5;
-    let currentUser = null;
+document.addEventListener("DOMContentLoaded", () => {
+    const grid = document.getElementById("preferenceGrid");
+    const nextBtn = document.getElementById("nextBtn");
 
-    // 1. CHECK AUTH STATE
+    // 1. Check Auth
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            currentUser = user;
-            // Optional: Restore previously selected preferences if they exist
-            restoreSelection(user.uid);
-        } else {
-            // Not logged in? Go back to start
-            window.location.replace("/landing.html");
-        }
-    });
-
-    // 2. RENDER GRID
-    preferencesData.forEach(pref => {
-        const item = document.createElement('div');
-        item.classList.add('pref-item');
-        item.setAttribute('data-id', pref.id);
-
-        item.innerHTML = `
-            <div class="icon-circle">
-                <img src="${pref.image}" alt="${pref.label}">
-            </div>
-            <span class="pref-label">${pref.label}</span>
-        `;
-
-        item.addEventListener('click', () => toggleSelection(item, pref.id));
-        grid.appendChild(item);
-    });
-
-    function toggleSelection(element, id) {
-        if (selectedPreferences.has(id)) {
-            selectedPreferences.delete(id);
-            element.classList.remove('selected');
-        } else {
-            selectedPreferences.add(id);
-            element.classList.add('selected');
-        }
-    }
-
-    // 3. HANDLE SUBMIT
-    nextBtn.addEventListener('click', async () => {
-        if (!currentUser) return;
-
-        if (selectedPreferences.size < MIN_SELECTION) {
-            alert(`Please select at least ${MIN_SELECTION} preferences to proceed.`);
-            subtitle.style.color = '#e74c3c';
-            setTimeout(() => subtitle.style.color = '', 1000);
+        if (!user) {
+            window.location.href = "regimob.html?mode=login";
             return;
         }
 
-        // Visual Feedback
-        const originalText = nextBtn.innerHTML;
-        nextBtn.disabled = true;
-        nextBtn.innerHTML = `Saving...`;
-
-        try {
-            const preferencesArray = Array.from(selectedPreferences);
-
-            // SAVE TO FIREBASE
-            const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, {
-                preferences: preferencesArray
-            });
-
-            console.log("Preferences saved!");
-
-            // Animation & Redirect
-            document.body.style.transition = 'opacity 0.5s ease';
-            document.body.style.opacity = '0';
-
-            setTimeout(() => {
-                window.location.href = 'ques.html';
-            }, 500);
-
-        } catch (error) {
-            console.error("Error saving preferences:", error);
-            alert("Error saving data: " + error.message);
-            nextBtn.disabled = false;
-            nextBtn.innerHTML = originalText;
+        // Optional: Load existing preferences
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().preferences) {
+            docSnap.data().preferences.forEach(p => selectedPreferences.add(p));
         }
+        renderPreferences();
     });
 
-    // Optional: Restore previously saved selections if user comes back
-    async function restoreSelection(uid) {
-        try {
-            const snap = await getDoc(doc(db, "users", uid));
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.preferences && Array.isArray(data.preferences)) {
-                    data.preferences.forEach(prefId => {
-                        selectedPreferences.add(prefId);
-                        const el = document.querySelector(`.pref-item[data-id="${prefId}"]`);
-                        if (el) el.classList.add('selected');
-                    });
-                }
-            }
-        } catch (e) {
-            console.log("No previous prefs found or error reading.");
+    // 2. Render Options
+    function renderPreferences() {
+        grid.innerHTML = "";
+        preferencesData.forEach(pref => {
+            const card = document.createElement("div");
+            card.className = `pref-item ${selectedPreferences.has(pref.id) ? "selected" : ""}`;
+
+            // Updated to use images
+            card.innerHTML = `
+        <div class="icon-circle">
+            <img src="${pref.image}" alt="${pref.label}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        </div>
+        <span class="pref-label">${pref.label}</span>
+      `;
+
+            card.addEventListener("click", () => togglePreference(pref.id, card));
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Toggle Selection
+    function togglePreference(id, card) {
+        if (selectedPreferences.has(id)) {
+            selectedPreferences.delete(id);
+            card.classList.remove("selected");
+        } else {
+            selectedPreferences.add(id);
+            card.classList.add("selected");
         }
+    }
+
+    // 4. Submit
+    window.submitPreferences = async () => {
+        if (selectedPreferences.size < 5) {
+            showToast(`Please select at least 5 preferences. You have selected ${selectedPreferences.size}.`, "warning");
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = "Saving... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+        try {
+            await updateDoc(doc(db, "users", user.uid), {
+                preferences: Array.from(selectedPreferences)
+            });
+            window.location.href = "ques.html";
+        } catch (error) {
+            console.error("Error saving preferences:", error);
+            showToast("Failed to save preferences.", "error");
+        } finally {
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = "Next <i class='fa-solid fa-chevron-right'></i>";
+        }
+    };
+
+    // Attach submit handler to button
+    if (nextBtn) {
+        nextBtn.addEventListener("click", window.submitPreferences);
     }
 });

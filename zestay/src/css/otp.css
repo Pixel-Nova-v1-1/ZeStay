@@ -115,6 +115,8 @@ body {
     margin-bottom: 3rem;
     opacity: 0;
     animation: fadeInUp 0.8s ease-out 0.5s forwards;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
 }
 
 
@@ -138,6 +140,7 @@ body {
     color: #333;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     outline: none;
+    font-family: 'Poppins', sans-serif;
 }
 
 .otp-input:focus {

@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase.js"; // Adjust path if needed (e.g. ./firebase.js)
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs, deleteDoc } from "firebase/firestore";
 
 // Pages that don't require login
 const PUBLIC_PAGES = ["/", "/landing.html", "/regimob.html"];
@@ -16,58 +16,148 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  // 1.5 CHECK IF ACCOUNT IS DELETED/BANNED
+  // Since we can't delete Auth record from client, we check the blacklist.
+  try {
+      const deletedRef = doc(db, "deleted_users", user.uid);
+      const deletedSnap = await getDoc(deletedRef);
+      if (deletedSnap.exists()) {
+          await signOut(auth);
+          alert("Your account has been permanently deleted by the administrator.");
+          window.location.replace("/landing.html");
+          return;
+      }
+  } catch (e) {
+      console.error("Error checking deleted status:", e);
+  }
+
   // 2. LOGGED IN - Check Progress
   const userRef = doc(db, "users", user.uid);
-  
+
   try {
     const snap = await getDoc(userRef);
 
-    // A. User doesn't exist in DB at all -> Create basic doc -> Go to Register
+    // 🔹 New user → create profile
     if (!snap.exists()) {
+      
+      // --- PREVENT DUPLICATION: Check for orphaned accounts with same email ---
+      try {
+          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+              console.log("Found orphaned accounts for this email. Cleaning up...");
+              // Delete old documents that don't match the current UID
+              const deletePromises = querySnapshot.docs.map(doc => {
+                  if (doc.id !== user.uid) {
+                      return deleteDoc(doc.ref);
+                  }
+              });
+              await Promise.all(deletePromises);
+          }
+      } catch (err) {
+          console.warn("Failed to check/clean orphans (likely permission issue):", err);
+      }
+      // -----------------------------------------------------------------------
+
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email,
-        profileCompleted: false,
+        onboardingComplete: false,
         createdAt: serverTimestamp()
       });
-      window.location.replace("/register.html");
+
+      // Don't redirect if we are in the middle of registration flow
+      if (path !== "/regimob.html" && path !== "/register.html") {
+        window.location.replace("/questions.html");
+      }
       return;
     }
 
     const data = snap.data();
 
-    // B. CHECKPOINT 1: Is Profile (Name, Photo, etc.) complete?
-    if (!data.profileCompleted) {
-      if (path !== "/register.html") {
-        window.location.replace("/register.html");
+    // 🔹 Route based on onboarding
+    if (data.onboardingComplete) {
+      if (!path.includes("listings") && !path.includes("profile") && !path.includes("index") && path !== "/") {
+        // Allow index/profile/listings
       }
-      return;
-    }
-
-    // C. CHECKPOINT 2: Has the user selected Preferences?
-    // We check if the 'preferences' array exists and has at least 5 items
-    const hasPreferences = data.preferences && Array.isArray(data.preferences) && data.preferences.length >= 5;
-
-    if (!hasPreferences) {
-      // If they haven't picked preferences yet, force them to preference.html
-      // But don't redirect if they are already there!
-      if (path !== "/preference.html") {
-        console.log("Preferences missing. Redirecting to selection...");
-        window.location.replace("/preference.html");
+    } else {
+      if (!path.includes("questions") && !path.includes("preference") && !path.includes("register")) {
+        // Redirect to onboarding if not complete? 
+        // For now, let's just focus on header UI
       }
-      return;
-    }
 
-    // D. USER IS FULLY SET UP
-    // If they are currently on a "Setup Page" (Login, Register, Preference), send them to the App.
-    if (PUBLIC_PAGES.includes(path) || path === "/register.html" || path === "/preference.html") {
+      // C. CHECKPOINT 2: Has the user selected Preferences?
+      // We check if the 'preferences' array exists and has at least 5 items
+      const hasPreferences = data.preferences && Array.isArray(data.preferences) && data.preferences.length >= 5;
+
+      if (!hasPreferences) {
+        // If they haven't picked preferences yet, force them to preference.html
+        // But don't redirect if they are already there!
+        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html") {
+          console.log("Preferences missing. Redirecting to selection...");
+          window.location.replace("/preference.html");
+        }
+        return;
+      }
+
+      // D. USER IS FULLY SET UP
+      // If they are currently on a "Setup Page" (Login, Register, Preference), send them to the App.
+      // We allow landing page ("/" or "/index.html") to remain open even if logged in.
+      if (path.includes("regimob.html") || path === "/register.html" || path === "/preference.html") {
         // You can change this to "/ques.html" if that's specifically where they go next
         window.location.replace("/why.html");
-    }
-    
-    // If they are already on /ques.html or /why.html, we do nothing and let them stay.
+      }
 
+      // If they are already on /ques.html or /why.html, we do nothing and let them stay.
+
+    }
   } catch (error) {
     console.error("Auth Listener Error:", error);
   }
+
+  updateHeaderUI(user, data);
 });
+
+function updateHeaderUI(user, userData) {
+  const authButtons = document.getElementById("auth-buttons");
+  const userProfile = document.getElementById("user-profile");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const landingProfileBtn = document.getElementById("landingProfileBtn");
+
+  if (authButtons && userProfile) {
+    if (user) {
+      authButtons.style.display = "none";
+      userProfile.style.display = "flex";
+
+      // Update profile icon if available
+      if (userData && userData.photoUrl) {
+        const img = document.createElement("img");
+        img.src = userData.photoUrl;
+        img.style.width = "32px";
+        img.style.height = "32px";
+        img.style.borderRadius = "50%";
+        img.style.objectFit = "cover";
+
+        landingProfileBtn.innerHTML = "";
+        landingProfileBtn.appendChild(img);
+      }
+    } else {
+      authButtons.style.display = "flex"; // or block depending on css
+      userProfile.style.display = "none";
+    }
+  }
+
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    };
+  }
+
+  if (landingProfileBtn) {
+    landingProfileBtn.onclick = () => {
+      window.location.href = "profile.html";
+    };
+  }
+}
