@@ -26,6 +26,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const verificationSection = document.getElementById("verificationSection");
   const resendBtn = document.getElementById("resendBtn");
 
+  if (!formContainer && !verificationSection) {
+    return;
+  }
+
   const authToggleLink = document.getElementById("authToggleLink");
   const authToggleText = document.getElementById("authToggleText");
   const title = document.getElementById("authTitle");

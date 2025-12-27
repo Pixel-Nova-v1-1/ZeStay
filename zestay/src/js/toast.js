@@ -1,8 +1,4 @@
-// Inject CSS
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = 'src/css/toast.css';
-document.head.appendChild(link);
+import '../css/toast.css';
 
 // Create Toast Container
 let container;
