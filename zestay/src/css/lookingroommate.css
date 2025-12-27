@@ -14,14 +14,7 @@ body {
 }
 
 /* Override font for specific text elements */
-.info-grid .info-item h4,
-.info-grid .info-item p:not(.fa):not(.fas):not(.far):not(.fab),
-.location-text,
-.item-label,
-.highlight-pill,
-.desc-box {
 
-}
 
 .brand-text {
     background: linear-gradient(to right, #00A89D, #7FDBFF);
