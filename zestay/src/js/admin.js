@@ -14,7 +14,7 @@ const navItems = document.querySelectorAll('.sidebar nav ul li');
 // Auth Check
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.replace("/landing.html"); // Redirect to login/landing
+        window.location.replace("/index.html"); // Redirect to login/landing
         return;
     }
 
@@ -40,7 +40,7 @@ onAuthStateChanged(auth, async (user) => {
 logoutBtn.addEventListener('click', async () => {
     try {
         await signOut(auth);
-        window.location.replace("/landing.html");
+        window.location.replace("/index.html");
     } catch (error) {
         console.error("Error signing out:", error);
         showToast("Error signing out", "error");
