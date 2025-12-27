@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (!currentUser) {
                 showToast("Please log in to request verification.", "warning");
-                window.location.href = 'landing.html';
+                window.location.href = 'index.html';
                 return;
             }
 
