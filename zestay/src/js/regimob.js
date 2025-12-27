@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (oobCode) {
     // Hide the main form and verification section
     // formContainer is hidden by default in HTML now to prevent flash
-    verificationSection.style.display = "none";
+    if (verificationSection) verificationSection.style.display = "none";
 
     // specific container for verification messages
     const statusDiv = document.createElement("div");

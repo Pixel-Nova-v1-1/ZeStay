@@ -1,5 +1,3 @@
-import '../css/toast.css';
-
 // Create Toast Container
 let container;
 

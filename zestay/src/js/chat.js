@@ -118,7 +118,7 @@ function initChatSystem() {
         };
       }
 
-      toggleBtn.style.display = 'flex';
+      if (toggleBtn) toggleBtn.style.display = 'flex';
 
       // Start listening for chat list updates
       subscribeToChatList();
@@ -137,7 +137,7 @@ function initChatSystem() {
       const badge = document.querySelector('.chat-badge');
       if (badge) badge.style.display = 'none';
 
-      toggleBtn.style.display = 'flex';
+      if (toggleBtn) toggleBtn.style.display = 'flex';
       if (!chatWidget.classList.contains('closed')) {
         showLoginPrompt();
       }
