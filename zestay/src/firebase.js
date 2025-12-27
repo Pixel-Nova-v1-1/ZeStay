@@ -18,11 +18,6 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 // Add this temporarily to check if variables are loading
-console.log("Firebase Config Check:", {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID
-});
-
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
