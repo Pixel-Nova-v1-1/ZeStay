@@ -8,25 +8,25 @@
 
     <link rel="stylesheet" href="src/css/regimob.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 
 <body>
     <div class="container">
         <div class="left-section">
             <div class="image-wrapper">
-                <img src="/images/roommates.png" alt="Friends Group Illustration" />
+                <img src="public/images/roommates copy.png" alt="Friends Group Illustration" />
             </div>
         </div>
 
         <div class="right-section">
             <div class="content-wrapper">
-                <h2 class="app-name">App Name</h2>
+                <h2 class="app-name"><span class="brand-text">ZeStay</span></h2>
 
-                <div class="form-container">
-                    <h1 class="title" id="authTitle">Welcome Back</h1>
+                <div class="form-container" style="display: none;">
+                    <h1 class="title" id="authTitle">Continue with Email</h1>
                     <p class="subtitle" id="authSubtitle">
-                        Enter your credentials to access your account
+                        We’ll send you a secure login link
                     </p>
 
                     <div class="input-group">
@@ -34,62 +34,108 @@
                         <input type="email" id="emailInput" placeholder="you@example.com" />
                     </div>
 
-                    <div class="input-group" style="margin-top: 15px;">
+                    <div class="input-group">
                         <span class="icon"><i class="fa-solid fa-lock"></i></span>
                         <input type="password" id="passwordInput" placeholder="Password" />
+                        <span class="toggle-password" id="togglePasswordBtn"
+                            style="cursor: pointer; margin-left: 10px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
                     </div>
 
-                    <button id="submitBtn" class="btn-otp">
-                        Login
+                    <div class="input-group" id="confirmPasswordGroup" style="display: none;">
+                        <span class="icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="confirmPasswordInput" placeholder="Confirm Password" />
+                        <span class="toggle-password" id="toggleConfirmPasswordBtn"
+                            style="cursor: pointer; margin-left: 10px;">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+
+                    <div class="input-group"
+                        style="width: 100%; text-align: left; margin-bottom: 15px; margin-top: -30px; margin-left: 5px; border: none; background: transparent;">
+                        <a href="#" id="forgotPasswordLink"
+                            style="color: #666; font-size: 0.85rem; text-decoration: none; display: none;">Forgot
+                            Password?</a>
+                    </div>
+
+                    <button id="authActionBtn" class="btn-otp">
+                        Continue
                     </button>
-                    
-                    <p style="margin-top: 20px; font-size: 0.9rem; text-align: center;">
-                        <a id="toggleModeBtn" href="#" style="color: #666; text-decoration: underline;">
-                            Need an account? Sign Up
-                        </a>
+
+                    <p id="authToggleText" class="animate-up"
+                        style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; max-width: 400px;">
+                        Don't have an account? <a href="#" id="authToggleLink"
+                            style="color: #2e7d32; text-decoration: none; font-weight: 600;">Register</a>
+                    </p>
+                </div>
+
+                <div id="verificationSection" style="display: none; text-align: center;">
+                    <div class="icon-circle"
+                        style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size: 32px; color: #2e7d32;"></i>
+                    </div>
+                    <h2 class="title" style="margin-bottom: 10px;">Check your inbox</h2>
+                    <p class="subtitle" style="margin-bottom: 30px;">
+                        We sent a verification link to your email. Please click the link to verify your account.
+                    </p>
+                    <button id="resendBtn" class="btn-otp"
+                        style="background-color: transparent; color: #2e7d32; border: 1px solid #2e7d32; margin-top: 10px;">
+                        Resend Link
+                    </button>
+                    <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                        Waiting for verification... <i class="fa-solid fa-spinner fa-spin"></i>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">Terms & Privacy</h2>
+            <p class="modal-subtitle">Please accept our terms and privacy policy to continue.</p>
+
+            <div class="checkbox-group">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="termsCheckbox">
+                    <span class="checkmark"></span>
+                    <span class="label-text">I accept the <a href="#" target="_blank">Terms and Conditions</a></span>
+                </label>
+            </div>
+
+            <div class="checkbox-group">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="privacyCheckbox">
+                    <span class="checkmark"></span>
+                    <span class="label-text">I accept the <a href="#" target="_blank">Privacy Policy</a></span>
+                </label>
+            </div>
+
+            <button id="termsContinueBtn" class="btn-otp" disabled>Continue</button>
+        </div>
+    </div>
+
+    <!-- Vite entry -->
     <script type="module" src="/src/main.js"></script>
 
+    <!-- UI text only -->
     <script>
         const params = new URLSearchParams(window.location.search);
-        let mode = params.get("mode"); // 'register' or 'login'
+        const mode = params.get("mode");
 
         const title = document.getElementById("authTitle");
-        const btn = document.getElementById("submitBtn");
-        const toggleBtn = document.getElementById("toggleModeBtn");
+        const subtitle = document.getElementById("authSubtitle");
 
-        function updateUI() {
-            if (mode === "register") {
-                title.textContent = "Create Account";
-                btn.textContent = "Sign Up";
-                toggleBtn.textContent = "Already have an account? Login";
-            } else {
-                title.textContent = "Welcome Back";
-                btn.textContent = "Login";
-                toggleBtn.textContent = "Need an account? Sign Up";
-            }
+        if (mode === "register") {
+            title.textContent = "Create your account";
+            subtitle.textContent = "We’ll send you a link to complete registration";
+        } else {
+            title.textContent = "Welcome back";
+            subtitle.textContent = "We’ll send you a secure login link";
         }
-
-        // Initial load
-        updateUI();
-
-        // Handle Toggle Click (Optional UX improvement)
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            mode = (mode === "register") ? "login" : "register";
-            
-            // Update URL without reloading
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.set('mode', mode);
-            window.history.pushState({}, '', newUrl);
-            
-            updateUI();
-        });
     </script>
 </body>
+
 </html>

@@ -34,7 +34,13 @@ header {
     color: #00C4B4;
     font-size: 40px;
     font-weight: 500;
+}
 
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .content-wrapper {

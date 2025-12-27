@@ -7,7 +7,7 @@
     <title>Help us refine your picks</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/css/ques.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
 
     <!-- Background Shapes -->
     <div class="img">
-        <img src="https://media.discordapp.net/attachments/1447539234528428034/1449842493595058369/design_register.png?ex=69405e8b&is=693f0d0b&hm=830d3a5921d62cfc678a5d80d14598319036bce6c52ea93aa89f85d5908da142&=&format=webp&quality=lossless&width=943&height=943"
+        <img src="public/images/cloverdesign.png"
             alt="clover">
     </div>
     <div class="bg-shape top-right-circle-outline"></div>
@@ -38,7 +38,7 @@
                     <span class="scale-label">Agree</span>
                     <div class="options-group">
                         <label class="option-label">
-                            <input type="radio" name="q1" value="1" checked>
+                            <input type="radio" name="q1" value="1">
                             <span class="custom-radio large"></span>
                         </label>
                         <label class="option-label">
@@ -414,13 +414,13 @@
                 </div>
             </div>
             <div class="form-actions">
-                <button type="submit" class="register-btn">Register</button>
+                <button type="button" id="submitBtn" class="register-btn">Register</button>
             </div>
         </form>
     </div>
 
 
-    <script src="src/js/ques.js"></script>
+    <script type="module" src="src/js/ques.js"></script>
 </body>
 
 </html>

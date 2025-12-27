@@ -4,35 +4,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Accomodation Matching</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/match.css">
+    <link rel="stylesheet" href="src/css/chat.css">
+    <!-- ================= GOOGLE MAPS + PLACES ================= -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
+        defer></script>
 </head>
 
 <body>
-    <header>
-        <div class="navbar">
-            <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">App Name</a></div>
-            <nav class="nav-links">
-                <div class="nav-actions">
-                    <a href="why.html" class="btn-post">
-                        <i class="fa-solid fa-plus"></i> Post Listing
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
+                    <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="why.html" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
                     </a>
 
-                    <div id="auth-buttons">
-                        <a href="regimob.html?mode=login">Login</a>
-                        <a href="regimob.html?mode=register">Register</a>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
+                        <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
                     </div>
 
-                    <div id="user-profile" style="display:none; align-items:center; gap:10px;">
-                        <button class="btn-profile" id="matchProfileBtn">
+                    <div id="user-profile" class="user-profile" style="display:none;">
+                        <button class="btn-icon" id="matchProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
                         </button>
-                        <button id="logoutBtn"
-                            style="background:none; border:none; color:#666; cursor:pointer; font-size:16px;">
-                            Logout
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
                         </button>
                     </div>
+                </div>
+            </nav>
+        </div>
+    </header>
                 </div>
             </nav>
         </div>
@@ -72,61 +88,6 @@
 
 
     <div class="listings-container">
-
-        <div class="listing-card">
-            <div class="card-content">
-                <div class="card-avatar">
-                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Felix" alt="Avatar">
-                </div>
-                <div class="card-details">
-                    <h3>Name of the person</h3>
-                    <p class="location"><i class="fa-solid fa-location-dot"></i> location</p>
-
-                    <div class="card-info-grid">
-                        <div class="info-item">
-                            <span class="label">Rent</span>
-                            <span class="value">₹ 5,000</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Looking for</span>
-                            <span class="value">Female</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer">
-                <span class="match-score">77% match!</span>
-                <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
-            </div>
-        </div>
-
-
-        <div class="listing-card">
-            <div class="card-content">
-                <div class="card-avatar">
-                    <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka" alt="Avatar">
-                </div>
-                <div class="card-details">
-                    <h3>Name of person</h3>
-                    <p class="location"><i class="fa-solid fa-location-dot"></i> location</p>
-
-                    <div class="card-info-grid">
-                        <div class="info-item">
-                            <span class="label">Rent</span>
-                            <span class="value">₹ 5,000</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Looking for</span>
-                            <span class="value">Male</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer">
-                <span class="match-score">89% match!</span>
-                <button class="btn-contact"><i class="fa-solid fa-phone"></i></button>
-            </div>
-        </div>
     </div>
     <div class="more">
         <button class="bhagwan">MORE<i class="fa-solid fa-chevron-down"></i></button>
@@ -134,7 +95,7 @@
     <footer class="finally">
         <div class="footer-content">
             <div class="footer-section">
-                <h2 class="footer-logo">App Name</h2>
+                <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
                 <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
                 <div class="social-icons">
                     <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
@@ -177,7 +138,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2025 App Name. All rights reserved.</p>
+            <p>&copy; 2025 ZeStay. All rights reserved.</p>
             <div class="footer-legal">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
@@ -185,7 +146,40 @@
             </div>
         </div>
     </footer>
-    <script src="src/js/match.js"></script>
+
+    <!-- ================= CHAT WIDGET ================= -->
+    <div id="chatWidget" class="chat-widget closed">
+        <div class="chat-header">
+            <button id="chatBackBtn" class="chat-back-btn hidden">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden">
+            <div class="chat-header-info">
+                <h3 id="chatTitle">Messages</h3>
+                <span id="chatStatus" class="chat-status"></span>
+            </div>
+            <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
+        </div>
+
+        <div id="chatListBody" class="chat-body list-view"></div>
+        <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
+
+        <div id="chatFooter" class="chat-footer hidden">
+            <button class="chat-attach-btn"><i class="fa-solid fa-paperclip"></i></button>
+            <input type="text" id="chatInput" placeholder="Message...">
+            <button id="chatSendBtn" class="chat-send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <button id="chatToggleBtn" class="chat-toggle-btn">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span class="chat-badge">4</span>
+    </button>
+
+    <script type="module" src="src/js/match.js"></script>
+    <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>
