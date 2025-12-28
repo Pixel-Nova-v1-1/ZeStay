@@ -243,6 +243,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Add Enter key listener to inputs
+  const inputs = [emailInput, passwordInput, confirmPasswordInput];
+  inputs.forEach(input => {
+    if (input) {
+      input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          authActionBtn.click();
+        }
+      });
+    }
+  });
+
   // Handle Auth Action
   if (authActionBtn) {
     authActionBtn.addEventListener("click", async () => {

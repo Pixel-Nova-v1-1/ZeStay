@@ -4,18 +4,18 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { showToast } from "./toast.js";
 
 const preferencesData = [
-    { id: 'night-owl', label: 'Night Owl', image: 'public/images/nightowl.png' },
-    { id: 'early-bird', label: 'Early Bird', image: 'public/images/earlybird.png' },
-    { id: 'music-lover', label: 'Music Lover', image: 'public/images/music.png' },
-    { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'public/images/quiet.png' },
-    { id: 'pet-lover', label: 'Pet Lover', image: 'public/images/petlover.png' },
-    { id: 'studious', label: 'Studious', image: 'public/images/studious.png' },
-    { id: 'sporty', label: 'Sporty', image: 'public/images/sporty.png' },
-    { id: 'guest-friendly', label: 'Guest Friendly', image: 'public/images/guestfriendly.png' },
-    { id: 'wanderer', label: 'Wanderer', image: 'public/images/wanderer.png' },
-    { id: 'clean-centric', label: 'Clean centric', image: 'public/images/cleaner.png' },
-    { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'public/images/nonalcoholic.png' },
-    { id: 'non-smoker', label: 'Non-smoker', image: 'public/images/nonsmoker.png' }
+    { id: 'night-owl', label: 'Night Owl', image: 'images/nightowl.png' },
+    { id: 'early-bird', label: 'Early Bird', image: 'images/earlybird.png' },
+    { id: 'music-lover', label: 'Music Lover', image: 'images/music.png' },
+    { id: 'quiet-seeker', label: 'Quiet Seeker', image: 'images/quiet.png' },
+    { id: 'pet-lover', label: 'Pet Lover', image: 'images/petlover.png' },
+    { id: 'studious', label: 'Studious', image: 'images/studious.png' },
+    { id: 'sporty', label: 'Sporty', image: 'images/sporty.png' },
+    { id: 'guest-friendly', label: 'Guest Friendly', image: 'images/guestfriendly.png' },
+    { id: 'wanderer', label: 'Wanderer', image: 'images/wanderer.png' },
+    { id: 'clean-centric', label: 'Clean centric', image: 'images/cleaner.png' },
+    { id: 'non-alcoholic', label: 'Non-alcoholic', image: 'images/nonalcoholic.png' },
+    { id: 'non-smoker', label: 'Non-smoker', image: 'images/nonsmoker.png' }
 ];
 
 const selectedPreferences = new Set();
