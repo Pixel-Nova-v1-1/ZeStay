@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/lookingroom.css">
     <link rel="stylesheet" href="src/css/chat.css">
+    <link rel="stylesheet" href="src/css/toast.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -38,6 +39,7 @@
                     <div id="user-profile" class="user-profile" style="display:none;">
                         <button class="btn-icon" id="matchProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
+                            <span class="header-profile-badge"></span>
                         </button>
                         <button id="logoutBtn" class="btn-logout">
                             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -248,7 +250,7 @@
 
     <button id="chatToggleBtn" class="chat-toggle-btn">
         <i class="fa-solid fa-comment-dots"></i>
-        <span class="chat-badge">4</span>
+        <span class="chat-badge" style="display: none;"></span>
     </button>
 
     <script type="module" src="src/js/lookingroom.js"></script>

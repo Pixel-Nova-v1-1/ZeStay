@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/match.css">
     <link rel="stylesheet" href="src/css/chat.css">
+    <link rel="stylesheet" href="src/css/toast.css">
     <!-- ================= GOOGLE MAPS + PLACES ================= -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
         defer></script>
@@ -39,6 +40,7 @@
                     <div id="user-profile" class="user-profile" style="display:none;">
                         <button class="btn-icon" id="matchProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
+                            <span class="header-profile-badge"></span>
                         </button>
                         <button id="logoutBtn" class="btn-logout">
                             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -175,7 +177,7 @@
 
     <button id="chatToggleBtn" class="chat-toggle-btn">
         <i class="fa-solid fa-comment-dots"></i>
-        <span class="chat-badge">4</span>
+        <span class="chat-badge" style="display: none;"></span>
     </button>
 
     <script type="module" src="src/js/match.js"></script>
