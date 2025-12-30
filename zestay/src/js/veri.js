@@ -161,7 +161,78 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup Uploads
     setupFileUpload('drop-zone-front', 'id-front');
     setupFileUpload('drop-zone-back', 'id-back');
-    setupFileUpload('drop-zone-selfie', 'selfie');
+    // setupFileUpload('drop-zone-selfie', 'selfie'); // Removed for live selfie
+
+    // --- Live Selfie Logic ---
+    let stream = null;
+    let capturedSelfieBase64 = null;
+    const webcamElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('canvas');
+    const capturedImageElement = document.getElementById('captured-image');
+    const startCameraBtn = document.getElementById('start-camera');
+    const captureBtn = document.getElementById('capture-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+
+    const startCamera = async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            webcamElement.srcObject = stream;
+            webcamElement.style.display = 'block';
+            capturedImageElement.style.display = 'none';
+            startCameraBtn.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+            retakeBtn.style.display = 'none';
+        } catch (err) {
+            console.error("Error accessing webcam:", err);
+            showToast("Could not access camera. Please allow camera permissions.", "error");
+        }
+    };
+
+    const stopCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    };
+
+    const captureImage = () => {
+        if (!stream) return;
+        
+        const context = canvasElement.getContext('2d');
+        canvasElement.width = webcamElement.videoWidth;
+        canvasElement.height = webcamElement.videoHeight;
+        context.drawImage(webcamElement, 0, 0, canvasElement.width, canvasElement.height);
+        
+        capturedSelfieBase64 = canvasElement.toDataURL('image/jpeg', 0.8);
+        capturedImageElement.src = capturedSelfieBase64;
+        
+        webcamElement.style.display = 'none';
+        capturedImageElement.style.display = 'block';
+        captureBtn.style.display = 'none';
+        retakeBtn.style.display = 'inline-block';
+        
+        // Stop camera stream after capture to save resources
+        stopCamera();
+    };
+
+    const retakeImage = () => {
+        capturedSelfieBase64 = null;
+        startCamera();
+    };
+
+    if (startCameraBtn) startCameraBtn.addEventListener('click', startCamera);
+    if (captureBtn) captureBtn.addEventListener('click', captureImage);
+    if (retakeBtn) retakeBtn.addEventListener('click', retakeImage);
+
+    // Ensure camera stops when modal is closed
+    if (btnClose) {
+        btnClose.addEventListener('click', stopCamera);
+    }
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            stopCamera();
+        }
+    });
 
     // Helper to compress image and convert to Base64
     const compressImage = (file) => {
@@ -216,10 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Validation: Check if files are selected
             const idFront = document.getElementById('id-front').files[0];
             const idBack = document.getElementById('id-back').files[0];
-            const selfie = document.getElementById('selfie').files[0];
 
-            if (!idFront || !idBack || !selfie) {
-                showToast('Please upload all required documents.', "warning");
+            if (!idFront || !idBack) {
+                showToast('Please upload ID card images.', "warning");
+                return;
+            }
+
+            if (!capturedSelfieBase64) {
+                showToast('Please take a live selfie.', "warning");
                 return;
             }
 
@@ -258,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 2. Compress Images to Base64 (Bypasses CORS and Storage buckets)
                 const idFrontBase64 = await compressImage(idFront);
                 const idBackBase64 = await compressImage(idBack);
-                const selfieBase64 = await compressImage(selfie);
+                // Selfie is already Base64
 
                 // 3. Save Request to Firestore
                 await addDoc(collection(db, "verification_requests"), {
@@ -269,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: document.getElementById('v-email').value,
                     idFrontUrl: idFrontBase64,
                     idBackUrl: idBackBase64,
-                    selfieUrl: selfieBase64,
+                    selfieUrl: capturedSelfieBase64,
                     status: 'pending',
                     submittedAt: serverTimestamp()
                 });
