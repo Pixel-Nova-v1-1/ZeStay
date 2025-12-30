@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const passwordInput = document.getElementById("passwordInput");
   const confirmPasswordInput = document.getElementById("confirmPasswordInput");
   const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
+  const passwordHint = document.getElementById("passwordHint");
   const authActionBtn = document.getElementById("authActionBtn");
   const togglePasswordBtn = document.getElementById("togglePasswordBtn");
   const toggleConfirmPasswordBtn = document.getElementById("toggleConfirmPasswordBtn");
@@ -116,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (mode === "register") {
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = "flex";
+      if (passwordHint) passwordHint.style.display = "block";
       if (authActionBtn) authActionBtn.textContent = "Register";
       if (title) title.textContent = "Create your account";
       if (subtitle) subtitle.textContent = "We’ll send you a link to complete registration";
@@ -123,6 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (forgotPasswordLink) forgotPasswordLink.style.display = "none";
     } else {
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
+      if (passwordHint) passwordHint.style.display = "none";
       if (authActionBtn) authActionBtn.textContent = "Login";
       if (title) title.textContent = "Welcome back";
       if (subtitle) subtitle.textContent = "We’ll send you a secure login link";
@@ -207,6 +210,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Hide password fields
       if (passwordInput) passwordInput.closest('.input-group').style.display = 'none';
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = 'none';
+      if (passwordHint) passwordHint.style.display = 'none';
       forgotPasswordLink.style.display = 'none';
 
       // Update Text
@@ -285,6 +289,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (mode === "register") {
           const confirmPassword = confirmPasswordInput.value;
+          
+          // Password Strength Validation
+          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+          if (!passwordRegex.test(password)) {
+            throw new Error("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+          }
+
           if (password !== confirmPassword) {
             throw new Error("Passwords do not match");
           }

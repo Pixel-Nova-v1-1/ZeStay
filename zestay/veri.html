@@ -94,14 +94,17 @@
                     </div>
 
                     <div class="form-section">
-                        <h3>Upload Your Selfie</h3>
-                        <div class="file-upload-box full-width" id="drop-zone-selfie">
-                            <input type="file" id="selfie" accept="image/jpeg,image/png" hidden>
-                            <div class="upload-placeholder">
-                                <i class="fa-solid fa-camera"></i>
-                                <span>Click or Drag Image to Upload<br>(JPG,JPEG,PNG)</span>
+                        <h3>Take a Live Selfie</h3>
+                        <p class="section-desc">Please take a live selfie to verify your identity.</p>
+                        <div class="camera-container" id="camera-container">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <img id="captured-image" style="display:none;" alt="Captured Selfie">
+                            <div class="camera-controls">
+                                <button type="button" id="start-camera" class="btn-camera">Start Camera</button>
+                                <button type="button" id="capture-btn" class="btn-camera" style="display:none;">Capture</button>
+                                <button type="button" id="retake-btn" class="btn-camera" style="display:none;">Retake</button>
                             </div>
-                            <div class="file-preview"></div>
                         </div>
                     </div>
 
