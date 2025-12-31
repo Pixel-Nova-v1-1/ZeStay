@@ -749,12 +749,20 @@ body {
 
 }
 
-.footer-content {
+/* ================= FOOTER ================= */
+.main-footer {
+    background-color: #001524;
+    color: #e0e0e0;
+    padding: 80px 50px 30px;
+}
+
+.footer-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 40px;
     max-width: 1200px;
     margin: 0 auto 60px;
+    padding: 0 20px;
 }
 
 .footer-section h2.footer-logo {
@@ -769,6 +777,10 @@ body {
     font-size: 20px;
     font-weight: 500;
     margin-bottom: 25px;
+}
+
+.footer-section h3::after {
+    display: none; /* Remove the underline from previous design */
 }
 
 .footer-section p {
@@ -795,6 +807,7 @@ body {
 
 .footer-section ul {
     list-style: none;
+    padding: 0;
 }
 
 .footer-section ul li {
@@ -806,11 +819,13 @@ body {
     text-decoration: none;
     font-size: 14px;
     transition: color 0.3s;
+    display: inline-block;
 }
 
 .footer-section ul li a:hover {
     color: #00C4B4;
     padding-left: 5px;
+    transform: none; /* Reset transform from previous design */
 }
 
 .contact-info li {
@@ -824,6 +839,8 @@ body {
 .contact-info li i {
     color: #a0a0a0;
     width: 20px;
+    font-size: 14px;
+    margin-top: 0;
 }
 
 .footer-bottom {
@@ -860,13 +877,13 @@ body {
 }
 
 @media (max-width: 900px) {
-    .footer-content {
+    .footer-container {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 600px) {
-    .footer-content {
+    .footer-container {
         grid-template-columns: 1fr;
         text-align: center;
     }

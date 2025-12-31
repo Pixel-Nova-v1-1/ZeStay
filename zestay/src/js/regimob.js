@@ -291,9 +291,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           const confirmPassword = confirmPasswordInput.value;
           
           // Password Strength Validation
-          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
           if (!passwordRegex.test(password)) {
-            throw new Error("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+            throw new Error("Password must be 8+ chars with uppercase, lowercase, number, and special char.");
           }
 
           if (password !== confirmPassword) {
