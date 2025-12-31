@@ -94,6 +94,7 @@
   object-fit: contain;
   border-radius: 8px;
   transition: transform 0.3s ease;
+  margin-top: -50px;
 }
 
 .box:hover .box-image {

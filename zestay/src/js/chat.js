@@ -69,7 +69,7 @@ const aiChat = {
   name: 'Z (AI Assistant)',
   preview: 'How can I help you find a roommate?',
   time: 'Now',
-  avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Zestay',
+  avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Mochi',
   online: true,
   isBot: true,
   timestamp: Date.now()

@@ -3,7 +3,18 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs, deleteDoc } from "firebase/firestore";
 
 // Pages that don't require login
-const PUBLIC_PAGES = ["/", "/index.html", "/regimob.html"];
+const PUBLIC_PAGES = [
+  "/", 
+  "/index.html", 
+  "/regimob.html",
+  "/terms.html",
+  "/privacy.html",
+  "/about.html",
+  "/how-it-works.html",
+  "/safety.html",
+  "/faq.html",
+  "/blog.html"
+];
 
 onAuthStateChanged(auth, async (user) => {
   const path = window.location.pathname;
