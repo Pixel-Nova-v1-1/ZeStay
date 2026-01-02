@@ -365,3 +365,12 @@ body {
         display: none;
     }
 }
+
+@media (max-width: 480px) {
+    .preference-grid {
+        grid-template-columns: 1fr;
+    }
+    body {
+        padding: 1rem;
+    }
+}

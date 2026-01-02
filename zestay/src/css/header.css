@@ -237,3 +237,39 @@
         font-size: 14px;
     }
 }
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 10px 15px;
+    }
+
+    .logo-text {
+        display: none; /* Hide text on very small screens, keep logo */
+    }
+
+    .btn-primary {
+        padding: 8px;
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+    }
+    
+    .btn-primary i {
+        margin: 0;
+    }
+
+    .btn-secondary {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+}
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}

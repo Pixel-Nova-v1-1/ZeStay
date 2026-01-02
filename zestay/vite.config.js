@@ -15,7 +15,6 @@ export default defineConfig({
         ques: resolve(__dirname, 'ques.html'),
         regimob: resolve(__dirname, 'regimob.html'),
         register: resolve(__dirname, 'register.html'),
-        test_upload: resolve(__dirname, 'test_upload.html'),
         veri: resolve(__dirname, 'veri.html'),
         why: resolve(__dirname, 'why.html'),
         about: resolve(__dirname, 'about.html'),
