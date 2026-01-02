@@ -532,6 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (currentType === 'Flats') {
                 fetchFlats();
+            } else if (currentType === 'Roommates') {
+                fetchMatches();
             } else {
                 init();
             }

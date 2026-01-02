@@ -412,3 +412,78 @@ body {
     color: transparent;
     font-weight: 600;
 }
+
+/* Mobile Compatibility */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .left-section {
+        display: none;
+    }
+
+    .right-section {
+        padding: 2rem 1.5rem;
+        width: 100%;
+        flex: 1;
+        justify-content: center; /* Center vertically */
+        min-height: 100vh; /* Ensure it takes full height */
+    }
+
+    .content-wrapper {
+        margin: 0 auto;
+        padding: 20px 0;
+        width: 100%;
+        max-width: 400px; /* Limit width on mobile */
+    }
+
+    .app-name {
+        margin-bottom: 2rem;
+        text-align: center;
+        font-size: 1.8rem; /* Slightly larger for better visibility */
+    }
+}
+         . l e f t - s e c t i o n   { 
+ 
+                 d i s p l a y :   n o n e ; 
+ 
+         } 
+ 
+ 
+ 
+         . r i g h t - s e c t i o n   { 
+ 
+                 p a d d i n g :   2 r e m ; 
+ 
+                 w i d t h :   1 0 0 % ; 
+ 
+                 f l e x :   1 ; 
+ 
+         } 
+ 
+ 
+ 
+         . c o n t e n t - w r a p p e r   { 
+ 
+                 m a r g i n :   0   a u t o ; 
+ 
+                 p a d d i n g :   2 0 p x   0 ; 
+ 
+         } 
+ 
+ 
+ 
+         . a p p - n a m e   { 
+ 
+                 m a r g i n - b o t t o m :   2 r e m ; 
+ 
+                 t e x t - a l i g n :   c e n t e r ; 
+ 
+         } 
+ 
+ } 
+ 
+ 
