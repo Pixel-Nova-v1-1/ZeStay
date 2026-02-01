@@ -111,10 +111,11 @@ async function loadDashboardData() {
             });
         }
 
-        // Real-time Reports Count
+        // Real-time Reports Count (Pending Only)
         const newReports = document.getElementById('newReports');
         if (newReports) {
-            onSnapshot(collection(db, "reports"), (snap) => {
+            const q = query(collection(db, "reports"), where("status", "==", "pending"));
+            onSnapshot(q, (snap) => {
                 newReports.textContent = snap.size;
             });
         }
@@ -487,7 +488,9 @@ async function renderReports() {
 
                 html += `
                     <tr>
-                        <td>${report.reason || 'No reason'}</td>
+                        <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${report.reason || ''}">
+                            ${report.reason || 'No reason'}
+                        </td>
                         <td>${displayType}</td>
                         <td>${entityId}</td>
                         <td>${reporter}</td>
@@ -495,7 +498,8 @@ async function renderReports() {
                         <td>
                             ${report.status !== 'resolved' ?
                         `<button onclick="window.resolveReport('${report.id}')" class="btn btn-success">Resolve</button>` :
-                        `<span style="color: #aaa;"><i class="fa-solid fa-check"></i> Resolved</span>`
+                        `<span style="color: #aaa;"><i class="fa-solid fa-check"></i> Resolved</span>
+                                 <button onclick="window.deleteReportRecord('${report.id}')" class="btn btn-sm btn-danger" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;" title="Delete Record"><i class="fa-solid fa-trash"></i></button>`
                     }
                         </td>
                     </tr>
@@ -515,6 +519,17 @@ async function renderReports() {
         contentArea.innerHTML = `<div class="recent-activity"><h2>Error Loading Reports</h2><p>${error.message}</p></div>`;
     }
 }
+
+window.deleteReportRecord = async (id) => {
+    const confirmed = await showConfirm("Permanently delete this report record? This cannot be undone.");
+    if (!confirmed) return;
+    try {
+        await deleteDoc(doc(db, "reports", id));
+        showToast("Report record deleted.", "success");
+    } catch (e) {
+        showToast("Error deleting record: " + e.message, "error");
+    }
+};
 
 async function renderSettings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Settings...</h2></div>';
@@ -691,16 +706,178 @@ window.deleteListing = async (id) => {
     }
 };
 
+// --- Advanced Resolution Flow ---
+
+// Inject Modal CSS
+const modalStyles = document.createElement('style');
+modalStyles.textContent = `
+    .admin-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5); z-index: 1000;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .admin-modal {
+        background: white; padding: 25px; border-radius: 12px;
+        width: 90%; max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        animation: fadeIn 0.2s ease-out;
+        text-align: center;
+    }
+    .admin-modal h3 { margin-top: 0; color: #333; }
+    .admin-modal p { color: #666; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1; min-width: 120px; }
+    .btn-spam { background: #f39c12; color: white; }
+    .btn-action { background: #e74c3c; color: white; }
+    .btn-delete { background: #c0392b; color: white; }
+    .btn-warning { background: #f1c40f; color: black; }
+    .btn-cancel { background: #95a5a6; color: white; }
+    .modal-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; min-height: 80px; resize: vertical; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+`;
+document.head.appendChild(modalStyles);
+
+let currentReportId = null;
+let currentReportedUserId = null; // We need to fetch this from the report first
+
 window.resolveReport = async (id) => {
-    const confirmed = await showConfirm("Mark this report as resolved?");
-    if (!confirmed) return;
+    currentReportId = id;
+
+    // Fetch report to get the reported user ID (needed for actions)
     try {
-        await updateDoc(doc(db, "reports", id), { status: 'resolved' });
-        showToast("Report resolved.", "success");
-        renderReports();
+        const docSnap = await getDoc(doc(db, "reports", id));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // normalized field or legacy field
+            currentReportedUserId = data.reportedEntityId || data.reportedUserId;
+        }
+    } catch (e) {
+        console.error("Error fetching report details:", e);
+    }
+
+    // Show Step 1: Spam vs Action
+    showModal(`
+        <h3>Resolve Report</h3>
+        <p>How would you like to resolve this report?</p>
+        <div class="modal-actions">
+            <button onclick="window.markAsSpam()" class="btn-modal btn-spam">Spam</button>
+            <button onclick="window.showActionStep()" class="btn-modal btn-action">Take Action</button>
+            <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.markAsSpam = async () => {
+    if (!currentReportId) return;
+    try {
+        await updateDoc(doc(db, "reports", currentReportId), {
+            status: 'resolved',
+            resolution: 'spam',
+            resolvedAt: serverTimestamp()
+        });
+        showToast("Report marked as spam and resolved.", "success");
+        window.closeAdminModal();
     } catch (e) {
         showToast("Error: " + e.message, "error");
     }
+};
+
+window.showActionStep = () => {
+    showModal(`
+        <h3>Take Action</h3>
+        <p>Choose an action against the reported user:</p>
+        <div class="modal-actions">
+             <button onclick="window.confirmDeleteUser()" class="btn-modal btn-delete">Delete Account</button>
+             <button onclick="window.showWarningStep()" class="btn-modal btn-warning">Send Warning</button>
+             <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.confirmDeleteUser = async () => {
+    if (!currentReportedUserId) {
+        showToast("Error: Could not identify the user to delete.", "error");
+        return;
+    }
+    // Reuse existing deleteUser logic but we need to close modal and maybe wrap calls
+    window.closeAdminModal();
+
+    // We call the existing global deleteUser function
+    // Note: The existing function asks for confirmation again ("Are you sure..."), which is fine/good.
+    await window.deleteUser(currentReportedUserId);
+
+    // Also mark report as resolved automatically if user is deleted?
+    // The existing deleteUser function calculates related reports and deletes them!
+    // So the report will be DELETED, which technically resolves it (removes it).
+    // So we don't need to update status.
+};
+
+window.showWarningStep = () => {
+    showModal(`
+        <h3>Send Warning</h3>
+        <p>Write a warning message to the user:</p>
+        <textarea id="warningMessage" class="modal-input" placeholder="e.g., Please follow community guidelines..."></textarea>
+        <div class="modal-actions">
+             <button onclick="window.sendWarning()" class="btn-modal btn-primary" style="background: #3498db; color: white;">Send & Resolve</button>
+             <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.sendWarning = async () => {
+    const msg = document.getElementById('warningMessage').value.trim();
+    if (!msg) {
+        showToast("Please enter a warning message.", "warning");
+        return;
+    }
+
+    if (!currentReportedUserId) return;
+
+    try {
+        // 1. Send Notification
+        await addDoc(collection(db, "notifications"), {
+            userId: currentReportedUserId,
+            title: "Admin Warning",
+            message: msg,
+            type: "warning",
+            read: false,
+            timestamp: serverTimestamp()
+        });
+
+        // 2. Resolve Report
+        await updateDoc(doc(db, "reports", currentReportId), {
+            status: 'resolved',
+            resolution: 'warning_sent',
+            adminNote: msg,
+            resolvedAt: serverTimestamp()
+        });
+
+        showToast("Warning sent and report resolved.", "success");
+        window.closeAdminModal();
+    } catch (e) {
+        showToast("Error sending warning: " + e.message, "error");
+    }
+};
+
+// Helper to render modal
+function showModal(content) {
+    let overlay = document.querySelector('.admin-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'admin-modal-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) window.closeAdminModal();
+        });
+    }
+
+    overlay.innerHTML = `<div class="admin-modal">${content}</div>`;
+    overlay.style.display = 'flex';
+}
+
+window.closeAdminModal = () => {
+    const overlay = document.querySelector('.admin-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
 };
 
 window.saveSettings = async () => {

@@ -1,11 +1,11 @@
 import { auth, db } from "../firebase.js"; // Adjust path if needed (e.g. ./firebase.js)
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs, deleteDoc, onSnapshot } from "firebase/firestore";
 
 // Pages that don't require login
 const PUBLIC_PAGES = [
-  "/", 
-  "/index.html", 
+  "/",
+  "/index.html",
   "/regimob.html",
   "/terms.html",
   "/privacy.html",
@@ -16,11 +16,15 @@ const PUBLIC_PAGES = [
   "/blog.html"
 ];
 
+let unsubscribeNotifications = null;
+
 onAuthStateChanged(auth, async (user) => {
   const path = window.location.pathname;
 
   // 1. NOT LOGGED IN
   if (!user) {
+    if (unsubscribeNotifications) unsubscribeNotifications(); // Unsubscribe if logged out
+
     if (!PUBLIC_PAGES.includes(path)) {
       window.location.replace("/index.html");
     }
@@ -30,17 +34,20 @@ onAuthStateChanged(auth, async (user) => {
   // 1.5 CHECK IF ACCOUNT IS DELETED/BANNED
   // Since we can't delete Auth record from client, we check the blacklist.
   try {
-      const deletedRef = doc(db, "deleted_users", user.uid);
-      const deletedSnap = await getDoc(deletedRef);
-      if (deletedSnap.exists()) {
-          await signOut(auth);
-          alert("Your account has been permanently deleted by the administrator.");
-          window.location.replace("/index.html");
-          return;
-      }
+    const deletedRef = doc(db, "deleted_users", user.uid);
+    const deletedSnap = await getDoc(deletedRef);
+    if (deletedSnap.exists()) {
+      await signOut(auth);
+      alert("Your account has been permanently deleted by the administrator.");
+      window.location.replace("/index.html");
+      return;
+    }
   } catch (e) {
-      console.error("Error checking deleted status:", e);
+    console.error("Error checking deleted status:", e);
   }
+
+  // --- START NOTIFICATION LISTENER ---
+  subscribeToNotifications(user.uid);
 
   // 2. LOGGED IN - Check Progress
   const userRef = doc(db, "users", user.uid);
@@ -50,24 +57,24 @@ onAuthStateChanged(auth, async (user) => {
 
     // 🔹 New user → create profile
     if (!snap.exists()) {
-      
+
       // --- PREVENT DUPLICATION: Check for orphaned accounts with same email ---
       try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
-          const querySnapshot = await getDocs(q);
-          
-          if (!querySnapshot.empty) {
-              console.log("Found orphaned accounts for this email. Cleaning up...");
-              // Delete old documents that don't match the current UID
-              const deletePromises = querySnapshot.docs.map(doc => {
-                  if (doc.id !== user.uid) {
-                      return deleteDoc(doc.ref);
-                  }
-              });
-              await Promise.all(deletePromises);
-          }
+        const q = query(collection(db, "users"), where("email", "==", user.email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          console.log("Found orphaned accounts for this email. Cleaning up...");
+          // Delete old documents that don't match the current UID
+          const deletePromises = querySnapshot.docs.map(doc => {
+            if (doc.id !== user.uid) {
+              return deleteDoc(doc.ref);
+            }
+          });
+          await Promise.all(deletePromises);
+        }
       } catch (err) {
-          console.warn("Failed to check/clean orphans (likely permission issue):", err);
+        console.warn("Failed to check/clean orphans (likely permission issue):", err);
       }
       // -----------------------------------------------------------------------
 
@@ -127,8 +134,37 @@ onAuthStateChanged(auth, async (user) => {
     console.error("Auth Listener Error:", error);
   }
 
-  updateHeaderUI(user, data);
+  updateHeaderUI(user, snap.exists() ? snap.data() : null);
 });
+
+function subscribeToNotifications(userId) {
+  if (unsubscribeNotifications) unsubscribeNotifications();
+
+  const q = query(
+    collection(db, "notifications"),
+    where("userId", "==", userId),
+    where("read", "==", false)
+  );
+
+  unsubscribeNotifications = onSnapshot(q, (snapshot) => {
+    const count = snapshot.size;
+    updateProfileBadge(count);
+  }, (error) => {
+    console.error("Notification listener error:", error);
+  });
+}
+
+function updateProfileBadge(count) {
+  const badge = document.querySelector('.header-profile-badge');
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
 
 function updateHeaderUI(user, userData) {
   const authButtons = document.getElementById("auth-buttons");
@@ -143,15 +179,22 @@ function updateHeaderUI(user, userData) {
 
       // Update profile icon if available
       if (userData && userData.photoUrl) {
-        const img = document.createElement("img");
+        // Check if we already have the img to avoid wiping the badge
+        let img = landingProfileBtn.querySelector('img');
+        if (!img) {
+          img = document.createElement("img");
+          img.style.width = "32px";
+          img.style.height = "32px";
+          img.style.borderRadius = "50%";
+          img.style.objectFit = "cover";
+          // Insert before any badge
+          landingProfileBtn.insertBefore(img, landingProfileBtn.firstChild);
+        }
         img.src = userData.photoUrl;
-        img.style.width = "32px";
-        img.style.height = "32px";
-        img.style.borderRadius = "50%";
-        img.style.objectFit = "cover";
 
-        landingProfileBtn.innerHTML = "";
-        landingProfileBtn.appendChild(img);
+        // Remove default icon if present (i tag)
+        const icon = landingProfileBtn.querySelector('i');
+        if (icon) icon.remove();
       }
     } else {
       authButtons.style.display = "flex"; // or block depending on css
