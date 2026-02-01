@@ -242,10 +242,7 @@ function subscribeToChatList() {
       badge.textContent = badgeText;
     }
 
-    if (headerBadge) {
-      headerBadge.style.display = shouldShow ? 'flex' : 'none';
-      headerBadge.textContent = badgeText;
-    }
+    // Removed header badge update to decouple systems
 
     if (tabBadge) {
       tabBadge.style.display = shouldShow ? 'inline-flex' : 'none';
