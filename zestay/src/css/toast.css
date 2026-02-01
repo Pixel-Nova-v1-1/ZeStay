@@ -184,3 +184,11 @@
 .custom-confirm-btn.confirm:hover {
     background: #c0392b;
 }
+
+/* Mobile Compatibility */
+@media (max-width: 480px) {
+    .toast {
+        min-width: auto;
+        width: 90vw;
+    }
+}

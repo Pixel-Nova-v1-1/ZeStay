@@ -425,3 +425,14 @@
     background: #ff4757;
     color: white;
 }
+
+/* Mobile Compatibility */
+@media (max-width: 480px) {
+    .chat-widget {
+        width: 90%;
+        right: 5%;
+        left: 5%;
+        bottom: 80px;
+        height: 60vh;
+    }
+}

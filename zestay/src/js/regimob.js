@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const passwordInput = document.getElementById("passwordInput");
   const confirmPasswordInput = document.getElementById("confirmPasswordInput");
   const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
+  const passwordHint = document.getElementById("passwordHint");
   const authActionBtn = document.getElementById("authActionBtn");
   const togglePasswordBtn = document.getElementById("togglePasswordBtn");
   const toggleConfirmPasswordBtn = document.getElementById("toggleConfirmPasswordBtn");
@@ -25,6 +26,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const formContainer = document.querySelector(".form-container");
   const verificationSection = document.getElementById("verificationSection");
   const resendBtn = document.getElementById("resendBtn");
+
+  if (!formContainer && !verificationSection) {
+    return;
+  }
 
   const authToggleLink = document.getElementById("authToggleLink");
   const authToggleText = document.getElementById("authToggleText");
@@ -36,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (oobCode) {
     // Hide the main form and verification section
     // formContainer is hidden by default in HTML now to prevent flash
-    verificationSection.style.display = "none";
+    if (verificationSection) verificationSection.style.display = "none";
 
     // specific container for verification messages
     const statusDiv = document.createElement("div");
@@ -112,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (mode === "register") {
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = "flex";
+      if (passwordHint) passwordHint.style.display = "block";
       if (authActionBtn) authActionBtn.textContent = "Register";
       if (title) title.textContent = "Create your account";
       if (subtitle) subtitle.textContent = "We’ll send you a link to complete registration";
@@ -119,6 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (forgotPasswordLink) forgotPasswordLink.style.display = "none";
     } else {
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
+      if (passwordHint) passwordHint.style.display = "none";
       if (authActionBtn) authActionBtn.textContent = "Login";
       if (title) title.textContent = "Welcome back";
       if (subtitle) subtitle.textContent = "We’ll send you a secure login link";
@@ -203,6 +210,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Hide password fields
       if (passwordInput) passwordInput.closest('.input-group').style.display = 'none';
       if (confirmPasswordGroup) confirmPasswordGroup.style.display = 'none';
+      if (passwordHint) passwordHint.style.display = 'none';
       forgotPasswordLink.style.display = 'none';
 
       // Update Text
@@ -239,6 +247,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Add Enter key listener to inputs
+  const inputs = [emailInput, passwordInput, confirmPasswordInput];
+  inputs.forEach(input => {
+    if (input) {
+      input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          authActionBtn.click();
+        }
+      });
+    }
+  });
+
   // Handle Auth Action
   if (authActionBtn) {
     authActionBtn.addEventListener("click", async () => {
@@ -268,6 +289,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (mode === "register") {
           const confirmPassword = confirmPasswordInput.value;
+          
+          // Password Strength Validation
+          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+          if (!passwordRegex.test(password)) {
+            throw new Error("Password must be 8+ chars with uppercase, lowercase, number, and special char.");
+          }
+
           if (password !== confirmPassword) {
             throw new Error("Passwords do not match");
           }

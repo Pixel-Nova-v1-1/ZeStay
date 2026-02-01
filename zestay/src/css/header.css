@@ -142,6 +142,7 @@
 }
 
 .btn-icon {
+    position: relative;
     background: rgba(0, 196, 180, 0.1);
     color: #00C4B4;
     border: 2px solid #00C4B4;
@@ -154,6 +155,25 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 20px;
+}
+
+.header-profile-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid white;
+    z-index: 10;
+    display: none;
 }
 
 .btn-icon:hover {
@@ -216,4 +236,40 @@
         padding: 8px 12px;
         font-size: 14px;
     }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 10px 15px;
+    }
+
+    .logo-text {
+        display: none; /* Hide text on very small screens, keep logo */
+    }
+
+    .btn-primary {
+        padding: 8px;
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+    }
+    
+    .btn-primary i {
+        margin: 0;
+    }
+
+    .btn-secondary {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+}
+.brand-text {
+    background: linear-gradient(to right, #00A89D, #7FDBFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }

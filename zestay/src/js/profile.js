@@ -1372,7 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             await signOut(auth);
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         });
     }
 

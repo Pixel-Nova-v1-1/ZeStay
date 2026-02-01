@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>Verification - ZeStay</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/veri.css">
     <link rel="stylesheet" href="src/css/chat.css">
+    <link rel="stylesheet" href="src/css/toast.css">
+    <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
 <body>
@@ -93,14 +96,17 @@
                     </div>
 
                     <div class="form-section">
-                        <h3>Upload Your Selfie</h3>
-                        <div class="file-upload-box full-width" id="drop-zone-selfie">
-                            <input type="file" id="selfie" accept="image/jpeg,image/png" hidden>
-                            <div class="upload-placeholder">
-                                <i class="fa-solid fa-camera"></i>
-                                <span>Click or Drag Image to Upload<br>(JPG,JPEG,PNG)</span>
+                        <h3>Take a Live Selfie</h3>
+                        <p class="section-desc">Please take a live selfie to verify your identity.</p>
+                        <div class="camera-container" id="camera-container">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <img id="captured-image" style="display:none;" alt="Captured Selfie">
+                            <div class="camera-controls">
+                                <button type="button" id="start-camera" class="btn-camera">Start Camera</button>
+                                <button type="button" id="capture-btn" class="btn-camera" style="display:none;">Capture</button>
+                                <button type="button" id="retake-btn" class="btn-camera" style="display:none;">Retake</button>
                             </div>
-                            <div class="file-preview"></div>
                         </div>
                     </div>
 
@@ -140,7 +146,7 @@
 
     <button id="chatToggleBtn" class="chat-toggle-btn">
         <i class="fa-solid fa-comment-dots"></i>
-        <span class="chat-badge">4</span>
+        <span class="chat-badge" style="display: none;"></span>
     </button>
 
     <script type="module" src="src/js/veri.js"></script>
@@ -148,3 +154,5 @@
 </body>
 
 </html>
+
+
