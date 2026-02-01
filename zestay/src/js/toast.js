@@ -1,15 +1,27 @@
-// Inject CSS
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = 'src/css/toast.css';
-document.head.appendChild(link);
-
 // Create Toast Container
-const container = document.createElement('div');
-container.id = 'toast-container';
-document.body.appendChild(container);
+let container;
+
+function initToastContainer() {
+    if (document.getElementById('toast-container')) {
+        container = document.getElementById('toast-container');
+        return;
+    }
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    if (document.body) {
+        document.body.appendChild(container);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.appendChild(container);
+        });
+    }
+}
+
+initToastContainer();
 
 export function showToast(message, type = 'info') {
+    if (!container) initToastContainer();
+    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
 

@@ -4,14 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>Accomodation Matching</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/match.css">
     <link rel="stylesheet" href="src/css/chat.css">
+    <link rel="stylesheet" href="src/css/toast.css">
     <!-- ================= GOOGLE MAPS + PLACES ================= -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
         defer></script>
+    <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
 <body>
@@ -39,16 +42,13 @@
                     <div id="user-profile" class="user-profile" style="display:none;">
                         <button class="btn-icon" id="matchProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
+                            <span class="header-profile-badge"></span>
                         </button>
                         <button id="logoutBtn" class="btn-logout">
                             <i class="fa-solid fa-arrow-right-from-bracket"></i>
                             <span>Logout</span>
                         </button>
                     </div>
-                </div>
-            </nav>
-        </div>
-    </header>
                 </div>
             </nav>
         </div>
@@ -92,8 +92,8 @@
     <div class="more">
         <button class="bhagwan">MORE<i class="fa-solid fa-chevron-down"></i></button>
     </div>
-    <footer class="finally">
-        <div class="footer-content">
+    <footer class="main-footer">
+        <div class="footer-container">
             <div class="footer-section">
                 <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
                 <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
@@ -175,7 +175,7 @@
 
     <button id="chatToggleBtn" class="chat-toggle-btn">
         <i class="fa-solid fa-comment-dots"></i>
-        <span class="chat-badge">4</span>
+        <span class="chat-badge" style="display: none;"></span>
     </button>
 
     <script type="module" src="src/js/match.js"></script>
@@ -183,3 +183,5 @@
 </body>
 
 </html>
+
+

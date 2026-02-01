@@ -3,7 +3,18 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs, deleteDoc } from "firebase/firestore";
 
 // Pages that don't require login
-const PUBLIC_PAGES = ["/", "/landing.html", "/regimob.html"];
+const PUBLIC_PAGES = [
+  "/", 
+  "/index.html", 
+  "/regimob.html",
+  "/terms.html",
+  "/privacy.html",
+  "/about.html",
+  "/how-it-works.html",
+  "/safety.html",
+  "/faq.html",
+  "/blog.html"
+];
 
 onAuthStateChanged(auth, async (user) => {
   const path = window.location.pathname;
@@ -11,7 +22,7 @@ onAuthStateChanged(auth, async (user) => {
   // 1. NOT LOGGED IN
   if (!user) {
     if (!PUBLIC_PAGES.includes(path)) {
-      window.location.replace("/landing.html");
+      window.location.replace("/index.html");
     }
     return;
   }
@@ -24,7 +35,7 @@ onAuthStateChanged(auth, async (user) => {
       if (deletedSnap.exists()) {
           await signOut(auth);
           alert("Your account has been permanently deleted by the administrator.");
-          window.location.replace("/landing.html");
+          window.location.replace("/index.html");
           return;
       }
   } catch (e) {
@@ -151,7 +162,7 @@ function updateHeaderUI(user, userData) {
   if (logoutBtn) {
     logoutBtn.onclick = async () => {
       await auth.signOut();
-      window.location.href = "index.html";
+      window.location.href = "/index.html";
     };
   }
 

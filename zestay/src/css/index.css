@@ -15,196 +15,9 @@ body {
 }
 
 /* ================= NEW HEADER STYLES ================= */
-.main-header {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
-    box-shadow: 0 2px 20px rgba(0, 196, 180, 0.08);
-    z-index: 1000;
-    border-bottom: 1px solid rgba(0, 196, 180, 0.1);
-}
+/* Header styles are imported from header.css */
 
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 50px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.logo-section {
-    display: flex;
-    align-items: center;
-}
-
-.logo-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.3s ease;
-}
-
-.logo-link:hover {
-    transform: scale(1.02);
-}
-
-.logo-img {
-    height: 45px;
-    width: auto;
-    transition: filter 0.3s ease;
-}
-
-.logo-link:hover .logo-img {
-    filter: brightness(1.1);
-}
-
-.logo-text {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-    background: linear-gradient(to right, #00A89D, #7FDBFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: -0.5px;
-}
-
-.brand-text {
-    background: linear-gradient(to right, #00A89D, #7FDBFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.logo-ze {
-    color: inherit;
-}
-
-.logo-stay {
-    color: inherit;
-}
-
-.header-nav {
-    display: flex;
-    align-items: center;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #00C4B4 0%, #00E5D0 100%);
-    color: white;
-    padding: 11px 24px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 196, 180, 0.2);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 196, 180, 0.35);
-    background: linear-gradient(135deg, #00B0A6 0%, #00D4C0 100%);
-}
-
-.btn-primary i {
-    font-size: 14px;
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.btn-secondary {
-    color: #2c3e50;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 15px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.btn-secondary:hover {
-    color: #00C4B4;
-    background-color: rgba(0, 196, 180, 0.05);
-}
-
-.btn-secondary.btn-register {
-    border: 2px solid #00C4B4;
-    color: #00C4B4;
-}
-
-.btn-secondary.btn-register:hover {
-    background-color: #00C4B4;
-    color: white;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.btn-icon {
-    background: rgba(0, 196, 180, 0.1);
-    color: #00C4B4;
-    border: 2px solid #00C4B4;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 20px;
-}
-
-.btn-icon:hover {
-    background: #00C4B4;
-    color: white;
-    transform: scale(1.05);
-}
-
-.btn-logout {
-    background: transparent;
-    color: #00C4B4;
-    border: 2px solid #00C4B4;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.3s ease;
-}
-
-.btn-logout:hover {
-    background: #00C4B4;
-    color: white;
-    transform: translateY(-1px);
-}
+/* Header styles continued in header.css */
 
 /* Legacy navbar support (will be removed) */
 .navbar {
@@ -728,159 +541,53 @@ body {
 }
 
 @media (max-width: 768px) {
+    .hero-image {
+        display: none;
+    }
+
     .four-steps {
-        flex-direction: column;
-        align-items: center;
-        gap: 50px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
     }
 
     .step-card {
-        max-width: 100%;
-        width: 100%;
-        padding: 0 20px;
+        flex: 0 0 45%;
+        max-width: 45%;
+        width: auto;
+        padding: 15px 10px;
+        min-width: auto;
+    }
+
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+    }
+
+    .step-icon i {
+        font-size: 20px;
+    }
+
+    .step-label {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .step-card h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .step-card p {
+        font-size: 11px;
+        line-height: 1.3;
     }
 }
 
 
-.finally {
-    background-color: #001524;
-    color: #e0e0e0;
-    padding: 80px 50px 30px;
-
-}
-
-.footer-content {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto 60px;
-}
-
-.footer-section h2.footer-logo {
-    color: #00C4B4;
-    font-size: 28px;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.footer-section h3 {
-    color: white;
-    font-size: 20px;
-    font-weight: 500;
-    margin-bottom: 25px;
-}
-
-.footer-section p {
-    color: #a0a0a0;
-    line-height: 1.6;
-    margin-bottom: 25px;
-    font-size: 14px;
-}
-
-.social-icons {
-    display: flex;
-    gap: 15px;
-}
-
-.social-icons a {
-    color: #a0a0a0;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-.social-icons a:hover {
-    color: #00C4B4;
-}
-
-.footer-section ul {
-    list-style: none;
-}
-
-.footer-section ul li {
-    margin-bottom: 15px;
-}
-
-.footer-section ul li a {
-    color: #a0a0a0;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
-}
-
-.footer-section ul li a:hover {
-    color: #00C4B4;
-    padding-left: 5px;
-}
-
-.contact-info li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #a0a0a0;
-    font-size: 14px;
-}
-
-.contact-info li i {
-    color: #a0a0a0;
-    width: 20px;
-}
-
-.footer-bottom {
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
-    padding-top: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.footer-bottom p {
-    color: #666;
-    font-size: 14px;
-}
-
-.footer-legal {
-    display: flex;
-    gap: 20px;
-}
-
-.footer-legal a {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
-}
-
-.footer-legal a:hover {
-    color: #00C4B4;
-}
-
-@media (max-width: 900px) {
-    .footer-content {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .social-icons,
-    .contact-info li {
-        justify-content: center;
-    }
-
-    .footer-bottom {
-        flex-direction: column;
-        text-align: center;
-    }
-}
+/* Footer styles moved to footer.css */
 
 
 .btn-profile {
@@ -910,3 +617,74 @@ body {
 /* --- Chat Widget Styles --- */
 
 /* Chat styles moved to chat.css */
+
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 28px;
+    }
+    .hero-content p {
+        font-size: 16px;
+    }
+
+    /* Features Section Mobile */
+    .features {
+        padding: 40px 20px;
+    }
+
+    .features-header h2 {
+        font-size: 24px;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .feature-card {
+        padding: 15px;
+    }
+
+    .feature-card h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .feature-card p {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 10px;
+    }
+
+    .icon-box i {
+        font-size: 18px;
+    }
+
+    /* How It Works Mobile */
+    .works {
+        padding: 40px 20px;
+    }
+
+    .works h1 {
+        font-size: 28px;
+    }
+
+    .works-subtitle {
+        font-size: 15px;
+    }
+
+    /* Footer Mobile */
+    /* Footer styles moved to footer.css */
+}
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 28px;
+    }
+    .hero-content p {
+        font-size: 16px;
+    }
+}
