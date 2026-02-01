@@ -69,7 +69,7 @@ const aiChat = {
   name: 'Z (AI Assistant)',
   preview: 'How can I help you find a roommate?',
   time: 'Now',
-  avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Zestay',
+  avatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Mochi',
   online: true,
   isBot: true,
   timestamp: Date.now()
@@ -118,7 +118,7 @@ function initChatSystem() {
         };
       }
 
-      toggleBtn.style.display = 'flex';
+      if (toggleBtn) toggleBtn.style.display = 'flex';
 
       // Start listening for chat list updates
       subscribeToChatList();
@@ -137,7 +137,7 @@ function initChatSystem() {
       const badge = document.querySelector('.chat-badge');
       if (badge) badge.style.display = 'none';
 
-      toggleBtn.style.display = 'flex';
+      if (toggleBtn) toggleBtn.style.display = 'flex';
       if (!chatWidget.classList.contains('closed')) {
         showLoginPrompt();
       }
@@ -145,7 +145,13 @@ function initChatSystem() {
   });
 
   // Event Listeners
-  toggleBtn.addEventListener('click', openWidget);
+  toggleBtn.addEventListener('click', () => {
+    if (chatWidget.classList.contains('closed')) {
+      openWidget();
+    } else {
+      closeWidget();
+    }
+  });
   if (closeBtn) closeBtn.addEventListener('click', closeWidget);
   if (backBtn) backBtn.addEventListener('click', showListView);
   if (sendBtn) sendBtn.addEventListener('click', handleSend);
@@ -225,13 +231,27 @@ function subscribeToChatList() {
 
     // Update Toggle Button Badge
     const badge = document.querySelector('.chat-badge');
+    const headerBadge = document.querySelector('.header-profile-badge');
+    const tabBadge = document.querySelector('.tab-badge');
+    
+    const badgeText = totalUnread > 9 ? '9+' : totalUnread;
+    const shouldShow = totalUnread > 0;
+
     if (badge) {
-      if (totalUnread > 0) {
-        badge.style.display = 'flex';
-        badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
-      } else {
-        badge.style.display = 'none';
-      }
+      badge.style.display = shouldShow ? 'flex' : 'none';
+      badge.textContent = badgeText;
+    }
+
+    if (headerBadge) {
+      headerBadge.style.display = shouldShow ? 'flex' : 'none';
+      headerBadge.textContent = badgeText;
+    }
+
+    if (tabBadge) {
+      tabBadge.style.display = shouldShow ? 'inline-flex' : 'none';
+      tabBadge.style.alignItems = 'center';
+      tabBadge.style.justifyContent = 'center';
+      tabBadge.textContent = badgeText;
     }
 
     // If we are currently in list view, re-render
