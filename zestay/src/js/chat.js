@@ -233,7 +233,7 @@ function subscribeToChatList() {
     const badge = document.querySelector('.chat-badge');
     const headerBadge = document.querySelector('.header-profile-badge');
     const tabBadge = document.querySelector('.tab-badge');
-    
+
     const badgeText = totalUnread > 9 ? '9+' : totalUnread;
     const shouldShow = totalUnread > 0;
 
@@ -909,12 +909,12 @@ async function submitReport() {
 
   try {
     await addDoc(collection(db, "reports"), {
-      reportedUserId: activeTargetUser.id,
-      reportedByName: (currentProfile && currentProfile.name) || "User",
-      reportedByUid: currentUser.uid,
+      reportedEntityId: activeTargetUser.id, // Standardized ID
+      reportedEntityType: 'Chat', // Standardized Type
       reason: reason,
-      reportSource: 'chat',
-      timestamp: Date.now(),
+      reportedBy: currentUser.uid, // Standardized Short ID
+      reportedByEmail: currentUser.email, // Standardized Email
+      timestamp: serverTimestamp(),
       status: 'pending'
     });
 
