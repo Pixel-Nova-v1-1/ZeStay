@@ -569,147 +569,7 @@ body {
 }
 
 
-.finally {
-    background-color: #001524;
-    color: #e0e0e0;
-    padding: 80px 50px 30px;
-    margin-top: 50px;
-
-}
-
-.footer-content {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto 60px;
-}
-
-.footer-section h2.footer-logo {
-    color: #00C4B4;
-    font-size: 28px;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.footer-section h3 {
-    color: white;
-    font-size: 20px;
-    font-weight: 500;
-    margin-bottom: 25px;
-}
-
-.footer-section p {
-    color: #a0a0a0;
-    line-height: 1.6;
-    margin-bottom: 25px;
-    font-size: 14px;
-}
-
-.social-icons {
-    display: flex;
-    gap: 15px;
-}
-
-.social-icons a {
-    color: #a0a0a0;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-.social-icons a:hover {
-    color: #00C4B4;
-}
-
-.footer-section ul {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-section ul li {
-    margin-bottom: 15px;
-}
-
-.footer-section ul li a {
-    color: #a0a0a0;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
-}
-
-.footer-section ul li a:hover {
-    color: #00C4B4;
-    padding-left: 5px;
-}
-
-.contact-info li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #a0a0a0;
-    font-size: 14px;
-}
-
-.contact-info li i {
-    color: #a0a0a0;
-    width: 20px;
-}
-
-.footer-bottom {
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
-    padding-top: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.footer-bottom p {
-    color: #666;
-    font-size: 14px;
-}
-
-.footer-legal {
-    display: flex;
-    gap: 20px;
-}
-
-.footer-legal a {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
-}
-
-.footer-legal a:hover {
-    color: #00C4B4;
-}
-
-@media (max-width: 900px) {
-    .footer-content {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .social-icons,
-    .contact-info li {
-        justify-content: center;
-    }
-
-    .footer-bottom {
-        flex-direction: column;
-        text-align: center;
-    }
-}
+/* Footer styles moved to footer.css */
 
 
 .modal-overlay {
@@ -840,4 +700,16 @@ body {
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
+}
+
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        padding: 0 20px;
+    }
+    .sidebar {
+        width: 100%;
+        position: static;
+        margin-bottom: 30px;
+    }
 }

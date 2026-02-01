@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>FAQ - Zestay</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/header.css">
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/footer.css">
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="public/images/logo.png" alt="Zestay Logo" class="logo-img">
+                    <span class="logo-text"><span class="logo-ze">Ze</span><span class="logo-stay">Stay</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav">
+                <div class="header-actions">
+                    <a href="#" id="postListingBtn" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Post Listing</span>
+                    </a>
+
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
+                        <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
+                    </div>
+
+                    <div id="user-profile" class="user-profile" style="display:none;">
+                        <button class="btn-icon" id="landingProfileBtn">
+                            <i class="fa-regular fa-circle-user"></i>
+                            <span class="header-profile-badge"></span>
+                        </button>
+                        <button id="logoutBtn" class="btn-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-container">
+        <h1 class="section-title">Frequently Asked Questions</h1>
+
+        <div class="faq-container">
+            <div class="faq-category">
+                <h2>General</h2>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Is Zestay completely free?
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Yes! Signing up, browsing matches, and chatting with users is currently free for all individual users.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Can I search for flatmates without having a flat?
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Absolutely. You can select "Looking for a Flatmate" and team up with others to hunt for a whole flat together ("Team-Up" mode).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-category">
+                <h2>Matching & Verification</h2>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        How is my Match Score calculated?
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>We use your answers from the "Vibe Check" quiz to compare key compatibility factors like cleanliness, social battery, and daily schedule. A score above 80% usually indicates excellent harmony.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        My ID verification failed. Why?
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Common reasons include: blurry photos, name mismatch between profile and ID, or an expired document. Please retry with a clear photo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-category">
+                <h2>Listings</h2>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        How long does my listing stay active?
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Listings are active for 30 days by default. You can renew them or mark them as "Occupied" at any time from your dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="how-it-works.html">How it Works</a></li>
+                    <li><a href="safety.html">Safety Tips</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Popular Cities</h3>
+                <ul>
+                    <li><a href="match.html?location=Panvel">Panvel</a></li>
+                    <li><a href="match.html?location=Mumbai">Mumbai</a></li>
+                    <li><a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a></li>
+                    <li><a href="match.html?location=Delhi">Delhi</a></li>
+                    <li><a href="match.html?location=Hyderabad">Hyderabad</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@zestay.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 ZeStay. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="src/main.js"></script>
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const isActive = header.classList.contains('active');
+                
+                // Close all other accordions
+                document.querySelectorAll('.accordion-header').forEach(h => {
+                    h.classList.remove('active');
+                    h.nextElementSibling.classList.remove('active');
+                });
+
+                if (!isActive) {
+                    header.classList.add('active');
+                    content.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
