@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let label = prefItem;
 
                 const lowerPref = prefItem.toLowerCase();
-                
+
                 // --- Mapping Logic ---
                 if (lowerPref.includes('clean')) iconClass = 'fa-broom';
                 else if (lowerPref.includes('quiet') || lowerPref.includes('calm')) iconClass = 'fa-volume-xmark';
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (lowerPref.includes('wanderer') || lowerPref.includes('travel')) iconClass = 'fa-plane';
                 else if (lowerPref.includes('non-alcoholic')) iconClass = 'fa-wine-glass-empty';
                 else if (lowerPref.includes('non-smoker')) iconClass = 'fa-ban-smoking';
-                
+
                 // New mappings for Requirement Chips
                 else if (lowerPref.includes('easy going')) iconClass = 'fa-face-smile';
                 else if (lowerPref.includes('long-term')) iconClass = 'fa-calendar-check';
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await addDoc(collection(db, "reports"), {
                 reportedEntityId: userId, // The ID of the user/listing being reported
-                reportedEntityType: 'user', // or 'listing' depending on context
+                reportedEntityType: 'Listing', // Standardized Type
                 reason: reason,
                 reportedBy: auth.currentUser.uid,
                 reportedByEmail: auth.currentUser.email,
