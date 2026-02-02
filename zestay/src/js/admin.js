@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, limit, orderBy, where, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
 
 
@@ -84,17 +84,41 @@ function loadTabContent(tab) {
 
 async function loadDashboardData() {
     try {
-        const usersSnap = await getDocs(collection(db, "users"));
+        // Real-time Users Count
         const totalUsers = document.getElementById('totalUsers');
-        if (totalUsers) totalUsers.textContent = usersSnap.size;
+        if (totalUsers) {
+            onSnapshot(collection(db, "users"), (snap) => {
+                totalUsers.textContent = snap.size;
+            });
+        }
 
-        const listingsSnap = await getDocs(collection(db, "listings"));
+        // Real-time Active Listings (Flats + Requirements)
         const activeListings = document.getElementById('activeListings');
-        if (activeListings) activeListings.textContent = listingsSnap.size;
+        if (activeListings) {
+            let flatsCount = 0;
+            let reqsCount = 0;
 
-        const reportsSnap = await getDocs(collection(db, "reports"));
+            // Listen to Flats
+            onSnapshot(collection(db, "flats"), (snap) => {
+                flatsCount = snap.size;
+                activeListings.textContent = flatsCount + reqsCount;
+            });
+
+            // Listen to Requirements
+            onSnapshot(collection(db, "requirements"), (snap) => {
+                reqsCount = snap.size;
+                activeListings.textContent = flatsCount + reqsCount;
+            });
+        }
+
+        // Real-time Reports Count (Pending Only)
         const newReports = document.getElementById('newReports');
-        if (newReports) newReports.textContent = reportsSnap.size;
+        if (newReports) {
+            const q = query(collection(db, "reports"), where("status", "==", "pending"));
+            onSnapshot(q, (snap) => {
+                newReports.textContent = snap.size;
+            });
+        }
 
         renderActivityLog();
     } catch (error) {
@@ -384,56 +408,128 @@ async function renderReports() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Reports...</h2></div>';
 
     try {
-        // Removed orderBy to prevent index issues for now
-        const q = query(collection(db, "reports"), limit(20));
-        const querySnapshot = await getDocs(q);
+        // Use onSnapshot for real-time updates
+        // Order by timestamp DESC to get latest reports
+        const q = query(collection(db, "reports"), orderBy("timestamp", "desc"), limit(50));
 
-        if (querySnapshot.empty) {
-            contentArea.innerHTML = '<div class="recent-activity"><h2>Reports</h2><p>No reports found.</p></div>';
-            return;
-        }
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            if (querySnapshot.empty) {
+                contentArea.innerHTML = '<div class="recent-activity"><h2>Reports</h2><p>No reports found.</p></div>';
+                return;
+            }
 
-        let html = `
-        <div class="recent-activity">
-            <h2>User Reports</h2>
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Reason</th>
-                        <th>Type</th>
-                        <th>Entity ID</th>
-                        <th>Reported By</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+            let reports = [];
+            querySnapshot.forEach((doc) => {
+                reports.push({ id: doc.id, ...doc.data() });
+            });
 
-        querySnapshot.forEach((doc) => {
-            const report = doc.data();
-            html += `
-                <tr>
-                    <td>${report.reason || 'No reason'}</td>
-                    <td>${report.reportedEntityType || 'N/A'}</td>
-                    <td>${report.reportedEntityId || 'N/A'}</td>
-                    <td>${report.reportedByEmail || report.reportedBy || 'Anonymous'}</td>
-                    <td>${report.status || 'Pending'}</td>
-                    <td>
-                        <button onclick="window.resolveReport('${doc.id}')" class="btn btn-success">Resolve</button>
-                    </td>
-                </tr>
+            // Client-side Sort: Pending first, then by Date
+            reports.sort((a, b) => {
+                // 1. Status Priority: 'pending' < 'resolved' (so pending comes first)
+                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                if (a.status !== 'pending' && b.status === 'pending') return 1;
+
+                // 2. Date Priority: Newest first (Descending)
+                // Timestamps might be Firestore objects or dates
+                const tA = a.timestamp ? (a.timestamp.seconds || new Date(a.timestamp).getTime() / 1000) : 0;
+                const tB = b.timestamp ? (b.timestamp.seconds || new Date(b.timestamp).getTime() / 1000) : 0;
+                return tB - tA;
+            });
+
+            let html = `
+            <div class="recent-activity">
+                <h2>User Reports</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Reason</th>
+                            <th>Type</th>
+                            <th>Entity ID</th>
+                            <th>Reported By</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
+
+            reports.forEach((report) => {
+                // --- Normalization Logic ---
+
+                // 1. Determine Type
+                let displayType = 'N/A';
+                if (report.reportedEntityType) {
+                    const t = report.reportedEntityType.toLowerCase();
+                    if (t === 'chat') displayType = 'Chat';
+                    else if (['listing', 'flat', 'roommate_listing', 'user', 'listing'].includes(t)) displayType = 'Listing';
+                    else displayType = report.reportedEntityType; // Fallback
+                } else if (report.reportSource === 'chat') {
+                    displayType = 'Chat';
+                }
+
+                // 2. Determine Entity ID
+                const entityId = report.reportedEntityId || report.reportedUserId || 'N/A';
+
+                // 3. Determine Reporter
+                // Prefer Email, then Name+UID, then UID, then Anonymous
+                let reporter = 'Anonymous';
+                if (report.reportedByEmail) {
+                    reporter = report.reportedByEmail;
+                } else if (report.reportedByName && report.reportedByUid) {
+                    reporter = `${report.reportedByName} (${report.reportedByUid})`;
+                } else if (report.reportedBy) {
+                    reporter = `${report.reportedBy}`;
+                } else if (report.reportedByUid) {
+                    reporter = `${report.reportedByUid}`;
+                }
+
+                // Formatting status for visual feedback
+                const statusStyle = report.status === 'pending' ? 'color: #e74c3c; font-weight: bold;' : 'color: #2ecc71;';
+
+                html += `
+                    <tr>
+                        <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${report.reason || ''}">
+                            ${report.reason || 'No reason'}
+                        </td>
+                        <td>${displayType}</td>
+                        <td>${entityId}</td>
+                        <td>${reporter}</td>
+                        <td style="${statusStyle}">${report.status && report.status.charAt(0).toUpperCase() + report.status.slice(1) || 'Pending'}</td>
+                        <td>
+                            ${report.status !== 'resolved' ?
+                        `<button onclick="window.resolveReport('${report.id}')" class="btn btn-success">Resolve</button>` :
+                        `<span style="color: #aaa;"><i class="fa-solid fa-check"></i> Resolved</span>
+                                 <button onclick="window.deleteReportRecord('${report.id}')" class="btn btn-sm btn-danger" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;" title="Delete Record"><i class="fa-solid fa-trash"></i></button>`
+                    }
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+            contentArea.innerHTML = html;
+
+        }, (error) => {
+            console.error("Error fetching reports:", error);
+            contentArea.innerHTML = `<div class="recent-activity"><h2>Error Loading Reports</h2><p>${error.message}</p></div>`;
         });
 
-        html += `</tbody></table></div>`;
-        contentArea.innerHTML = html;
-
     } catch (error) {
-        console.error("Error fetching reports:", error);
+        console.error("Error setting up reports listener:", error);
         contentArea.innerHTML = `<div class="recent-activity"><h2>Error Loading Reports</h2><p>${error.message}</p></div>`;
     }
 }
+
+window.deleteReportRecord = async (id) => {
+    const confirmed = await showConfirm("Permanently delete this report record? This cannot be undone.");
+    if (!confirmed) return;
+    try {
+        await deleteDoc(doc(db, "reports", id));
+        showToast("Report record deleted.", "success");
+    } catch (e) {
+        showToast("Error deleting record: " + e.message, "error");
+    }
+};
 
 async function renderSettings() {
     contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Settings...</h2></div>';
@@ -490,11 +586,11 @@ window.deleteUser = async (userId) => {
         try {
             // Try the Vercel API route first (Production/Vercel Dev)
             let apiUrl = '/api/delete-user';
-            
+
             // If running locally without Vercel Dev, you might need the full localhost URL
             if (window.location.hostname === 'localhost' && window.location.port !== '') {
-                 // Optional: Check if we are on standard Vite port (5173) vs Vercel port
-                 // For now, we'll try the relative path. If it fails (404), we could try localhost:3000
+                // Optional: Check if we are on standard Vite port (5173) vs Vercel port
+                // For now, we'll try the relative path. If it fails (404), we could try localhost:3000
             }
 
             const response = await fetch(apiUrl, {
@@ -502,11 +598,11 @@ window.deleteUser = async (userId) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ uid: userId })
             });
-            
+
             // If relative path failed (e.g. 404 because not on Vercel), try local backend
             if (!response.ok && response.status === 404) {
-                 console.log("API route not found, trying local backend...");
-                 const localResponse = await fetch('http://localhost:3000/delete-user', {
+                console.log("API route not found, trying local backend...");
+                const localResponse = await fetch('http://localhost:3000/delete-user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ uid: userId })
@@ -567,16 +663,16 @@ window.deleteUser = async (userId) => {
 
         // 8. Delete Reports (by this user)
         if (userEmail) {
-             const reportsQuery = query(collection(db, "reports"), where("reportedByEmail", "==", userEmail));
-             const reportsSnap = await getDocs(reportsQuery);
-             const reportDeletions = reportsSnap.docs.map(doc => deleteDoc(doc.ref));
-             await Promise.all(reportDeletions);
+            const reportsQuery = query(collection(db, "reports"), where("reportedByEmail", "==", userEmail));
+            const reportsSnap = await getDocs(reportsQuery);
+            const reportDeletions = reportsSnap.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(reportDeletions);
         }
 
         // 9. Delete Chats and Messages
         const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
         const chatsSnap = await getDocs(chatsQuery);
-        
+
         const chatDeletions = chatsSnap.docs.map(async (chatDoc) => {
             const chatId = chatDoc.id;
             // Delete messages for this chat
@@ -584,7 +680,7 @@ window.deleteUser = async (userId) => {
             const msgsSnap = await getDocs(msgsQuery);
             const msgDeletions = msgsSnap.docs.map(m => deleteDoc(m.ref));
             await Promise.all(msgDeletions);
-            
+
             // Delete the chat document itself
             return deleteDoc(chatDoc.ref);
         });
@@ -610,16 +706,178 @@ window.deleteListing = async (id) => {
     }
 };
 
+// --- Advanced Resolution Flow ---
+
+// Inject Modal CSS
+const modalStyles = document.createElement('style');
+modalStyles.textContent = `
+    .admin-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5); z-index: 1000;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .admin-modal {
+        background: white; padding: 25px; border-radius: 12px;
+        width: 90%; max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        animation: fadeIn 0.2s ease-out;
+        text-align: center;
+    }
+    .admin-modal h3 { margin-top: 0; color: #333; }
+    .admin-modal p { color: #666; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1; min-width: 120px; }
+    .btn-spam { background: #f39c12; color: white; }
+    .btn-action { background: #e74c3c; color: white; }
+    .btn-delete { background: #c0392b; color: white; }
+    .btn-warning { background: #f1c40f; color: black; }
+    .btn-cancel { background: #95a5a6; color: white; }
+    .modal-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; min-height: 80px; resize: vertical; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+`;
+document.head.appendChild(modalStyles);
+
+let currentReportId = null;
+let currentReportedUserId = null; // We need to fetch this from the report first
+
 window.resolveReport = async (id) => {
-    const confirmed = await showConfirm("Mark this report as resolved?");
-    if (!confirmed) return;
+    currentReportId = id;
+
+    // Fetch report to get the reported user ID (needed for actions)
     try {
-        await updateDoc(doc(db, "reports", id), { status: 'resolved' });
-        showToast("Report resolved.", "success");
-        renderReports();
+        const docSnap = await getDoc(doc(db, "reports", id));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // normalized field or legacy field
+            currentReportedUserId = data.reportedEntityId || data.reportedUserId;
+        }
+    } catch (e) {
+        console.error("Error fetching report details:", e);
+    }
+
+    // Show Step 1: Spam vs Action
+    showModal(`
+        <h3>Resolve Report</h3>
+        <p>How would you like to resolve this report?</p>
+        <div class="modal-actions">
+            <button onclick="window.markAsSpam()" class="btn-modal btn-spam">Spam</button>
+            <button onclick="window.showActionStep()" class="btn-modal btn-action">Take Action</button>
+            <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.markAsSpam = async () => {
+    if (!currentReportId) return;
+    try {
+        await updateDoc(doc(db, "reports", currentReportId), {
+            status: 'resolved',
+            resolution: 'spam',
+            resolvedAt: serverTimestamp()
+        });
+        showToast("Report marked as spam and resolved.", "success");
+        window.closeAdminModal();
     } catch (e) {
         showToast("Error: " + e.message, "error");
     }
+};
+
+window.showActionStep = () => {
+    showModal(`
+        <h3>Take Action</h3>
+        <p>Choose an action against the reported user:</p>
+        <div class="modal-actions">
+             <button onclick="window.confirmDeleteUser()" class="btn-modal btn-delete">Delete Account</button>
+             <button onclick="window.showWarningStep()" class="btn-modal btn-warning">Send Warning</button>
+             <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.confirmDeleteUser = async () => {
+    if (!currentReportedUserId) {
+        showToast("Error: Could not identify the user to delete.", "error");
+        return;
+    }
+    // Reuse existing deleteUser logic but we need to close modal and maybe wrap calls
+    window.closeAdminModal();
+
+    // We call the existing global deleteUser function
+    // Note: The existing function asks for confirmation again ("Are you sure..."), which is fine/good.
+    await window.deleteUser(currentReportedUserId);
+
+    // Also mark report as resolved automatically if user is deleted?
+    // The existing deleteUser function calculates related reports and deletes them!
+    // So the report will be DELETED, which technically resolves it (removes it).
+    // So we don't need to update status.
+};
+
+window.showWarningStep = () => {
+    showModal(`
+        <h3>Send Warning</h3>
+        <p>Write a warning message to the user:</p>
+        <textarea id="warningMessage" class="modal-input" placeholder="e.g., Please follow community guidelines..."></textarea>
+        <div class="modal-actions">
+             <button onclick="window.sendWarning()" class="btn-modal btn-primary" style="background: #3498db; color: white;">Send & Resolve</button>
+             <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.sendWarning = async () => {
+    const msg = document.getElementById('warningMessage').value.trim();
+    if (!msg) {
+        showToast("Please enter a warning message.", "warning");
+        return;
+    }
+
+    if (!currentReportedUserId) return;
+
+    try {
+        // 1. Send Notification
+        await addDoc(collection(db, "notifications"), {
+            userId: currentReportedUserId,
+            title: "Admin Warning",
+            message: msg,
+            type: "warning",
+            read: false,
+            timestamp: serverTimestamp()
+        });
+
+        // 2. Resolve Report
+        await updateDoc(doc(db, "reports", currentReportId), {
+            status: 'resolved',
+            resolution: 'warning_sent',
+            adminNote: msg,
+            resolvedAt: serverTimestamp()
+        });
+
+        showToast("Warning sent and report resolved.", "success");
+        window.closeAdminModal();
+    } catch (e) {
+        showToast("Error sending warning: " + e.message, "error");
+    }
+};
+
+// Helper to render modal
+function showModal(content) {
+    let overlay = document.querySelector('.admin-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'admin-modal-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) window.closeAdminModal();
+        });
+    }
+
+    overlay.innerHTML = `<div class="admin-modal">${content}</div>`;
+    overlay.style.display = 'flex';
+}
+
+window.closeAdminModal = () => {
+    const overlay = document.querySelector('.admin-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
 };
 
 window.saveSettings = async () => {
@@ -668,10 +926,10 @@ window.cleanDuplicates = async () => {
                 group.sort((a, b) => {
                     const timeA = a.updatedAt || a.createdAt || 0;
                     const timeB = b.updatedAt || b.createdAt || 0;
-                    
+
                     const tA = (timeA && typeof timeA.toMillis === 'function') ? timeA.toMillis() : new Date(timeA).getTime();
                     const tB = (timeB && typeof timeB.toMillis === 'function') ? timeB.toMillis() : new Date(timeB).getTime();
-                    
+
                     return tB - tA; // Descending (Newest first)
                 });
 
