@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await addDoc(collection(db, "reports"), {
                 reportedEntityId: id,
-                reportedEntityType: type === 'flat' ? 'flat' : 'roommate_listing',
+                reportedEntityType: 'Listing', // Standardized Type
                 reason: reason,
                 reportedBy: auth.currentUser.uid,
                 reportedByEmail: auth.currentUser.email,

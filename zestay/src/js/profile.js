@@ -751,6 +751,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 notifContainer.appendChild(item);
             });
 
+            // Mark as read after rendering
+            markNotificationsAsRead(uid, notifications);
+
         } catch (error) {
             console.error("Error loading notifications:", error);
             // Fallback for missing index error on first run
@@ -759,6 +762,28 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 notifContainer.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error loading notifications.</p>';
             }
+        }
+    }
+
+    async function markNotificationsAsRead(uid, notifications) {
+        const unreadDocs = notifications.filter(n => !n.read && n.id);
+        if (unreadDocs.length === 0) return;
+
+        // Since we don't have the doc ID in the data pushed above, let's re-fetch or assume we need to query
+        // Actually, the previous query didn't save ID. Let's fix that first.
+
+        try {
+            const q = query(
+                collection(db, "notifications"),
+                where("userId", "==", uid),
+                where("read", "==", false)
+            );
+            const snap = await getDocs(q);
+            const updates = snap.docs.map(doc => updateDoc(doc.ref, { read: true }));
+            await Promise.all(updates);
+            console.log("Marked notifications as read:", updates.length);
+        } catch (e) {
+            console.error("Error marking notifications read:", e);
         }
     }
 
