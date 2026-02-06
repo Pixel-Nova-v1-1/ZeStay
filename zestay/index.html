@@ -4,17 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>Zestay</title>
 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/index.css">
     <link rel="stylesheet" href="src/css/chat.css">
-    <link rel="stylesheet" href="src/css/toast.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
 <body>
@@ -44,7 +43,6 @@
                     <div id="user-profile" class="user-profile" style="display:none;">
                         <button class="btn-icon" id="landingProfileBtn">
                             <i class="fa-regular fa-circle-user"></i>
-                            <span class="header-profile-badge"></span>
                         </button>
                         <button id="logoutBtn" class="btn-logout">
                             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -64,6 +62,9 @@
                 <span class="highlight"><span class="cursive-text">Flatmate</span></span> or
                 <span class="highlight"><span class="cursive-text">Room</span></span>
             </h1>
+            <p>
+                hello world
+            </p>
 
             <p class="subtitle">
                 Connect with verified flatmates and discover the perfect shared living space in your city
@@ -89,9 +90,9 @@
 
                 <div class="top-cities">
                     Top cities:
-                    <a href="match.html?location=Panvel">Panvel</a>,
                     <a href="match.html?location=Mumbai">Mumbai</a>,
-                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>
+                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>,
+                    <a href="match.html?location=Pune">Pune</a>
                 </div>
             </div>
         </div>
@@ -179,8 +180,8 @@
     </section>
 
     <!-- ================= FOOTER ================= -->
-    <footer class="main-footer">
-        <div class="footer-container">
+    <footer class="finally">
+        <div class="footer-content">
             <div class="footer-section">
                 <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
                 <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
@@ -195,22 +196,22 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="how-it-works.html">How it Works</a></li>
-                    <li><a href="safety.html">Safety Tips</a></li>
-                    <li><a href="faq.html">FAQ</a></li>
-                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How it Works</a></li>
+                    <li><a href="#">Safety Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Blog</a></li>
                 </ul>
             </div>
 
             <div class="footer-section">
                 <h3>Popular Cities</h3>
                 <ul>
-                    <li><a href="match.html?location=Panvel">Panvel</a></li>
-                    <li><a href="match.html?location=Mumbai">Mumbai</a></li>
-                    <li><a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a></li>
-                    <li><a href="match.html?location=Delhi">Delhi</a></li>
-                    <li><a href="match.html?location=Hyderabad">Hyderabad</a></li>
+                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Delhi</a></li>
+                    <li><a href="#">Pune</a></li>
+                    <li><a href="#">Hyderabad</a></li>
                 </ul>
             </div>
 
@@ -227,8 +228,8 @@
         <div class="footer-bottom">
             <p>&copy; 2025 ZeStay. All rights reserved.</p>
             <div class="footer-legal">
-                <a href="privacy.html">Privacy Policy</a>
-                <a href="terms.html">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
                 <a href="#">Cookie Policy</a>
             </div>
         </div>
@@ -262,7 +263,7 @@
 
     <button id="chatToggleBtn" class="chat-toggle-btn">
         <i class="fa-solid fa-comment-dots"></i>
-        <span class="chat-badge" style="display: none;"></span>
+        <span class="chat-badge">4</span>
     </button>
 
     <!-- ================= GOOGLE MAPS + PLACES ================= -->
@@ -274,5 +275,3 @@
 </body>
 
 </html>
-
-
