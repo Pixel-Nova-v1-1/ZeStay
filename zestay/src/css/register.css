@@ -490,3 +490,184 @@ button:disabled,
     border-color: var(--primary-teal);
     box-shadow: 0 2px 5px rgba(0, 201, 183, 0.3);
 }
+
+/* Dark Mode Styles */
+[data-theme="dark"] body {
+    background-color: #202124;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .container {
+    background-color: #202124;
+}
+
+[data-theme="dark"] .page-header h1 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .register-form {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+[data-theme="dark"] .form-group label {
+    color: #bdc1c6;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select {
+    background-color: #202124;
+    border-color: #5f6368;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .form-group input::placeholder {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus {
+    border-color: #00c4b4;
+    background-color: #202124;
+}
+
+[data-theme="dark"] #email {
+    background-color: #3c4043 !important;
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .hobbies-selection {
+    background-color: #202124;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .hobbies-label-text {
+    color: #9aa0a6;
+    background-color: #202124;
+}
+
+[data-theme="dark"] .hobby-option {
+    background-color: #3c4043;
+    color: #e8eaed;
+    border: 1px solid #5f6368;
+}
+
+[data-theme="dark"] .hobby-option:hover {
+    background-color: #5f6368;
+}
+
+[data-theme="dark"] .hobby-option.selected {
+    background: linear-gradient(135deg, #00C4B4, #00E5D0);
+    color: white;
+    border-color: transparent;
+}
+
+[data-theme="dark"] .photo-labels h3 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .or-divider {
+    color: #bdc1c6;
+}
+
+[data-theme="dark"] .or-divider::before,
+[data-theme="dark"] .or-divider::after {
+    background-color: #5f6368;
+}
+
+[data-theme="dark"] .file-upload-box {
+    background-color: #202124;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .file-upload-box:hover {
+    border-color: #00c4b4;
+    background-color: rgba(0, 196, 180, 0.05);
+}
+
+[data-theme="dark"] .upload-content p {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .upload-icon {
+    color: #00c4b4;
+}
+
+[data-theme="dark"] .avatar-grid {
+    background-color: transparent;
+    border: none;
+}
+
+[data-theme="dark"] .avatar-option:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: transparent;
+    border: 2px solid #00c4b4;
+    color: #00c4b4;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(0, 196, 180, 0.1);
+    transform: rotate(15deg);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+    border-color: #f1c40f;
+    color: #f1c40f;
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+    background: rgba(241, 196, 15, 0.1);
+}
+
+/* Background Shapes Dark Mode */
+[data-theme="dark"] .bg-shape {
+    z-index: 1;
+    /* Make higher so visible */
+}
+
+[data-theme="dark"] .top-right-circle-outline {
+    border-color: #bdc1c6;
+    /* Lighter grey for visibility */
+    background-color: transparent;
+}
+
+[data-theme="dark"] .bg-shape.top-right-circle-solid {
+    background-color: var(--primary-teal);
+    /* Revert to teal */
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .bg-shape.right-small-circle-1,
+[data-theme="dark"] .bg-shape.right-small-circle-2 {
+    /* Keep original teal for color, adjust opacity */
+    background-color: var(--primary-teal);
+    border: none;
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .img {
+    filter: brightness(0.8) contrast(1.1);
+    z-index: 0;
+    /* Also bring up */
+}
+
+[data-theme="dark"] .img {
+    filter: brightness(0.8) contrast(1.1);
+}

@@ -5,13 +5,48 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* ================= CSS VARIABLES ================= */
+:root {
+    /* Light Theme (Default) */
+    --bg-primary: #d3f9f6;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f8fffe;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-light: #ffffff;
+    --accent-primary: #00C4B4;
+    --accent-secondary: #00E5D0;
+    --accent-hover: #00B0A6;
+    --border-color: #dddddd;
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --header-shadow: 0 2px 20px rgba(0, 196, 180, 0.08);
+}
+
+[data-theme="dark"] {
+    /* Dark Theme (Google-inspired) */
+    --bg-primary: #202124;
+    --bg-secondary: #292a2d;
+    --bg-tertiary: #303134;
+    --text-primary: #e8eaed;
+    --text-secondary: #9aa0a6;
+    --text-light: #ffffff;
+    --accent-primary: #00C4B4;
+    --accent-secondary: #00E5D0;
+    --accent-hover: #00Aaa0;
+    --border-color: #5f6368;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --header-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 .cursive-text {
     font-family: 'Dancing Script', cursive;
     font-weight: 600;
 }
 
 body {
-    background-color: #d3f9f6;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ================= LANDING LOADER ================= */
@@ -227,6 +262,120 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     z-index: 0;
+}
+
+/* Dark mode specific overrides */
+[data-theme="dark"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .hero-content h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .hero-content .highlight {
+    color: var(--accent-primary);
+}
+
+[data-theme="dark"] .subtitle {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .find::before {
+    background: var(--bg-tertiary);
+    box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] .find::after {
+    opacity: 0.3;
+}
+
+[data-theme="dark"] .tab {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .tab:not(.active):hover {
+    background-color: #3c4043;
+}
+
+[data-theme="dark"] .input-group {
+    border-color: var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .input-group input {
+    color: var(--text-primary);
+    background: transparent;
+}
+
+[data-theme="dark"] .input-group i {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .top-cities,
+[data-theme="dark"] .top-cities a {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .features {
+    background-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .features-header h2 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .features-header p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .feature-card {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .feature-card:hover {
+    background: #3c4043;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .icon-box {
+    background-color: rgba(0, 196, 180, 0.15);
+}
+
+[data-theme="dark"] .feature-card h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .feature-card p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .works {
+    background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .works h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .works-subtitle {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .step-card h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .step-card p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .btn-profile {
+    color: var(--text-secondary);
 }
 
 .find::after {
@@ -806,3 +955,17 @@ body {
         font-size: 16px;
     }
 }
+/* Landing Loader Dark Mode */
+[data-theme='dark'] .curtain-left,
+[data-theme='dark'] .curtain-right {
+    background-color: #202124;
+}
+
+[data-theme='dark'] .loader-text {
+    color: #3c4043; /* Darker grey base for contrast */
+}
+
+[data-theme='dark'] .loader-text::before {
+    color: #00C4B4; /* Keep the teal wave */
+}
+

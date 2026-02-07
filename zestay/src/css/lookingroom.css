@@ -877,3 +877,109 @@ body {
         margin-bottom: 30px;
     }
 }
+
+/* Dark Mode Styles */
+[data-theme="dark"] body {
+    background-color: #202124;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .main-content {
+    background-color: #292a2d;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .profile-img-container {
+    background-color: #292a2d;
+    border-color: #3c4043;
+}
+
+[data-theme="dark"] .profile-name {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .section-header {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .location-text,
+[data-theme="dark"] .info-grid .info-item {
+    background-color: #303134;
+    color: #e8eaed;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .location-text {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .info-grid .info-item h4 {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .info-grid .info-item p {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .desc-box {
+    background-color: #303134;
+    color: #e8eaed;
+    border-left-color: #00c4b4;
+}
+
+[data-theme="dark"] .divider {
+    background-color: #5f6368;
+}
+
+[data-theme="dark"] .item-circle .circle-icon {
+    background-color: #3c4043;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .item-circle .item-label {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .amenity-icon {
+    background-color: #3c4043;
+    color: #00c4b4;
+}
+
+[data-theme="dark"] .amenity-item span {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .highlight-pill {
+    background-color: #303134;
+    border-color: #5f6368;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .highlight-pill:hover {
+    border-color: #00c4b4;
+    color: #00c4b4;
+}
+
+[data-theme="dark"] .report-section {
+    border-top-color: #5f6368;
+}
+
+[data-theme="dark"] .report-text {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .btn-report {
+    background-color: #303134;
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+[data-theme="dark"] .btn-report:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+[data-theme="dark"] .loading-overlay {
+    background-color: #202124;
+}

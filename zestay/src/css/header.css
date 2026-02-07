@@ -3,10 +3,18 @@
     position: sticky;
     top: 0;
     width: 100%;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
-    box-shadow: 0 2px 20px rgba(0, 196, 180, 0.08);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     z-index: 1000;
-    border-bottom: 1px solid rgba(0, 196, 180, 0.1);
+    border-bottom: none;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark Mode Header - Gray Background */
+[data-theme="dark"] .main-header {
+    background: #2d2d2d;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    border-bottom-color: #404040;
 }
 
 .header-container {
@@ -158,9 +166,17 @@
 }
 
 @keyframes badgePop {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .header-profile-badge {
@@ -180,9 +196,88 @@
     font-weight: 700;
     border: 2px solid white;
     z-index: 10;
-    display: none; /* Toggled by JS */
-    animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: none;
+    /* Toggled by JS */
+    animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Theme Toggle Button - Improved Design */
+.theme-toggle-btn {
+    background: rgba(0, 196, 180, 0.1);
+    border: 2px solid rgba(0, 196, 180, 0.3);
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(0, 196, 180, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.theme-toggle-btn:hover::before {
+    opacity: 1;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(0, 196, 180, 0.15);
+    border-color: #00C4B4;
+    color: #00C4B4;
+    transform: rotate(0deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 196, 180, 0.3);
+}
+
+.theme-toggle-btn i {
+    transition: transform 0.5s ease;
+    z-index: 1;
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+/* Dark mode toggle button */
+[data-theme="dark"] .theme-toggle-btn {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .theme-toggle-btn::before {
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+    background-color: rgba(251, 191, 36, 0.15);
+    border-color: #fbbf24;
+    color: #fbbf24;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+@media (max-width: 480px) {
+    .theme-toggle-btn {
+        margin-right: 8px;
+        width: 38px;
+        height: 38px;
+        padding: 8px;
+        font-size: 16px;
+    }
 }
 
 .btn-icon:hover {
@@ -253,7 +348,8 @@
     }
 
     .logo-text {
-        display: none; /* Hide text on very small screens, keep logo */
+        display: none;
+        /* Hide text on very small screens, keep logo */
     }
 
     .btn-primary {
@@ -262,7 +358,7 @@
         height: 36px;
         justify-content: center;
     }
-    
+
     .btn-primary i {
         margin: 0;
     }
@@ -271,14 +367,25 @@
         padding: 6px 10px;
         font-size: 13px;
     }
-    
+
     .header-actions {
         gap: 8px;
     }
 }
+
 .brand-text {
     background: linear-gradient(to right, #00A89D, #7FDBFF);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+/* Dark Mode Login Button Styles */
+[data-theme="dark"] .btn-secondary {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    color: #00C4B4;
+    background-color: rgba(0, 196, 180, 0.1);
 }
