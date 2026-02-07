@@ -146,6 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error fetching matches:", error);
             container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading matches.</p>';
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
         }
     }
 
@@ -223,6 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentType === 'Flats') {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading flats.</p>';
             }
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
         }
     }
 
@@ -270,16 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Boosted: Add base score of 30
             hobbiesMatch = Math.min(100, (sharedHobbies.length / Math.max(h1.length, 1)) * 100 + 30);
         } else {
-             // Boosted: Default score if no hobbies (was 0)
-             hobbiesMatch = 60;
+            // Boosted: Default score if no hobbies (was 0)
+            hobbiesMatch = 60;
         }
 
         // Weighted Average (33% each)
         let finalScore = (personalityMatch + prefMatch + hobbiesMatch) / 3;
-        
+
         // Final Boost: Add 15 points to everything
         finalScore = Math.min(100, finalScore + 15);
-        
+
         return Math.round(finalScore);
     }
 
@@ -512,6 +522,11 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         currentIndex = 0;
         renderItems();
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
     }
 
 

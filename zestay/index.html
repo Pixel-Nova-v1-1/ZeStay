@@ -12,11 +12,20 @@
         rel="stylesheet">
     <link rel="stylesheet" href="src/css/header.css">
     <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/footer.css">
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
+    <!-- ================= LANDING LOADER ================= -->
+    <div id="landingLoader" class="landing-loader">
+        <div class="curtain-left"></div>
+        <div class="curtain-right"></div>
+        <div class="loader-content">
+            <h1 class="loader-text" data-text="ZeStay">ZeStay</h1>
+        </div>
+    </div>
 
     <!-- ================= HEADER ================= -->
     <header class="main-header">
@@ -62,10 +71,6 @@
                 <span class="highlight"><span class="cursive-text">Flatmate</span></span> or
                 <span class="highlight"><span class="cursive-text">Room</span></span>
             </h1>
-            <p>
-                hello world
-            </p>
-
             <p class="subtitle">
                 Connect with verified flatmates and discover the perfect shared living space in your city
             </p>
@@ -90,9 +95,9 @@
 
                 <div class="top-cities">
                     Top cities:
+                    <a href="match.html?location=Panvel">Panvel</a>,
                     <a href="match.html?location=Mumbai">Mumbai</a>,
-                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>,
-                    <a href="match.html?location=Pune">Pune</a>
+                    <a href="match.html?location=Navi%20Mumbai">Navi Mumbai</a>
                 </div>
             </div>
         </div>
@@ -180,8 +185,8 @@
     </section>
 
     <!-- ================= FOOTER ================= -->
-    <footer class="finally">
-        <div class="footer-content">
+    <footer class="main-footer">
+        <div class="footer-container">
             <div class="footer-section">
                 <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
                 <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
@@ -207,10 +212,10 @@
             <div class="footer-section">
                 <h3>Popular Cities</h3>
                 <ul>
-                    <li><a href="#">Navi Mumbai</a></li>
+                    <li><a href="#">Panvel</a></li>
                     <li><a href="#">Mumbai</a></li>
+                    <li><a href="#">Navi Mumbai</a></li>
                     <li><a href="#">Delhi</a></li>
-                    <li><a href="#">Pune</a></li>
                     <li><a href="#">Hyderabad</a></li>
                 </ul>
             </div>

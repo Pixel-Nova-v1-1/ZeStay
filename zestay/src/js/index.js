@@ -88,7 +88,7 @@ function loadGoogleMaps() {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.defer = true;
     script.async = true;
-    
+
     script.onload = () => {
         initLandingAutocomplete();
     };
@@ -99,6 +99,18 @@ function loadGoogleMaps() {
 /* Load Maps on Page Load */
 window.addEventListener('load', () => {
     loadGoogleMaps();
+
+    // Hide Landing Loader
+    const loader = document.getElementById('landingLoader');
+    if (loader) {
+        setTimeout(() => {
+            loader.classList.add('opening');
+            // Remove from DOM after curtain transition (1.2s in CSS)
+            setTimeout(() => {
+                loader.remove();
+            }, 1500);
+        }, 3000); // 3 seconds to show the premium water fill animation
+    }
 });
 
 /* =========================================================

@@ -11,12 +11,17 @@
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="src/css/toast.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
 <body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading details...</div>
+    </div>
     <header class="main-header">
         <div class="header-container">
             <div class="logo-section">
@@ -203,8 +208,7 @@
         <div class="modal-content">
             <button class="close-modal">&times;</button>
             <div class="modal-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/4201/4201973.png"
-                    alt="Report Illustration">
+                <img src="https://cdn-icons-png.flaticon.com/512/4201/4201973.png" alt="Report Illustration">
             </div>
             <h2>Found Wrong Information?</h2>
             <p class="modal-subtitle">Please choose from the following option</p>
@@ -260,5 +264,3 @@
 </body>
 
 </html>
-
-

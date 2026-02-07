@@ -14,6 +14,121 @@ body {
     background-color: #d3f9f6;
 }
 
+/* ================= LANDING LOADER ================= */
+.landing-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    overflow: hidden;
+}
+
+.curtain-left,
+.curtain-right {
+    position: absolute;
+    top: 0;
+    width: 50.5%;
+    /* Slight overlap to prevent seam */
+    height: 100%;
+    background-color: #ffffff;
+    z-index: -1;
+    transition: transform 1.2s cubic-bezier(1, 0, 0, 1);
+}
+
+.curtain-left {
+    left: 0;
+}
+
+.curtain-right {
+    right: 0;
+}
+
+.landing-loader.opening .curtain-left {
+    transform: translateX(-100%);
+}
+
+.landing-loader.opening .curtain-right {
+    transform: translateX(100%);
+}
+
+.loader-content {
+    position: relative;
+    z-index: 1;
+    transition: opacity 0.5s ease;
+}
+
+.landing-loader.opening .loader-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-text {
+    position: relative;
+    font-size: clamp(60px, 12vw, 120px);
+    font-weight: 900;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    color: #e0e0e0;
+    /* Grey base */
+    margin: 0;
+    padding: 20px;
+}
+
+.loader-text::before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #00C4B4;
+    /* Wave color */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+    animation: waterFill 3s ease-in-out infinite alternate;
+    /* Create wave effect using mask or clip-path */
+    clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
+    /* Initial */
+}
+
+@keyframes waterFill {
+    0% {
+        clip-path: polygon(0% 100%, 100% 100%, 100% 90%, 75% 95%, 50% 90%, 25% 95%, 0% 90%);
+    }
+
+    50% {
+        clip-path: polygon(0% 50%, 25% 45%, 50% 50%, 75% 45%, 100% 50%, 100% 100%, 0% 100%);
+    }
+
+    100% {
+        clip-path: polygon(0% 10%, 25% 15%, 50% 10%, 75% 15%, 100% 10%, 100% 100%, 0% 100%);
+    }
+}
+
+/* Add a subtle float animation to the whole text */
+.loader-content {
+    animation: floatText 3s ease-in-out infinite;
+}
+
+@keyframes floatText {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 /* ================= NEW HEADER STYLES ================= */
 /* Header styles are imported from header.css */
 
@@ -622,6 +737,7 @@ body {
     .hero-content h1 {
         font-size: 28px;
     }
+
     .hero-content p {
         font-size: 16px;
     }
@@ -680,10 +796,12 @@ body {
     /* Footer Mobile */
     /* Footer styles moved to footer.css */
 }
+
 @media (max-width: 480px) {
     .hero-content h1 {
         font-size: 28px;
     }
+
     .hero-content p {
         font-size: 16px;
     }
