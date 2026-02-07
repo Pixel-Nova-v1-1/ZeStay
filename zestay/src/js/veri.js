@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.style.borderColor = '#ddd', false);
+            dropZone.addEventListener(eventName, () => dropZone.style.borderColor = '', false);
         });
 
         dropZone.addEventListener('drop', (e) => {
@@ -197,20 +197,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const captureImage = () => {
         if (!stream) return;
-        
+
         const context = canvasElement.getContext('2d');
         canvasElement.width = webcamElement.videoWidth;
         canvasElement.height = webcamElement.videoHeight;
         context.drawImage(webcamElement, 0, 0, canvasElement.width, canvasElement.height);
-        
+
         capturedSelfieBase64 = canvasElement.toDataURL('image/jpeg', 0.8);
         capturedImageElement.src = capturedSelfieBase64;
-        
+
         webcamElement.style.display = 'none';
         capturedImageElement.style.display = 'block';
         captureBtn.style.display = 'none';
         retakeBtn.style.display = 'inline-block';
-        
+
         // Stop camera stream after capture to save resources
         stopCamera();
     };

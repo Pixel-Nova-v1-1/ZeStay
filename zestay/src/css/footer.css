@@ -29,7 +29,8 @@
 }
 
 .footer-section h3::after {
-    display: none; /* Remove the underline from previous design */
+    display: none;
+    /* Remove the underline from previous design */
 }
 
 .footer-section p {
@@ -74,7 +75,8 @@
 .footer-section ul li a:hover {
     color: #00C4B4;
     padding-left: 5px;
-    transform: none; /* Reset transform from previous design */
+    transform: none;
+    /* Reset transform from previous design */
 }
 
 .contact-info li {
@@ -165,6 +167,7 @@
 }
 
 @media (max-width: 480px) {
+
     /* Footer Mobile */
     .main-footer {
         padding: 40px 20px 20px;
@@ -186,7 +189,7 @@
         margin-bottom: 15px;
     }
 
-    .footer-section p, 
+    .footer-section p,
     .footer-section ul li a,
     .contact-info li {
         font-size: 14px;
@@ -201,4 +204,28 @@
         flex-direction: column;
         gap: 10px;
     }
+}
+
+/* Dark Mode Footer (already dark, minimal changes) */
+[data-theme="dark"] .main-footer {
+    background-color: #1a1a1a;
+}
+
+[data-theme="dark"] .footer-section p {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .footer-section ul li a,
+[data-theme="dark"] .contact-info li,
+[data-theme="dark"] .social-icons a {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .footer-section h3 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .footer-bottom p,
+[data-theme="dark"] .footer-legal a {
+    color: #9aa0a6;
 }

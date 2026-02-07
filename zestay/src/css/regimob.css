@@ -429,61 +429,112 @@ body {
         padding: 2rem 1.5rem;
         width: 100%;
         flex: 1;
-        justify-content: center; /* Center vertically */
-        min-height: 100vh; /* Ensure it takes full height */
+        justify-content: center;
+        /* Center vertically */
+        min-height: 100vh;
+        /* Ensure it takes full height */
     }
 
     .content-wrapper {
         margin: 0 auto;
         padding: 20px 0;
         width: 100%;
-        max-width: 400px; /* Limit width on mobile */
+        max-width: 400px;
+        /* Limit width on mobile */
     }
 
     .app-name {
         margin-bottom: 2rem;
         text-align: center;
-        font-size: 1.8rem; /* Slightly larger for better visibility */
+        font-size: 1.8rem;
+        /* Slightly larger for better visibility */
     }
 }
-         . l e f t - s e c t i o n   { 
- 
-                 d i s p l a y :   n o n e ; 
- 
-         } 
- 
- 
- 
-         . r i g h t - s e c t i o n   { 
- 
-                 p a d d i n g :   2 r e m ; 
- 
-                 w i d t h :   1 0 0 % ; 
- 
-                 f l e x :   1 ; 
- 
-         } 
- 
- 
- 
-         . c o n t e n t - w r a p p e r   { 
- 
-                 m a r g i n :   0   a u t o ; 
- 
-                 p a d d i n g :   2 0 p x   0 ; 
- 
-         } 
- 
- 
- 
-         . a p p - n a m e   { 
- 
-                 m a r g i n - b o t t o m :   2 r e m ; 
- 
-                 t e x t - a l i g n :   c e n t e r ; 
- 
-         } 
- 
- } 
- 
- 
+
+/* Dark Mode Styles */
+[data-theme="dark"] .right-section,
+[data-theme="dark"] .modal-content {
+    background-color: #202124;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .title {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .subtitle {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .input-group {
+    border-color: #5f6368;
+    background-color: #303134;
+}
+
+[data-theme="dark"] .input-group input {
+    color: #e8eaed;
+    background-color: transparent;
+}
+
+[data-theme="dark"] .input-group input::placeholder {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .input-group .icon,
+[data-theme="dark"] .input-group .toggle-password {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] #authToggleText {
+    color: #9aa0a6;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: transparent;
+    border: 2px solid #00c4b4;
+    color: #00c4b4;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(0, 196, 180, 0.1);
+    transform: rotate(15deg);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+    border-color: #f1c40f;
+    color: #f1c40f;
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+    background: rgba(241, 196, 15, 0.1);
+}
+
+/* Modal Dark Mode */
+[data-theme="dark"] .modal-title {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .modal-subtitle,
+[data-theme="dark"] .label-text {
+    color: #bdc1c6;
+}
+
+[data-theme="dark"] .checkbox-container input:checked~.checkmark {
+    background-color: #00c4b4;
+}
+
+[data-theme="dark"] .checkbox-container .checkmark {
+    background-color: #303134;
+    border: 1px solid #5f6368;
+}
