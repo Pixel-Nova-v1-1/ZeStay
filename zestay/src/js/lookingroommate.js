@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let data = mockData;
 
-        if (id && type === 'flat') {
-            try {
+        try {
+            if (id && type === 'flat') {
                 const docRef = doc(db, "flats", id);
                 const docSnap = await getDoc(docRef);
 
@@ -104,159 +104,155 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     console.log("No such flat document!");
                 }
-            } catch (error) {
-                console.error("Error getting flat details:", error);
-            }
-        } else if (id) {
-            // It's a User/Roommate ID
-            currentOwnerId = id;
+            } else if (id) {
+                // It's a User/Roommate ID
+                currentOwnerId = id;
 
-            // Fetch user data logic (simplified for now as mockData is used)
-            // In real app, we would fetch doc(db, "users", id) here too
-            try {
-                const userDoc = await getDoc(doc(db, "users", id));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    data = {
-                        ...data, // Keep existing mockData as base
-                        name: userData.name || data.name,
-                        avatar: userData.photoUrl || data.avatar,
-                        location: userData.location || data.location,
-                        gender: userData.gender || data.gender,
-                        isVerified: userData.isVerified,
-                        // For roommate profiles, rent, occupancy, lookingFor might come from a separate roommate_listing collection
-                        // For now, we'll keep mockData's values or fetch from a roommate_listing if available
-                        // This example focuses on user details for the profile section
-                    };
+                // Fetch user data logic (simplified for now as mockData is used)
+                try {
+                    const userDoc = await getDoc(doc(db, "users", id));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        data = {
+                            ...data, // Keep existing mockData as base
+                            name: userData.name || data.name,
+                            avatar: userData.photoUrl || data.avatar,
+                            location: userData.location || data.location,
+                            gender: userData.gender || data.gender,
+                            isVerified: userData.isVerified,
+                        };
+                    }
+                } catch (e) { console.error("Error fetching user", e); }
+            }
+
+            // Profile
+            document.getElementById('profileName').textContent = data.name;
+            document.getElementById('profileImage').src = data.avatar;
+
+            // Verification Badge
+            const verificationBadge = document.getElementById('verificationBadge');
+            if (verificationBadge) {
+                verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+                if (data.isVerified) {
+                    verificationBadge.style.flexShrink = '0';
                 }
-            } catch (e) { console.error("Error fetching user", e); }
-        }
-
-        // Profile
-        document.getElementById('profileName').textContent = data.name;
-        document.getElementById('profileImage').src = data.avatar;
-
-        // Verification Badge
-        const verificationBadge = document.getElementById('verificationBadge');
-        if (verificationBadge) {
-            verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
-            if (data.isVerified) {
-                verificationBadge.style.flexShrink = '0';
             }
-        }
 
-        // Adjust Font Size to Fit
-        adjustProfileNameFontSize();
-        window.addEventListener('resize', adjustProfileNameFontSize);
+            // Adjust Font Size to Fit
+            adjustProfileNameFontSize();
+            window.addEventListener('resize', adjustProfileNameFontSize);
 
-        // Basic Info
-        document.getElementById('displayLocation').textContent = data.location;
+            // Basic Info
+            document.getElementById('displayLocation').textContent = data.location;
 
-        const addressEl = document.getElementById('displayAddress');
-        const addressContainer = document.getElementById('addressContainer');
-        if (addressEl && addressContainer) {
-            // Prioritize fullAddress -> address
-            // Show address if available, regardless of type
-            const bestAddress = data.fullAddress || data.address;
+            const addressEl = document.getElementById('displayAddress');
+            const addressContainer = document.getElementById('addressContainer');
+            if (addressEl && addressContainer) {
+                const bestAddress = data.fullAddress || data.address;
+                if (bestAddress) {
+                    addressEl.textContent = bestAddress;
+                    addressContainer.style.display = 'flex';
+                } else {
+                    addressContainer.style.display = 'none';
+                }
+            }
 
-            if (bestAddress) {
-                addressEl.textContent = bestAddress;
-                addressContainer.style.display = 'flex';
+            document.getElementById('displayGender').textContent = data.gender;
+            document.getElementById('displayRent').textContent = data.rent;
+            document.getElementById('displayOccupancy').textContent = data.occupancy;
+            document.getElementById('displayLookingFor').textContent = data.lookingFor;
+            document.getElementById('displayDescription').textContent = data.description;
+
+            // Verified Box in Basic Info
+            const infoGrid = document.querySelector('.info-grid');
+            if (infoGrid) {
+                let verifiedBox = infoGrid.querySelector('.verified-box');
+                if (!verifiedBox) {
+                    verifiedBox = document.createElement('div');
+                    verifiedBox.className = 'info-item verified-box';
+                    infoGrid.appendChild(verifiedBox);
+                }
+
+                if (data.isVerified) {
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
+                    `;
+                } else {
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
+                    `;
+                }
+            }
+
+            // Images
+            currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
+            updateSlider(0);
+
+            // Preferences
+            const prefsContainer = document.getElementById('preferencesContainer');
+            prefsContainer.innerHTML = '';
+            if (data.preferences && data.preferences.length > 0) {
+                data.preferences.forEach(pref => {
+                    prefsContainer.innerHTML += `
+                        <div class="item-circle">
+                            <div class="circle-icon"><img src="${pref.img}" alt="${pref.label}"></div>
+                            <span class="item-label">${pref.label}</span>
+                        </div>
+                    `;
+                });
             } else {
-                addressContainer.style.display = 'none';
-            }
-        }
-
-        document.getElementById('displayGender').textContent = data.gender;
-        document.getElementById('displayRent').textContent = data.rent;
-        document.getElementById('displayOccupancy').textContent = data.occupancy;
-        document.getElementById('displayLookingFor').textContent = data.lookingFor;
-        document.getElementById('displayDescription').textContent = data.description;
-
-        // Verified Box in Basic Info
-        // Verified/Unverified Box in Basic Info
-        const infoGrid = document.querySelector('.info-grid');
-        if (infoGrid) {
-            let verifiedBox = infoGrid.querySelector('.verified-box');
-            if (!verifiedBox) {
-                verifiedBox = document.createElement('div');
-                verifiedBox.className = 'info-item verified-box';
-                infoGrid.appendChild(verifiedBox);
+                prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
             }
 
-            if (data.isVerified) {
-                verifiedBox.innerHTML = `
-                    <h4>Status</h4>
-                    <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
-                `;
-            } else {
-                verifiedBox.innerHTML = `
-                    <h4>Status</h4>
-                    <p><i class="fa-solid fa-circle-xmark" style="color: #e74c3c;"></i> Unverified</p>
-                `;
+            // Amenities
+            const amenitiesContainer = document.getElementById('amenitiesContainer');
+            amenitiesContainer.innerHTML = '';
+            if (data.amenities && data.amenities.length > 0) {
+                data.amenities.forEach(am => {
+                    let iconClass = am.icon || 'fa-check';
+                    const lowerLabel = am.label.toLowerCase();
+                    if (lowerLabel.includes('wifi')) iconClass = 'fa-wifi';
+                    else if (lowerLabel.includes('wash')) iconClass = 'fa-shirt';
+                    else if (lowerLabel.includes('ac') || lowerLabel.includes('air')) iconClass = 'fa-wind';
+                    else if (lowerLabel.includes('park')) iconClass = 'fa-car';
+                    else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
+                    else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
+                    else if (lowerLabel.includes('power')) iconClass = 'fa-battery-full';
+                    else if (lowerLabel.includes('fridge')) iconClass = 'fa-snowflake';
+                    else if (lowerLabel.includes('water') || lowerLabel.includes('ro')) iconClass = 'fa-bottle-water';
+                    else if (lowerLabel.includes('kitchen')) iconClass = 'fa-fire-burner';
+                    else if (lowerLabel.includes('cook')) iconClass = 'fa-kitchen-set';
+                    else if (lowerLabel.includes('geyser')) iconClass = 'fa-faucet';
+
+                    amenitiesContainer.innerHTML += `
+                        <div class="item-circle">
+                            <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
+                            <span class="item-label">${am.label}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Highlights
+            const highContainer = document.getElementById('highlightsContainer');
+            highContainer.innerHTML = '';
+            if (data.highlights && data.highlights.length > 0) {
+                data.highlights.forEach(h => {
+                    highContainer.innerHTML += `
+                         <div class="highlight-pill"><i class="fa-solid fa-check"></i> ${h}</div>
+                    `;
+                });
+            }
+        } catch (error) {
+            console.error("Error loading data:", error);
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
             }
         }
-
-        // Images
-        currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
-        updateSlider(0);
-
-        // Preferences
-        const prefsContainer = document.getElementById('preferencesContainer');
-        prefsContainer.innerHTML = '';
-        if (data.preferences && data.preferences.length > 0) {
-            data.preferences.forEach(pref => {
-                prefsContainer.innerHTML += `
-                    <div class="item-circle">
-                        <div class="circle-icon"><img src="${pref.img}" alt="${pref.label}"></div>
-                        <span class="item-label">${pref.label}</span>
-                    </div>
-                `;
-            });
-        } else {
-            prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
-        }
-
-        // Amenities
-        const amenitiesContainer = document.getElementById('amenitiesContainer');
-        amenitiesContainer.innerHTML = '';
-        if (data.amenities && data.amenities.length > 0) {
-            data.amenities.forEach(am => {
-                let iconClass = am.icon || 'fa-check';
-                const lowerLabel = am.label.toLowerCase();
-                if (lowerLabel.includes('wifi')) iconClass = 'fa-wifi';
-                else if (lowerLabel.includes('wash')) iconClass = 'fa-shirt';
-                else if (lowerLabel.includes('ac') || lowerLabel.includes('air')) iconClass = 'fa-wind';
-                else if (lowerLabel.includes('park')) iconClass = 'fa-car';
-                else if (lowerLabel.includes('tv')) iconClass = 'fa-tv';
-                else if (lowerLabel.includes('lift')) iconClass = 'fa-elevator';
-                else if (lowerLabel.includes('power')) iconClass = 'fa-battery-full';
-                else if (lowerLabel.includes('fridge')) iconClass = 'fa-snowflake';
-                else if (lowerLabel.includes('water') || lowerLabel.includes('ro')) iconClass = 'fa-bottle-water';
-                else if (lowerLabel.includes('kitchen')) iconClass = 'fa-fire-burner';
-                else if (lowerLabel.includes('cook')) iconClass = 'fa-kitchen-set';
-                else if (lowerLabel.includes('geyser')) iconClass = 'fa-faucet';
-
-                amenitiesContainer.innerHTML += `
-                    <div class="item-circle">
-                        <div class="amenity-icon"><i class="fa-solid ${iconClass}"></i></div>
-                        <span class="item-label">${am.label}</span>
-                    </div>
-                `;
-            });
-        }
-
-        // Highlights
-        const highContainer = document.getElementById('highlightsContainer');
-        highContainer.innerHTML = '';
-        if (data.highlights && data.highlights.length > 0) {
-            data.highlights.forEach(h => {
-                highContainer.innerHTML += `
-                     <div class="highlight-pill"><i class="fa-solid fa-check"></i> ${h}</div>
-                `;
-            });
-        }
-
     }
 
     function adjustProfileNameFontSize() {
@@ -268,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         nameEl.style.whiteSpace = 'nowrap'; // Ensure it doesn't wrap
 
         // Reduce font size until it fits
-        // We check if scrollWidth (content) > clientWidth (visible area)
         while (nameEl.scrollWidth > nameEl.clientWidth && fontSize > 16) {
             fontSize--;
             nameEl.style.fontSize = fontSize + 'px';
@@ -290,9 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentImageIndex >= currentImages.length) currentImageIndex = 0;
 
         sliderImg.src = currentImages[currentImageIndex];
-
-        // Update dots (if dynamic, but simplistic here)
-        // ...
     }
 
     if (prevBtn && nextBtn) {
@@ -374,9 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!targetId || targetId === 'mock-user-id') {
                         console.warn("No valid target ID found for chat.");
-                        // Fallback for demo? Or block? 
-                        // For now, let's allow mock-user if locally testing, but in prod we need real ID.
-                        // But for verification check, we need a real ID to fetch.
                     }
 
                     // CHECK TARGET VERIFICATION
@@ -466,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        const type = urlParams.get('type'); // 'flat' or undefined (roommate)
 
         if (!id) {
             showToast("Cannot report: No listing ID found.", "error");
