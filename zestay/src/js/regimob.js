@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Brief delay then check auth state for redirect
       setTimeout(() => {
         if (auth.currentUser) {
-          window.location.href = "register.html";
+          showPxOwnerModal(); // Show modal
         } else {
           // If not logged in (e.g. different browser), prompt to login to continue
           statusDiv.innerHTML = `
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (mode === "register") {
           const confirmPassword = confirmPasswordInput.value;
-          
+
           // Password Strength Validation
           const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
           if (!passwordRegex.test(password)) {
@@ -355,26 +355,67 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Polling Function
+  // --- PG OWNER MODAL LOGIC ---
+  const pgOwnerModal = document.getElementById("pgOwnerModal");
+  const pgOwnerYesBtn = document.getElementById("pgOwnerYesBtn");
+  const pgOwnerNoBtn = document.getElementById("pgOwnerNoBtn");
+
+  function showPxOwnerModal() {
+    // Hide other sections if visible
+    if (formContainer) formContainer.style.display = "none";
+    if (verificationSection) verificationSection.style.display = "none";
+
+    // Remove any status divs if present (from oobCode flow)
+    const statusDiv = document.querySelector(".right-section .content-wrapper > div:not(.form-container):not(#verificationSection)");
+    if (statusDiv && statusDiv.innerHTML.includes("Email Verified")) {
+      statusDiv.style.display = "none";
+    }
+
+    if (pgOwnerModal) pgOwnerModal.style.display = "flex";
+  }
+
+  if (pgOwnerYesBtn) {
+    pgOwnerYesBtn.addEventListener("click", () => {
+      window.location.href = "pg_owner_details.html";
+    });
+  }
+
+  if (pgOwnerNoBtn) {
+    pgOwnerNoBtn.addEventListener("click", () => {
+      window.location.href = "register.html";
+    });
+  }
+
+
+  // --- Polling Function ---
   function startPolling(user) {
     const intervalId = setInterval(async () => {
       await user.reload();
       if (user.emailVerified) {
         clearInterval(intervalId);
-        window.location.href = "register.html";
+        showPxOwnerModal(); // Show modal instead of direct redirect
       }
     }, 3000); // Check every 3 seconds
   }
-
-  // Handle Email Verification Link Click (if user opens link in same browser/tab)
-  // Logic moved to top of file
 
 
   // Listen for auth state changes
   onAuthStateChanged(auth, (user) => {
     if (user && user.emailVerified && mode === 'register' && !oobCode) {
       // Double check if already verified (e.g. if polling missed it)
-      window.location.href = "register.html";
+      // Only redirect if we are NOT already on the modal
+      if (pgOwnerModal && pgOwnerModal.style.display === "none") {
+        // We might be in the middle of standard flow, let polling handle it usually, 
+        // but if we are just landing here and verified, show modal.
+        // However, let's be careful not to interfere with OOB flow which handles it explicitly below.
+        // Since OOB flow stops execution with 'return', this listener might run in background.
+        // But if OOB is present, we return early.
+
+        // If we are just sitting on register page and get verified:
+        if (verificationSection.style.display !== "none") {
+          showPxOwnerModal();
+        }
+      }
     }
   });
 

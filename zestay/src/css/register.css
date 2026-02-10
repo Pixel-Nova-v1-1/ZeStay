@@ -115,6 +115,7 @@ body {
 /* Custom Input Styling */
 input[type="text"],
 input[type="email"],
+input[type="tel"],
 input[type="date"],
 select {
     width: 100%;
@@ -243,6 +244,46 @@ label {
     color: #777;
 }
 
+.upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-area:hover {
+    border-color: #00bfa5;
+    background-color: #f0fdfa;
+}
+
+.upload-area i {
+    font-size: 2rem;
+    color: #888;
+}
+
+.upload-area p {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.upload-area p span {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.note {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+}
+
 .file-preview {
     position: absolute;
     top: 0;
@@ -253,9 +294,7 @@ label {
     background-position: center;
     background-repeat: no-repeat;
     z-index: 2;
-    /* Sit on top of upload content */
     border-radius: 13px;
-    /* Match parent radius minus border */
 }
 
 .file-preview.hidden {
@@ -592,6 +631,24 @@ button:disabled,
 
 [data-theme="dark"] .upload-icon {
     color: #00c4b4;
+}
+
+[data-theme="dark"] .upload-area {
+    background-color: #303134;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .upload-area:hover {
+    background-color: #3c4043;
+    border-color: #00c4b4;
+}
+
+[data-theme="dark"] .upload-area p {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .note {
+    color: #9aa0a6;
 }
 
 [data-theme="dark"] .avatar-grid {

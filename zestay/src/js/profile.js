@@ -50,6 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const mobileInput = document.getElementById("display-mobile");
+    if (mobileInput) {
+        mobileInput.addEventListener("input", (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, "");
+            if (val.length > 10) val = val.slice(0, 10);
+            e.target.value = val;
+        });
+    }
+
     // Modal Elements
     const openUploadModalBtn = document.getElementById('openUploadModalBtn');
     const profileUploadModal = document.getElementById('profileUploadModal');
@@ -164,6 +173,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // PG Owner UI Customization
+                const isPgOwner = data.role === 'PG_OWNER';
+                const preferencesTabBtn = document.getElementById('preferencesTabBtn');
+                const normalUserOnly = document.querySelectorAll('.normal-user-only');
+                const pgOwnerOnly = document.querySelectorAll('.pg-owner-only');
+
+                if (isPgOwner) {
+                    if (preferencesTabBtn) preferencesTabBtn.style.display = 'none';
+                    normalUserOnly.forEach(el => el.style.display = 'none');
+                    pgOwnerOnly.forEach(el => el.style.display = 'block');
+
+                    // If we were on preferences tab, switch to my-profile
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    if (activeTab && activeTab.dataset.tab === 'preferences') {
+                        document.querySelector('[data-tab="my-profile"]').click();
+                    }
+                } else {
+                    if (preferencesTabBtn) preferencesTabBtn.style.display = 'block';
+                    normalUserOnly.forEach(el => el.style.display = 'block');
+                    pgOwnerOnly.forEach(el => el.style.display = 'none');
+                }
+
+                // PG Owner Badge
+                const pgOwnerBadge = document.getElementById('pgOwnerBadge');
+                if (pgOwnerBadge) {
+                    if (isPgOwner) {
+                        pgOwnerBadge.style.display = 'inline-flex';
+                    } else {
+                        pgOwnerBadge.style.display = 'none';
+                    }
+                }
+
                 // Update Avatar
                 if (profileAvatarEl) {
                     profileAvatarEl.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
@@ -187,6 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-email').value = data.email || "";
                 document.getElementById('display-occupation').value = data.occupation || "";
                 document.getElementById('display-dob').value = data.dob || "";
+
+                // Populate PG specific fields
+                if (document.getElementById('display-mobile')) document.getElementById('display-mobile').value = data.mobile || "";
+                if (document.getElementById('display-pgName')) document.getElementById('display-pgName').value = data.pgName || "";
+                if (document.getElementById('display-address')) document.getElementById('display-address').value = data.address || "";
+                if (document.getElementById('display-roleType')) document.getElementById('display-roleType').value = data.roleType || (data.role === 'PG_OWNER' ? 'Owner' : '');
 
                 // Set Hobbies
                 const hobbies = data.hobbies || "";
@@ -568,14 +615,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedHobbies = Array.from(document.querySelectorAll('#display-hobbies-container .hobby-option.selected'))
                 .map(opt => opt.dataset.value);
 
+            // PG Specific Fields
+            const newMobile = document.getElementById('display-mobile').value;
+            const newPgName = document.getElementById('display-pgName').value;
+            const newAddress = document.getElementById('display-address').value;
+            const newRoleType = document.getElementById('display-roleType').value;
+
             try {
-                await updateDoc(doc(db, "users", currentUser.uid), {
+                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
+                const userData = userDocSnap.data();
+                const isPgOwner = userData.role === 'PG_OWNER';
+
+                const updates = {
                     name: newName,
-                    occupation: newOccupation,
-                    gender: newGender,
-                    dob: document.getElementById('display-dob').value,
-                    hobbies: selectedHobbies
-                });
+                    dob: document.getElementById('display-dob').value
+                };
+
+                if (isPgOwner) {
+                    // Mobile Validation for PG Owner
+                    if (newMobile.length !== 10) {
+                        showToast("Mobile number must be exactly 10 digits", "warning");
+                        saveProfileBtn.innerHTML = 'Save Changes <i class="fa-solid fa-check"></i>';
+                        return;
+                    }
+                    updates.mobile = newMobile;
+                    updates.pgName = newPgName;
+                    updates.address = newAddress;
+                    updates.roleType = newRoleType;
+                } else {
+                    updates.occupation = newOccupation;
+                    updates.gender = newGender;
+                    updates.hobbies = selectedHobbies;
+                }
+
+                await updateDoc(doc(db, "users", currentUser.uid), updates);
 
                 // --- SYNC CHATS ---
                 await updateUserInChats(currentUser.uid, { name: newName });

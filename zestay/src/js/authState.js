@@ -86,7 +86,7 @@ onAuthStateChanged(auth, async (user) => {
       });
 
       // Don't redirect if we are in the middle of registration flow
-      if (path !== "/regimob.html" && path !== "/register.html") {
+      if (path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
         window.location.replace("/questions.html");
       }
       return;
@@ -95,12 +95,15 @@ onAuthStateChanged(auth, async (user) => {
     const data = snap.data();
 
     // 🔹 Route based on onboarding
-    if (data.onboardingComplete) {
+    // PG Owners skip preferences/questions entirely — they are fully registered after submitting PG details
+    const isPGOwner = data.role === 'PG_OWNER';
+
+    if (data.onboardingComplete || isPGOwner) {
       if (!path.includes("listings") && !path.includes("profile") && !path.includes("index") && path !== "/") {
         // Allow index/profile/listings
       }
     } else {
-      if (!path.includes("questions") && !path.includes("preference") && !path.includes("register")) {
+      if (!path.includes("questions") && !path.includes("preference") && !path.includes("register") && !path.includes("pg_owner_details")) {
         // Redirect to onboarding if not complete? 
         // For now, let's just focus on header UI
       }
@@ -112,7 +115,7 @@ onAuthStateChanged(auth, async (user) => {
       if (!hasPreferences) {
         // If they haven't picked preferences yet, force them to preference.html
         // But don't redirect if they are already there!
-        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html") {
+        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
           console.log("Preferences missing. Redirecting to selection...");
           window.location.replace("/preference.html");
         }

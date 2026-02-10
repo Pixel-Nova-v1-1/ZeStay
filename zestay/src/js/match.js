@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     userPreferences: userData.preferences || [], // For tooltip
                     userHobbies: userData.hobbies || [], // For tooltip
                     isVerified: userData.isVerified || false,
+                    userRole: userData.role || 'USER', // Add Role
                     matchScore: matchScore
                 };
             });
@@ -209,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ownerName: ownerData.name || 'User',
                     ownerPhoto: ownerData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (flatData.userId || 'User'),
                     isVerified: ownerData.isVerified || false,
+                    ownerRole: ownerData.role || 'USER', // Add Role
                     matchScore: matchScore
                 };
             });
@@ -300,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
 
         const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
+        const pgIcon = (item.userRole === 'PG_OWNER' || item.ownerRole === 'PG_OWNER') ? '<i class="fa-solid fa-building-user" style="color: #FFD700; margin-left: 5px;" title="PG Owner"></i>' : '';
 
         if (type === 'Roommates') {
 
@@ -336,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.userName || 'User'}${verifiedIcon}</h3>
+                        <h3>${item.userName || 'User'}${verifiedIcon}${pgIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
@@ -409,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Owner Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
+                        <h3>${item.ownerName || 'User'}${verifiedIcon}${pgIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">

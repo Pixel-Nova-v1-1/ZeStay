@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>PG Owner Registration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/register.css">
+    <link rel="stylesheet" href="src/css/toast.css">
+    <link rel="stylesheet" href="src/css/footer.css">
+    <style>
+        /* Additional styles for PG Owner specific fields */
+        .role-selection {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .role-option:hover {
+            border-color: #00C4B4;
+            background: #f0fffd;
+        }
+
+        .role-option.selected {
+            border-color: #00C4B4;
+            background: #e0fffc;
+            color: #009688;
+        }
+
+        .role-option input {
+            display: none;
+        }
+
+        .role-option i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="img">
+        <img src="public/images/cloverdesign.png" alt="Decoration">
+    </div>
+    <div class="bg-shape top-right-circle-outline"></div>
+    <div class="bg-shape top-right-circle-solid"></div>
+    <div class="bg-shape right-small-circle-1"></div>
+    <div class="bg-shape right-small-circle-2"></div>
+
+    <div class="container">
+        <header class="page-header fade-in-up">
+            <h1>PG OWNER DETAILS</h1>
+        </header>
+
+        <form class="register-form" id="pgOwnerForm">
+            <div class="form-grid fade-in-up" style="animation-delay: 0.1s;">
+
+                <div class="form-group full-width">
+                    <label>I am a:</label>
+                    <div class="role-selection">
+                        <label class="role-option selected">
+                            <input type="radio" name="role" value="Owner" checked>
+                            <i class="fa-solid fa-house-user"></i> Owner
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="Agent">
+                            <i class="fa-solid fa-user-tie"></i> Agent
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name: <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" placeholder="Full Name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>DOB: <span class="required">*</span></label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="dob-day" required style="flex: 1;">
+                            <option value="" disabled selected>Day</option>
+                            <!-- JS will populate -->
+                        </select>
+                        <select id="dob-month" required style="flex: 1;">
+                            <option value="" disabled selected>Month</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <select id="dob-year" required style="flex: 1;">
+                            <option value="" disabled selected>Year</option>
+                            <!-- JS will populate -->
+                        </select>
+                    </div>
+                    <input type="hidden" id="dob" name="dob">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email: <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="Email" required readonly
+                        style="background-color: #f0f0f0; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile">Mobile: <span class="required">*</span></label>
+                    <input type="tel" id="mobile" name="mobile" placeholder="Mobile Number" maxlength="10"
+                        minlength="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pgName">PG Name: <span class="required">*</span></label>
+                    <input type="text" id="pgName" name="pgName" placeholder="Name of your PG" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="address">Address: <span class="required">*</span></label>
+                    <input type="text" id="address" name="address" placeholder="Full Address of the PG / Office"
+                        required>
+                </div>
+
+            </div>
+
+            <!-- Profile Photo / Avatar Section -->
+            <div class="photo-section fade-in-up" style="animation-delay: 0.15s;">
+                <div class="photo-labels">
+                    <h3>Upload a photo</h3>
+                    <div class="or-divider">OR</div>
+                    <h3>Select an avatar</h3>
+                </div>
+
+                <div class="photo-actions">
+                    <div class="file-upload-box" id="profileDropZone">
+                        <input type="file" id="profilePic" name="profilePic" accept="image/*" class="file-input" hidden>
+                        <div class="upload-content">
+                            <i class="fa-regular fa-image upload-icon"></i>
+                            <p>Click or drop to upload your profile photo (jpg or png)</p>
+                        </div>
+                        <div id="profilePreview" class="file-preview hidden"></div>
+                    </div>
+
+                    <div class="avatar-grid" id="avatarGrid">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Devjith" alt="Avatar 1"
+                            class="avatar-option" data-value="Devjith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Aditya" alt="Avatar 2"
+                            class="avatar-option" data-value="Aditya">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Anirudh" alt="Avatar 3"
+                            class="avatar-option" data-value="Anirudh">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Tanvi" alt="Avatar 4"
+                            class="avatar-option" data-value="Tanvi">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rudra" alt="Avatar 5"
+                            class="avatar-option" data-value="Rudra">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Advaith" alt="Avatar 6"
+                            class="avatar-option" data-value="Advaith">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Pixel" alt="Avatar 7"
+                            class="avatar-option" data-value="Pixel">
+                        <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nova" alt="Avatar 8"
+                            class="avatar-option" data-value="Nova">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PG Photos Section -->
+            <div class="photo-section fade-in-up" style="animation-delay: 0.2s;">
+                <div class="photo-labels">
+                    <h3>Upload PG Photos</h3>
+                    <p style="font-size: 0.9rem; color: #666; margin-top: -10px; margin-bottom: 15px;">Upload images of
+                        the property/PG</p>
+                </div>
+
+                <div class="photo-actions">
+                    <div class="upload-area" id="pgUploadArea">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span></p>
+                        <input type="file" id="pgPhotos" name="pgPhotos" accept="image/*" multiple hidden>
+                    </div>
+                    <p class="note">Upload images upto 10mb</p>
+                </div>
+            </div>
+
+            <div class="form-actions fade-in-up" style="animation-delay: 0.3s;">
+                <button type="submit" class="next-btn">
+                    Submit <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="src/js/theme.js"></script>
+    <script type="module" src="src/js/pg_owner_details.js"></script>
+</body>
+
+</html>
