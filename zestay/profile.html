@@ -82,6 +82,10 @@
                         <i class="fa-solid fa-circle-check"></i>
                         <span class="tooltip-text">Verified User</span>
                     </span>
+                    <span id="pgOwnerBadge" class="verification-badge-wrapper" style="display: none;">
+                        <i class="fa-solid fa-building-user" style="color: #FFD700;"></i>
+                        <span class="tooltip-text">PG Owner</span>
+                    </span>
                 </h1>
             </div>
         </section>
@@ -91,7 +95,7 @@
             <button class="tab-btn active" data-tab="my-profile">
                 <i class="fa-solid fa-user"></i> My Profile
             </button>
-            <button class="tab-btn" data-tab="preferences">
+            <button class="tab-btn" data-tab="preferences" id="preferencesTabBtn">
                 <i class="fa-solid fa-sliders"></i> My Preferences
             </button>
             <button class="tab-btn" data-tab="listings">
@@ -114,31 +118,46 @@
                             <label for="display-name">Name</label>
                             <input type="text" id="display-name" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Occupation (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label for="display-occupation">Occupation</label>
                             <input type="text" id="display-occupation" class="profile-input" readonly>
                         </div>
+                        <!-- Mobile (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-mobile">Mobile Number</label>
+                            <input type="tel" id="display-mobile" class="profile-input" maxlength="10" minlength="10"
+                                readonly>
+                        </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group-half">
                             <label for="display-email">Email</label>
                             <input type="email" id="display-email" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Gender (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label for="display-gender">Gender</label>
                             <div class="gender-pill-display" id="display-gender">
-                                <!-- Will be populated with both options, active class on selected -->
                                 <span class="gender-option">Male</span>
                                 <span class="gender-option">Female</span>
                             </div>
                         </div>
+                        <!-- PG Name (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-pgName">PG Name</label>
+                            <input type="text" id="display-pgName" class="profile-input" readonly>
+                        </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group-half">
                             <label for="display-dob">Date of Birth</label>
                             <input type="date" id="display-dob" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Hobbies (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label>Hobbies</label>
                             <div class="hobbies-selection profile-input" id="display-hobbies-container"
                                 style="height: auto; min-height: 50px; display: flex; flex-wrap: wrap; gap: 10px;">
@@ -149,6 +168,22 @@
                                 <div class="hobby-option" data-value="music">Music</div>
                                 <div class="hobby-option" data-value="cooking">Cooking</div>
                             </div>
+                        </div>
+                        <!-- Role Type (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-roleType">Role Type</label>
+                            <select id="display-roleType" class="profile-input" disabled>
+                                <option value="Owner">Owner</option>
+                                <option value="Agent">Agent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Address (PG Owner only) -->
+                    <div class="form-row pg-owner-only" style="display: none;">
+                        <div class="form-group-full" style="width: 100%;">
+                            <label for="display-address">PG Address</label>
+                            <input type="text" id="display-address" class="profile-input" readonly>
                         </div>
                     </div>
                     <div class="save-btn-container">
