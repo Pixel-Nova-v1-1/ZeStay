@@ -1,194 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <title>Document</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="src/css/why.css" />
-    <link rel="stylesheet" href="src/css/chat.css" />
-    <link rel="stylesheet" href="src/css/toast.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-    />
-    <!-- ================= GOOGLE MAPS + PLACES ================= -->
-    <!-- Key is loaded dynamically in src/js/why.js to use Environment Variables -->
-      <link rel="stylesheet" href="src/css/footer.css">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <title>Document</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="src/css/why.css" />
+  <link rel="stylesheet" href="src/css/chat.css" />
+  <link rel="stylesheet" href="src/css/toast.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <!-- ================= GOOGLE MAPS + PLACES ================= -->
+  <!-- Key is loaded dynamically in src/js/why.js to use Environment Variables -->
+  <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
-  <body>
-    <div class="title">
-      <h1>
-        <a href="index.html" style="text-decoration: none; color: inherit"
-          ><span class="brand-text">ZeStay</span></a
-        >
-      </h1>
+<body>
+  <div class="title" style="position: relative;">
+    <h1>
+      <a href="index.html" style="text-decoration: none; color: inherit"><span class="brand-text">ZeStay</span></a>
+    </h1>
+    <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+      style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">
+      <i class="fa-solid fa-sun"></i>
+    </button>
+  </div>
+  <div class="subtitle">
+    <h2>Post Requirement</h2>
+    <p>
+      Find your perfect match effortlessly!
+    </p>
+  </div>
+  <section class="main">
+    <div class="box" id="openRoomModal" style="display: none;">
+      <p>Need a Roomate</p>
+      <p class="p">For your Room ></p>
+      <img src="public/images/roommates_v2.png" alt="Roommates" class="box-image" />
     </div>
-    <div class="subtitle">
-      <h2>Post Requirement</h2>
-      <p>
-        Find your perfect match effortlessly!
-      </p>
+    <div class="box" id="openReqModal" style="display: none;">
+      <p>Need a Room/Flat?</p>
+      <p class="p">With a Roommate ></p>
+      <img src="public/images/house-removebg-preview.png" alt="House" class="box-image" />
     </div>
-    <section class="main">
-      <div class="box" id="openRoomModal">
-        <p>Need a Roomate</p>
-        <p class="p">For your Room ></p>
-        <img
-          src="public/images/roommates_v2.png"
-          alt="Roommates"
-          class="box-image"
-        />
+    <!-- New PG Owner Option (Hidden by default) -->
+    <div class="box" id="openPgModal" style="display: none;">
+      <p>List Your PG</p>
+      <p class="p">Find Tenants ></p>
+      <img src="public/images/house-removebg-preview.png" alt="PG" class="box-image" />
+    </div>
+  </section>
+  <section>
+    <div class="scam">
+      <a href="veri.html" class="scam-link"><button>
+          <i class="fa-solid fa-triangle-exclamation"></i> Beware of Scams,
+          verify flatmates/tenants >
+        </button></a>
+    </div>
+  </section>
+  <!-- Requirement Modal -->
+  <div class="modal-overlay" id="reqModal">
+    <div class="modal-card">
+      <button class="close-btn" id="closeReqModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-header">
+        <h1>Add Your Requirment</h1>
+        <p>so that other user can contact you.</p>
       </div>
-      <div class="box" id="openReqModal">
-        <p>Need a Room/Flat?</p>
-        <p class="p">With a Roommate ></p>
-        <img
-          src="public/images/house-removebg-preview.png"
-          alt="House"
-          class="box-image"
-        />
-      </div>
-    </section>
-    <section>
-      <div class="scam">
-        <a href="veri.html" class="scam-link"
-          ><button>
-            <i class="fa-solid fa-triangle-exclamation"></i> Beware of Scams,
-            verify flatmates/tenants >
-          </button></a
-        >
-      </div>
-    </section>
-    <!-- Requirement Modal -->
-    <div class="modal-overlay" id="reqModal">
-      <div class="modal-card">
-        <button class="close-btn" id="closeReqModal">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="modal-header">
-          <h1>Add Your Requirment</h1>
-          <p>so that other user can contact you.</p>
+      <form class="req-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Approx Rent*</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-indian-rupee-sign icon"></i>
+              <input type="number" name="rent" placeholder="0000" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>City/State</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot icon"></i>
+              <input type="text" name="location" id="reqLocation" placeholder="City/State" required />
+            </div>
+          </div>
         </div>
-        <form class="req-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Approx Rent*</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-indian-rupee-sign icon"></i>
-                <input type="number" name="rent" placeholder="0000" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>City/State</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-location-dot icon"></i>
-                <input
-                  type="text"
-                  name="location"
-                  id="reqLocation"
-                  placeholder="City/State"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Looking For</label>
-              <div class="toggle-group single-select" data-group="gender">
-                <button type="button" class="toggle-btn" data-value="male">
-                  Male
-                </button>
-                <button type="button" class="toggle-btn" data-value="female">
-                  Female
-                </button>
-                <button
-                  type="button"
-                  class="toggle-btn active"
-                  data-value="any"
-                >
-                  Any
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Occupancy</label>
-              <div class="toggle-group single-select" data-group="occupancy">
-                <button
-                  type="button"
-                  class="toggle-btn active"
-                  data-value="single"
-                >
-                  Single
-                </button>
-                <button type="button" class="toggle-btn" data-value="shared">
-                  Shared
-                </button>
-                <button type="button" class="toggle-btn" data-value="any">
-                  Any
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group full-width">
-            <label>Your living preferences</label>
-            <div class="chips-container multi-select">
-              <button type="button" class="chip active">
-                Clean & organized
+        <div class="form-row">
+          <div class="form-group">
+            <label>Looking For</label>
+            <div class="toggle-group single-select" data-group="gender">
+              <button type="button" class="toggle-btn" data-value="male">
+                Male
               </button>
-              <button type="button" class="chip">Work from home</button>
-              <button type="button" class="chip">Easy going</button>
-              <button type="button" class="chip">Long-term stay</button>
-              <button type="button" class="chip">College student</button>
-              <button type="button" class="chip">Minimal lifestyle</button>
-              <button type="button" class="chip">Short-term stay</button>
-              <button type="button" class="chip">Privacy focused</button>
-              <button type="button" class="chip">Freelancer</button>
-              <button type="button" class="chip">Calm & quiet</button>
-              <button type="button" class="chip">First-time renter</button>
-              <button type="button" class="chip">Working professional</button>
-              <button type="button" class="chip">Social but balanced</button>
-              <button type="button" class="chip">Flexible routine</button>
+              <button type="button" class="toggle-btn" data-value="female">
+                Female
+              </button>
+              <button type="button" class="toggle-btn active" data-value="any">
+                Any
+              </button>
             </div>
           </div>
-          <div class="form-group full-width">
-            <label>Description*</label>
-            <textarea
-              name="description"
-              placeholder="I am looking Roommate for my room.(This is a text box)"
-              required
-            ></textarea>
+          <div class="form-group">
+            <label>Occupancy</label>
+            <div class="toggle-group single-select" data-group="occupancy">
+              <button type="button" class="toggle-btn active" data-value="single">
+                Single
+              </button>
+              <button type="button" class="toggle-btn" data-value="shared">
+                Shared
+              </button>
+              <button type="button" class="toggle-btn" data-value="any">
+                Any
+              </button>
+            </div>
           </div>
-          <div class="form-footer">
-            <button type="submit" class="submit-btn" id="submitReq">
-              Submit
+        </div>
+        <div class="form-group full-width">
+          <label>Your living preferences</label>
+          <div class="chips-container multi-select">
+            <button type="button" class="chip active">
+              Clean & organized
             </button>
-            <p class="footer-link">
-              Have room & need roommate?
-              <a href="#" id="switchToRoomModal">Add Room ></a>
-            </p>
+            <button type="button" class="chip">Work from home</button>
+            <button type="button" class="chip">Easy going</button>
+            <button type="button" class="chip">Long-term stay</button>
+            <button type="button" class="chip">College student</button>
+            <button type="button" class="chip">Minimal lifestyle</button>
+            <button type="button" class="chip">Short-term stay</button>
+            <button type="button" class="chip">Privacy focused</button>
+            <button type="button" class="chip">Freelancer</button>
+            <button type="button" class="chip">Calm & quiet</button>
+            <button type="button" class="chip">First-time renter</button>
+            <button type="button" class="chip">Working professional</button>
+            <button type="button" class="chip">Social but balanced</button>
+            <button type="button" class="chip">Flexible routine</button>
           </div>
-        </form>
-      </div>
+        </div>
+        <div class="form-group full-width">
+          <label>Description*</label>
+          <textarea name="description" placeholder="I am looking Roommate for my room.(This is a text box)"
+            required></textarea>
+        </div>
+        <div class="form-footer">
+          <button type="submit" class="submit-btn" id="submitReq">
+            Submit
+          </button>
+          <p class="footer-link">
+            Have room & need roommate?
+            <a href="#" id="switchToRoomModal">Add Room ></a>
+          </p>
+        </div>
+      </form>
     </div>
-    <!-- Verification Alert Modal -->
-    <div class="modal-overlay" id="verificationModal">
-      <div
-        class="modal-card"
-        style="max-width: 400px; text-align: center; padding: 30px"
-      >
-        <button class="close-btn" id="closeVerificationModal">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div style="margin-bottom: 20px">
-          <div
-            style="
+  </div>
+  <!-- Verification Alert Modal -->
+  <div class="modal-overlay" id="verificationModal">
+    <div class="modal-card" style="max-width: 400px; text-align: center; padding: 30px">
+      <button class="close-btn" id="closeVerificationModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div style="margin-bottom: 20px">
+        <div style="
               width: 80px;
               height: 80px;
               background: #ffebee;
@@ -197,285 +171,363 @@
               align-items: center;
               justify-content: center;
               margin: 0 auto;
-            "
-          >
-            <i
-              class="fa-solid fa-user-shield"
-              style="font-size: 32px; color: #d32f2f"
-            ></i>
-          </div>
+            ">
+          <i class="fa-solid fa-user-shield" style="font-size: 32px; color: #d32f2f"></i>
         </div>
-        <h2 style="margin-bottom: 10px; color: #333">Verification Required</h2>
-        <p style="color: #666; margin-bottom: 25px">
-          You need to verify your profile before you can post a requirement or a
-          room listing. It helps us keep the community safe!
-        </p>
-        <a
-          href="veri.html"
-          class="submit-btn"
-          style="text-decoration: none; display: inline-block; width: 100%"
-          >Verify Now</a
-        >
       </div>
+      <h2 style="margin-bottom: 10px; color: #333">Verification Required</h2>
+      <p style="color: #666; margin-bottom: 25px">
+        You need to verify your profile before you can post a requirement or a
+        room listing. It helps us keep the community safe!
+      </p>
+      <a href="veri.html" class="submit-btn" style="text-decoration: none; display: inline-block; width: 100%">Verify
+        Now</a>
     </div>
-    <!-- Room Modal -->
-    <div class="modal-overlay" id="roomModal">
-      <div class="modal-card">
-        <button class="close-btn" id="closeRoomModal">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="modal-header">
-          <h1>Add Your Room Details</h1>
-          <p>so that other user can contact you.</p>
-        </div>
-        <form class="req-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Approx Rent*</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-indian-rupee-sign icon"></i>
-                <input type="number" name="rent" placeholder="0000" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>City/State</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-location-dot icon"></i>
-                <input
-                  type="text"
-                  name="location"
-                  id="roomLocation"
-                  placeholder="City/State"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Full Address</label>
+  </div>
+  <!-- Room Modal -->
+  <div class="modal-overlay" id="roomModal">
+    <div class="modal-card">
+      <button class="close-btn" id="closeRoomModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-header">
+        <h1>Add Your Room Details</h1>
+        <p>so that other user can contact you.</p>
+      </div>
+      <form class="req-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Approx Rent*</label>
             <div class="input-wrapper">
-              <i class="fa-solid fa-map-pin icon"></i>
-              <input
-                type="text"
-                name="address"
-                placeholder="Enter full address"
-                required
-              />
+              <i class="fa-solid fa-indian-rupee-sign icon"></i>
+              <input type="number" name="rent" placeholder="0000" required />
             </div>
           </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Looking For</label>
-              <div class="toggle-group single-select" data-group="gender">
-                <button type="button" class="toggle-btn" data-value="male">
-                  Male
-                </button>
-                <button type="button" class="toggle-btn" data-value="female">
-                  Female
-                </button>
-                <button
-                  type="button"
-                  class="toggle-btn active"
-                  data-value="any"
-                >
-                  Any
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Occupancy</label>
-              <div class="toggle-group single-select" data-group="occupancy">
-                <button
-                  type="button"
-                  class="toggle-btn active"
-                  data-value="single"
-                >
-                  Single
-                </button>
-                <button type="button" class="toggle-btn" data-value="shared">
-                  Shared
-                </button>
-                <button type="button" class="toggle-btn" data-value="any">
-                  Any
-                </button>
-              </div>
+          <div class="form-group">
+            <label>City/State</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot icon"></i>
+              <input type="text" name="location" id="roomLocation" placeholder="City/State" required />
             </div>
           </div>
-
-          <div class="form-group full-width">
-            <label>Choose Highlights of the Room</label>
-            <div class="chips-container multi-select">
-              <button type="button" class="chip active">Fully furnished</button>
-              <button type="button" class="chip">Semi furnished</button>
-              <button type="button" class="chip">Market nearby</button>
-              <button type="button" class="chip">Park nearby</button>
-              <button type="button" class="chip">Attached washroom</button>
-              <button type="button" class="chip">Gated society</button>
-              <button type="button" class="chip">No restriction</button>
-              <button type="button" class="chip">Security guard</button>
-              <button type="button" class="chip">Close to metro station</button>
-              <button type="button" class="chip">Well ventilated</button>
-              <button type="button" class="chip">Clean & hygienic</button>
-              <button type="button" class="chip">
-                Public transport nearby
-              </button>
-              <button type="button" class="chip">Spacious room</button>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Upload 3 Photos Of Your Room</label>
-            <div class="upload-area">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-              <p>
-                Click or Drag Image to Upload<br /><span>(JPG, JPEG, PNG)</span>
-              </p>
-              <input
-                type="file"
-                id="fileInput"
-                name="roomPhotos"
-                multiple
-                hidden
-              />
-            </div>
-            <p class="note">Upload an image upto 10mb</p>
-          </div>
-          <div class="form-group full-width">
-            <label>Amenities</label>
-            <div class="amenities-grid">
-              <div class="amenity-item">
-                <div class="amenity-icon active">
-                  <i class="fa-solid fa-shirt"></i>
-                </div>
-                <span>Washing Machine</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
-                <span>Parking</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-snowflake"></i>
-                </div>
-                <span>Fridge</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-elevator"></i>
-                </div>
-                <span>Lift</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon"><i class="fa-solid fa-wifi"></i></div>
-                <span>WiFi</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon"><i class="fa-solid fa-tv"></i></div>
-                <span>TV</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-battery-full"></i>
-                </div>
-                <span>Power Backup</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-bottle-water"></i>
-                </div>
-                <span>24/7 Water Supply</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon"><i class="fa-solid fa-wind"></i></div>
-                <span>AC</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-fire-burner"></i>
-                </div>
-                <span>Kitchen</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-kitchen-set"></i>
-                </div>
-                <span>Cook</span>
-              </div>
-              <div class="amenity-item">
-                <div class="amenity-icon">
-                  <i class="fa-solid fa-faucet"></i>
-                </div>
-                <span>Geyser</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Description*</label>
-            <textarea
-              name="description"
-              placeholder="I am looking Roommate for my room.(This is a text box)"
-              required
-            ></textarea>
-          </div>
-
-          <div class="form-footer">
-            <button type="submit" class="submit-btn">Submit</button>
-            <p class="footer-link">
-              Looking For Room?
-              <a href="#" id="switchToReqModal">Add Requirement ></a>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- ================= CHAT WIDGET ================= -->
-    <div id="chatWidget" class="chat-widget closed">
-      <div class="chat-header">
-        <button id="chatBackBtn" class="chat-back-btn hidden">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <img
-          id="chatHeaderAvatar"
-          src=""
-          alt=""
-          class="chat-header-avatar hidden"
-        />
-        <div class="chat-header-info">
-          <h3 id="chatTitle">Messages</h3>
-          <span id="chatStatus" class="chat-status"></span>
         </div>
-        <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
-      </div>
 
-      <div id="chatListBody" class="chat-body list-view"></div>
-      <div
-        id="chatConversationBody"
-        class="chat-body conversation-view hidden"
-      ></div>
+        <div class="form-group full-width">
+          <label>Full Address</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-map-pin icon"></i>
+            <input type="text" name="address" placeholder="Enter full address" required />
+          </div>
+        </div>
 
-      <div id="chatFooter" class="chat-footer hidden">
-        <button class="chat-attach-btn">
-          <i class="fa-solid fa-paperclip"></i>
-        </button>
-        <input type="text" id="chatInput" placeholder="Message..." />
-        <button id="chatSendBtn" class="chat-send-btn">
-          <i class="fa-solid fa-paper-plane"></i>
-        </button>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Looking For</label>
+            <div class="toggle-group single-select" data-group="gender">
+              <button type="button" class="toggle-btn" data-value="male">
+                Male
+              </button>
+              <button type="button" class="toggle-btn" data-value="female">
+                Female
+              </button>
+              <button type="button" class="toggle-btn active" data-value="any">
+                Any
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Occupancy</label>
+            <div class="toggle-group single-select" data-group="occupancy">
+              <button type="button" class="toggle-btn active" data-value="single">
+                Single
+              </button>
+              <button type="button" class="toggle-btn" data-value="shared">
+                Shared
+              </button>
+              <button type="button" class="toggle-btn" data-value="any">
+                Any
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Choose Highlights of the Room</label>
+          <div class="chips-container multi-select">
+            <button type="button" class="chip active">Fully furnished</button>
+            <button type="button" class="chip">Semi furnished</button>
+            <button type="button" class="chip">Market nearby</button>
+            <button type="button" class="chip">Park nearby</button>
+            <button type="button" class="chip">Attached washroom</button>
+            <button type="button" class="chip">Gated society</button>
+            <button type="button" class="chip">No restriction</button>
+            <button type="button" class="chip">Security guard</button>
+            <button type="button" class="chip">Close to metro station</button>
+            <button type="button" class="chip">Well ventilated</button>
+            <button type="button" class="chip">Clean & hygienic</button>
+            <button type="button" class="chip">
+              Public transport nearby
+            </button>
+            <button type="button" class="chip">Spacious room</button>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Upload 3 Photos Of Your Room</label>
+          <div class="upload-area">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>
+              Click or Drag Image to Upload<br /><span>(JPG, JPEG, PNG)</span>
+            </p>
+            <input type="file" id="fileInput" name="roomPhotos" multiple hidden />
+          </div>
+          <p class="note">Upload an image upto 10mb</p>
+        </div>
+        <div class="form-group full-width">
+          <label>Amenities</label>
+          <div class="amenities-grid">
+            <div class="amenity-item">
+              <div class="amenity-icon active">
+                <i class="fa-solid fa-shirt"></i>
+              </div>
+              <span>Washing Machine</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon"><i class="fa-solid fa-car"></i></div>
+              <span>Parking</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-snowflake"></i>
+              </div>
+              <span>Fridge</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-elevator"></i>
+              </div>
+              <span>Lift</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon"><i class="fa-solid fa-wifi"></i></div>
+              <span>WiFi</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon"><i class="fa-solid fa-tv"></i></div>
+              <span>TV</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-battery-full"></i>
+              </div>
+              <span>Power Backup</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-bottle-water"></i>
+              </div>
+              <span>24/7 Water Supply</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon"><i class="fa-solid fa-wind"></i></div>
+              <span>AC</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-fire-burner"></i>
+              </div>
+              <span>Kitchen</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-kitchen-set"></i>
+              </div>
+              <span>Cook</span>
+            </div>
+            <div class="amenity-item">
+              <div class="amenity-icon">
+                <i class="fa-solid fa-faucet"></i>
+              </div>
+              <span>Geyser</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Description*</label>
+          <textarea name="description" placeholder="I am looking Roommate for my room.(This is a text box)"
+            required></textarea>
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="submit-btn">Submit</button>
+          <p class="footer-link">
+            Looking For Room?
+            <a href="#" id="switchToReqModal">Add Requirement ></a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PG Modal -->
+  <div class="modal-overlay" id="pgModal">
+    <div class="modal-card">
+      <button class="close-btn" id="closePgModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-header">
+        <h1>List Your PG</h1>
+        <p>so that tenants can contact you.</p>
       </div>
+      <form class="req-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Approx Rent (Per Year)*</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-indian-rupee-sign icon"></i>
+              <input type="number" name="rent" placeholder="0000" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>City/State</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot icon"></i>
+              <input type="text" name="location" id="pgLocation" placeholder="City/State" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>PG Name</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-building icon"></i>
+            <input type="text" name="pgName" placeholder="Enter PG Name" required />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Full Address</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-map-pin icon"></i>
+            <input type="text" name="address" placeholder="Enter full address" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Looking For</label>
+            <div class="toggle-group single-select" data-group="gender">
+              <button type="button" class="toggle-btn" data-value="male">
+                Male
+              </button>
+              <button type="button" class="toggle-btn" data-value="female">
+                Female
+              </button>
+              <button type="button" class="toggle-btn active" data-value="any">
+                Any
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Occupancy Type</label>
+            <div class="toggle-group single-select" data-group="occupancy">
+              <button type="button" class="toggle-btn active" data-value="single">
+                Single
+              </button>
+              <button type="button" class="toggle-btn" data-value="double">
+                Double
+              </button>
+              <button type="button" class="toggle-btn" data-value="triple">
+                Triple
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Choose Highlights of the PG</label>
+          <div class="chips-container multi-select">
+            <button type="button" class="chip active">WiFi Included</button>
+            <button type="button" class="chip">Food Included</button>
+            <button type="button" class="chip">Laundry Service</button>
+            <button type="button" class="chip">Housekeeping</button>
+            <button type="button" class="chip">CCTV Security</button>
+            <button type="button" class="chip">Biometric Access</button>
+            <button type="button" class="chip">Power Backup</button>
+            <button type="button" class="chip">AC Rooms</button>
+            <button type="button" class="chip">Attached Washroom</button>
+            <button type="button" class="chip">TV in Room</button>
+            <button type="button" class="chip">Study Table</button>
+            <button type="button" class="chip">Geyser</button>
+            <button type="button" class="chip">Refrigerator</button>
+            <button type="button" class="chip">RO Water</button>
+            <button type="button" class="chip">Lift</button>
+            <button type="button" class="chip">No Gate Closing Time</button>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Upload 3 Photos Of Your PG</label>
+          <div class="upload-area">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>
+              Click or Drag Image to Upload<br /><span>(JPG, JPEG, PNG)</span>
+            </p>
+            <input type="file" id="pgFileInput" name="roomPhotos" multiple hidden />
+          </div>
+          <p class="note">Upload an image upto 10mb</p>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Description*</label>
+          <textarea name="description" placeholder="Describe your PG, rules, and nearby amenities..."
+            required></textarea>
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="submit-btn">List PG</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= CHAT WIDGET ================= -->
+  <div id="chatWidget" class="chat-widget closed">
+    <div class="chat-header">
+      <button id="chatBackBtn" class="chat-back-btn hidden">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <img id="chatHeaderAvatar" src="" alt="" class="chat-header-avatar hidden" />
+      <div class="chat-header-info">
+        <h3 id="chatTitle">Messages</h3>
+        <span id="chatStatus" class="chat-status"></span>
+      </div>
+      <button id="chatCloseBtn" class="chat-close-btn">&times;</button>
     </div>
 
-    <button id="chatToggleBtn" class="chat-toggle-btn">
-      <i class="fa-solid fa-comment-dots"></i>
-      <span class="chat-badge" style="display: none;"></span>
-    </button>
+    <div id="chatListBody" class="chat-body list-view"></div>
+    <div id="chatConversationBody" class="chat-body conversation-view hidden"></div>
 
-    <script type="module" src="src/js/why.js"></script>
-    <script type="module" src="src/js/chat.js"></script>
-  </body>
+    <div id="chatFooter" class="chat-footer hidden">
+      <button class="chat-attach-btn">
+        <i class="fa-solid fa-paperclip"></i>
+      </button>
+      <input type="text" id="chatInput" placeholder="Message..." />
+      <button id="chatSendBtn" class="chat-send-btn">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <button id="chatToggleBtn" class="chat-toggle-btn">
+    <i class="fa-solid fa-comment-dots"></i>
+    <span class="chat-badge" style="display: none;"></span>
+  </button>
+
+  <script src="src/js/theme.js" defer></script>
+  <script type="module" src="src/js/why.js"></script>
+  <script type="module" src="src/js/chat.js"></script>
+</body>
+
 </html>
-
-

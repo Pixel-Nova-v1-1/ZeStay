@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="src/css/regimob.css" />
     <link rel="stylesheet" href="src/css/toast.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
@@ -25,6 +27,12 @@
         <div class="right-section">
             <div class="content-wrapper">
                 <h2 class="app-name"><span class="brand-text">ZeStay</span></h2>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+                    style="position: absolute; top: 20px; right: 20px;">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
 
                 <div class="form-container" style="display: none;">
                     <h1 class="title" id="authTitle">Continue with Email</h1>
@@ -104,7 +112,8 @@
                 <label class="checkbox-container">
                     <input type="checkbox" id="termsCheckbox">
                     <span class="checkmark"></span>
-                    <span class="label-text">I accept the <a href="terms.html" target="_blank">Terms and Conditions</a></span>
+                    <span class="label-text">I accept the <a href="terms.html" target="_blank">Terms and
+                            Conditions</a></span>
                 </label>
             </div>
 
@@ -112,7 +121,8 @@
                 <label class="checkbox-container">
                     <input type="checkbox" id="privacyCheckbox">
                     <span class="checkmark"></span>
-                    <span class="label-text">I accept the <a href="privacy.html" target="_blank">Privacy Policy</a></span>
+                    <span class="label-text">I accept the <a href="privacy.html" target="_blank">Privacy
+                            Policy</a></span>
                 </label>
             </div>
 
@@ -120,6 +130,26 @@
         </div>
     </div>
 
+    <!-- PG Owner Selection Modal -->
+    <div id="pgOwnerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="text-align: center;">
+            <div class="icon-circle"
+                style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e0fffc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-house-user" style="font-size: 32px; color: #00C4B4;"></i>
+            </div>
+            <h2 class="modal-title">One last thing...</h2>
+            <p class="modal-subtitle">Are you a PG Owner or Agent?</p>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button id="pgOwnerNoBtn" class="btn-otp"
+                    style="background: transparent; color: #666; border: 1px solid #ccc;">No, I'm a User</button>
+                <button id="pgOwnerYesBtn" class="btn-otp" style="background: #00C4B4; color: white; border: none;">Yes,
+                    I am</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/theme.js"></script>
     <!-- Vite entry -->
     <script type="module" src="/src/main.js"></script>
 
@@ -142,5 +172,3 @@
 </body>
 
 </html>
-
-

@@ -8,7 +8,8 @@
     <title>Pick Your Preferences</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/preference.css">
@@ -30,6 +31,10 @@
         <header class="page-header">
             <h1 class="fade-in-down">Pick your Preferences</h1>
             <p class="subtitle fade-in-down delay-1">Please select at least 5 preferences</p>
+            <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+                style="position: absolute; top: 20px; right: 20px;">
+                <i class="fa-solid fa-sun"></i>
+            </button>
         </header>
 
         <div class="preference-grid" id="preferenceGrid">
@@ -43,9 +48,8 @@
         </div>
     </div>
 
+    <script src="src/js/theme.js"></script>
     <script type="module" src="src/js/preference.js"></script>
 </body>
 
 </html>
-
-

@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, addDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
 import { showToast } from "./toast.js";
 
 console.log("match.js loaded");
@@ -8,6 +8,7 @@ console.log("match.js loaded");
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
     let flatsData = [];
+    let pgsData = []; // New PG Data Array
 
     let currentType = 'Roommates';
     let currentFilter = 'Any';
@@ -129,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     userPreferences: userData.preferences || [], // For tooltip
                     userHobbies: userData.hobbies || [], // For tooltip
                     isVerified: userData.isVerified || false,
+                    userRole: userData.role || 'USER', // Add Role
                     matchScore: matchScore
                 };
             });
@@ -146,6 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error fetching matches:", error);
             container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading matches.</p>';
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
         }
     }
 
@@ -204,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ownerName: ownerData.name || 'User',
                     ownerPhoto: ownerData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (flatData.userId || 'User'),
                     isVerified: ownerData.isVerified || false,
+                    ownerRole: ownerData.role || 'USER', // Add Role
                     matchScore: matchScore
                 };
             });
@@ -223,6 +231,84 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentType === 'Flats') {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading flats.</p>';
             }
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+    }
+
+    async function fetchPGs() {
+        if (pgsData.length > 0) {
+            if (currentType === 'PGs') init();
+            return;
+        }
+
+        container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Loading PGs...</p>';
+
+        try {
+            const querySnapshot = await getDocs(collection(db, "pgs"));
+
+            const pgPromises = querySnapshot.docs.map(async (docSnapshot) => {
+                const pgData = docSnapshot.data();
+                const pgId = docSnapshot.id;
+
+                if (currentUser && pgData.userId === currentUser.uid) return null;
+
+                let ownerData = {};
+                let matchScore = 0;
+
+                if (pgData.userId) {
+                    try {
+                        // Check if we already have this user
+                        if (currentUser && pgData.userId === currentUser.uid) {
+                            ownerData = currentUserData;
+                        } else {
+                            const userDocRef = doc(db, "users", pgData.userId);
+                            const userDocSnap = await getDoc(userDocRef);
+                            if (userDocSnap.exists()) {
+                                ownerData = userDocSnap.data();
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching PG owner:", err);
+                    }
+                }
+
+                // Match Score for PGs can be simple for now or similar to Flats
+                // PGs might not have 'preferences' to match against, keeping it simple or default
+                if (currentUserData && ownerData) {
+                    matchScore = calculateMatchScore(currentUserData, ownerData);
+                }
+
+                return {
+                    id: pgId,
+                    ...pgData,
+                    ownerName: ownerData.name || 'PG Owner',
+                    ownerPhoto: ownerData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (pgData.userId || 'PG'),
+                    isVerified: ownerData.isVerified || false,
+                    ownerRole: ownerData.role || 'PG_OWNER',
+                    matchScore: matchScore
+                };
+            });
+
+            const pgs = (await Promise.all(pgPromises)).filter(p => p !== null);
+            pgs.sort((a, b) => b.matchScore - a.matchScore);
+            pgsData = pgs;
+
+            if (currentType === 'PGs') {
+                init();
+            }
+
+        } catch (error) {
+            console.error("Error fetching PGs:", error);
+            if (currentType === 'PGs') {
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading PGs.</p>';
+            }
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
         }
     }
 
@@ -270,40 +356,40 @@ document.addEventListener('DOMContentLoaded', () => {
             // Boosted: Add base score of 30
             hobbiesMatch = Math.min(100, (sharedHobbies.length / Math.max(h1.length, 1)) * 100 + 30);
         } else {
-             // Boosted: Default score if no hobbies (was 0)
-             hobbiesMatch = 60;
+            // Boosted: Default score if no hobbies (was 0)
+            hobbiesMatch = 60;
         }
 
         // Weighted Average (33% each)
         let finalScore = (personalityMatch + prefMatch + hobbiesMatch) / 3;
-        
+
         // Final Boost: Add 15 points to everything
         finalScore = Math.min(100, finalScore + 15);
-        
+
         return Math.round(finalScore);
     }
 
     function getCardHTML(item, type, index = 0) {
         const delay = index * 0.1;
         const style = `style="animation-delay: ${delay}s"`;
-        // Store type and ID in data attributes for delegation
         const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
 
-        const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
+        const isListingPgOwner = item.userRole === 'PG_OWNER' || item.ownerRole === 'PG_OWNER';
+        const isViewerPgOwner = currentUserData && currentUserData.role === 'PG_OWNER';
+        const hideMatch = isListingPgOwner || isViewerPgOwner;
+
+        const verifiedIcon = (item.isVerified && !isListingPgOwner) ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
+        const pgIcon = isListingPgOwner ? '<i class="fa-solid fa-building-user" style="color: #FFD700; margin-left: 5px;" title="PG Owner"></i>' : '';
 
         if (type === 'Roommates') {
-
             let interestsHTML = '';
-            // Use preferences from User Data (fetched in fetchMatches)
             const interests = item.userPreferences || [];
-            // Also add hobbies if available
             let hobbies = [];
             if (item.hobbies) {
                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
                 else hobbies = item.hobbies.split(',').map(s => s.trim());
             }
 
-            // Combine and take top 5
             const allInterests = [...interests, ...hobbies].slice(0, 5);
 
             if (allInterests.length > 0) {
@@ -317,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const location = item.location || 'Location not specified';
             const address = item.address ? item.address + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
-            const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
 
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
@@ -326,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.userName || 'User'}${verifiedIcon}</h3>
+                        <h3>${item.userName || 'User'}${verifiedIcon}${pgIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
@@ -343,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-footer">
                     <div class="match-wrapper">
+                        ${!hideMatch ? `
                         <span class="match-score">${item.matchScore}% match!</span>
                         <div class="interests-tooltip">
                             <div class="tooltip-title">Common Interests</div>
@@ -350,10 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${interestsHTML}
                             </div>
                         </div>
+                        ` : ''}
                     </div>
                     <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
+
         } else if (type === 'Flats') {
             const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
             const location = item.location || 'Location not specified';
@@ -362,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
 
-            // Amenities Logic
             const amenities = item.amenities || [];
             let amenitiesHTML = '';
 
@@ -399,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
                        <img src="${avatar}" alt="Owner Avatar">
                     </div>
                     <div class="card-details">
-                        <h3>${item.ownerName || 'User'}${verifiedIcon}</h3>
+                        <h3>${item.ownerName || 'User'}${verifiedIcon}${pgIcon}</h3>
                         <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
                         
                         <div class="card-info-grid">
@@ -420,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-footer">
                     <div class="match-wrapper">
-                        <span class="match-score">${item.matchScore}% match!</span>
+                        ${!hideMatch ? `<span class="match-score">${item.matchScore}% match!</span>` : ''}
                         ${amenitiesHTML ? `
                         <div class="interests-tooltip">
                             <div class="tooltip-title">Amenities</div>
@@ -429,17 +516,104 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>` : ''}
                     </div>
-                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="btn-review" title="See Reviews">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        } else if (type === 'PGs') {
+            const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
+            const location = item.location || 'Location not specified';
+            const address = item.address ? item.address + ', ' : '';
+            const rent = item.rent ? `₹ ${item.rent}/year` : 'Rent not specified';
+            const occupancy = item.occupancy || 'Any';
+            const pgName = item.pgName || 'PG Name';
+
+            const amenities = item.highlights || item.amenities || [];
+            let amenitiesHTML = '';
+
+            if (amenities.length > 0) {
+                amenitiesHTML = amenities.slice(0, 5).map(am => {
+                    let icon = '<i class="fa-solid fa-check"></i> ';
+                    const lower = am.toLowerCase();
+                    if (lower.includes('wifi')) icon = '<i class="fa-solid fa-wifi"></i> ';
+                    else if (lower.includes('food')) icon = '<i class="fa-solid fa-utensils"></i> ';
+                    else if (lower.includes('laundry')) icon = '<i class="fa-solid fa-shirt"></i> ';
+                    else if (lower.includes('ac')) icon = '<i class="fa-solid fa-wind"></i> ';
+                    else if (lower.includes('tv')) icon = '<i class="fa-solid fa-tv"></i> ';
+                    else if (lower.includes('power')) icon = '<i class="fa-solid fa-battery-full"></i> ';
+                    else if (lower.includes('security') || lower.includes('cctv')) icon = '<i class="fa-solid fa-shield-halved"></i> ';
+                    else if (lower.includes('washroom')) icon = '<i class="fa-solid fa-bath"></i> ';
+
+                    return `<span class="interest-tag">${icon}${am}</span>`;
+                }).join('');
+
+                if (amenities.length > 5) {
+                    amenitiesHTML += `<span class="interest-tag view-more" style="background: transparent;">+${amenities.length - 5}</span>`;
+                }
+            }
+
+            return `
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+                <div class="card-content">
+                    <div class="card-avatar">
+                       <img src="${avatar}" alt="PG Owner">
+                    </div>
+                    <div class="card-details">
+                        <h3>${pgName}${verifiedIcon}${pgIcon}</h3>
+                        <p class="location" style="font-size: 0.85rem; color: #666;">By ${item.ownerName}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
+                        
+                        <div class="card-info-grid">
+                            <div class="info-item">
+                                <span class="label">Rent</span>
+                                <span class="value">${rent}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Looking For</span>
+                                <span class="value">${item.gender ? item.gender.charAt(0).toUpperCase() + item.gender.slice(1) : 'Any'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Occupancy</span>
+                                <span class="value">${occupancy}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="match-wrapper">
+                        ${!hideMatch ? `<span class="match-score">${item.matchScore}% match!</span>` : ''}
+                        ${amenitiesHTML ? `
+                        <div class="interests-tooltip">
+                            <div class="tooltip-title">Highlights</div>
+                            <div class="interests-grid">
+                                ${amenitiesHTML}
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="btn-review" title="See Reviews">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    </div>
                 </div>
             </div>`;
         } else {
-            // Fallback
             return ``;
         }
     }
 
     function getFilteredData() {
-        const data = currentType === 'Roommates' ? allUsers : flatsData;
+        // const data = currentType === 'Roommates' ? allUsers : flatsData;
+        let data = [];
+        if (currentType === 'Roommates') data = allUsers;
+        else if (currentType === 'Flats') data = flatsData;
+        else if (currentType === 'PGs') data = pgsData;
+
         let filtered = data;
 
         // 1. Filter by Dropdown (Gender)
@@ -447,15 +621,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentFilter.toLowerCase() !== 'any') {
             if (currentType === 'Roommates') {
                 filtered = filtered.filter(item => (item.userGender || '').toLowerCase() === currentFilter.toLowerCase());
-            } else {
-                // For Flats, we might filter by owner gender or flat preference? 
-                // Assuming owner gender for now as per previous logic, or maybe flat "looking for"?
-                // Previous logic used item.gender. 
-                // Flats data has 'gender' field (Looking For) from roomModal.
-                // But wait, roomModal has "Looking For" (gender) field.
-                // Let's check if flatsData has 'gender' field. Yes, from roomModal.
-                // But wait, I changed flatsData to include owner details.
-                // The flat doc itself has 'gender' (Looking For).
+            } else if (currentType === 'Flats') {
+                // Flats data has 'gender' field (Looking For)
+                filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
+            } else if (currentType === 'PGs') {
                 filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
             }
         }
@@ -475,6 +644,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filteredData.length === 0) {
             if (currentType === 'Flats') {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No flats available yet.</p>';
+            } else if (currentType === 'PGs') {
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No PGs available yet.</p>';
             } else {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
             }
@@ -512,6 +683,11 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         currentIndex = 0;
         renderItems();
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
     }
 
 
@@ -534,6 +710,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchFlats();
             } else if (currentType === 'Roommates') {
                 fetchMatches();
+            } else if (currentType === 'PGs') {
+                fetchPGs();
             } else {
                 init();
             }
@@ -579,9 +757,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // So just setting the value here is enough for the initial render.
         }
 
-        // 3. Check URL for Type (Roommates vs Flats)
+        // 3. Check URL for Type
         const typeParam = urlParams.get('type');
-        if (typeParam && (typeParam === 'Flats' || typeParam === 'Roommates')) {
+        if (typeParam && (typeParam === 'Flats' || typeParam === 'Roommates' || typeParam === 'PGs')) {
             currentType = typeParam;
 
             // Update UI Toggles
@@ -601,74 +779,302 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Access Control (Event Delegation) ---
+    // --- Unified Review Logic ---
+    const unifiedReviewForm = document.getElementById('unifiedReviewForm');
+    const toggleReviewFormBtn = document.getElementById('toggleReviewFormBtn');
+    const unifiedRatingStars = document.querySelectorAll('#unifiedRatingStars i');
+    const unifiedReviewRatingInput = document.getElementById('unifiedReviewRating');
+    const unifiedRatingError = document.getElementById('unifiedRatingError');
+
+    // Toggle Form Visibility
+    if (toggleReviewFormBtn) {
+        toggleReviewFormBtn.onclick = () => {
+             if (!currentUser) {
+                // If not logged in, redirect
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+            unifiedReviewForm.classList.toggle('hidden');
+        };
+    }
+
+    // Star Rating Logic (Unified)
+    function resetUnifiedStars() {
+        unifiedRatingStars.forEach(star => {
+            star.classList.replace('fa-solid', 'fa-regular');
+        });
+        if (unifiedReviewRatingInput) unifiedReviewRatingInput.value = '0';
+        if (unifiedRatingError) unifiedRatingError.classList.add('hidden');
+        if (unifiedReviewForm) {
+            unifiedReviewForm.reset();
+            unifiedReviewForm.classList.add('hidden');
+        }
+    }
+
+    unifiedRatingStars.forEach(star => {
+        star.onclick = () => {
+            const rating = star.dataset.rating;
+            unifiedReviewRatingInput.value = rating;
+
+            // Fill stars up to selected
+            unifiedRatingStars.forEach(s => {
+                const r = s.dataset.rating;
+                if (r <= rating) {
+                    s.classList.replace('fa-regular', 'fa-solid');
+                } else {
+                    s.classList.replace('fa-solid', 'fa-regular');
+                }
+            });
+            if (unifiedRatingError) unifiedRatingError.classList.add('hidden');
+        };
+    });
+
+    // Submit Unified Review
+    if (unifiedReviewForm) {
+        unifiedReviewForm.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const rating = parseInt(unifiedReviewRatingInput.value);
+            const comment = document.getElementById('unifiedReviewComment').value.trim();
+            const targetId = document.getElementById('unifiedTargetId').value;
+            const targetType = document.getElementById('unifiedTargetType').value;
+            const ownerId = document.getElementById('unifiedOwnerId').value;
+
+            if (rating === 0) {
+                unifiedRatingError.classList.remove('hidden');
+                return;
+            }
+
+            if (!currentUser) {
+                showToast("You must be logged in to submit a review", "error");
+                return;
+            }
+
+            const submitBtn = unifiedReviewForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    reviewerId: currentUser.uid,
+                    reviewerName: currentUserData.name || 'Anonymous',
+                    reviewerPhoto: currentUserData.photoUrl || null,
+                    targetId: targetId,
+                    targetType: targetType,
+                    ownerId: ownerId,
+                    rating: rating,
+                    comment: comment,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast("Review submitted successfully!", "success");
+                
+                // Hide Form and Reset
+                unifiedReviewForm.classList.add('hidden');
+                unifiedReviewForm.reset();
+                resetUnifiedStars();
+
+                // Refresh Reviews List !
+                fetchAndShowReviews(targetId);
+
+            } catch (error) {
+                console.error("Error submitting review:", error);
+                showToast("Failed to submit review. Try again.", "error");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        };
+    }
+
+    // --- View Reviews Modal (Unified) ---
+    const viewReviewsModal = document.getElementById('viewReviewsModal');
+    const closeViewReviewsModal = document.getElementById('closeViewReviewsModal');
+    const reviewsListContainer = document.getElementById('reviewsList');
+    const avgRatingDisplay = document.getElementById('avgRatingDisplay');
+    const avgStarsDisplay = document.getElementById('avgStarsDisplay');
+    const totalReviewsDisplay = document.getElementById('totalReviewsDisplay');
+    const viewReviewTargetName = document.getElementById('viewReviewTargetName');
+
+    if (closeViewReviewsModal) {
+        closeViewReviewsModal.onclick = () => {
+            viewReviewsModal.classList.add('hidden');
+            if (typeof resetUnifiedStars === 'function') resetUnifiedStars();
+        };
+        viewReviewsModal.onclick = (e) => {
+            if (e.target === viewReviewsModal) {
+                viewReviewsModal.classList.add('hidden');
+                if (typeof resetUnifiedStars === 'function') resetUnifiedStars();
+            }
+        };
+    }
+
+    async function fetchAndShowReviews(targetId) {
+        if (!reviewsListContainer) return;
+        reviewsListContainer.innerHTML = '<div class="loading-reviews">Loading reviews...</div>';
+        
+        try {
+            // Updated Query: Removed orderBy to avoid index requirement errors. Sorting client-side instead.
+            const q = query(collection(db, "reviews"), where("targetId", "==", targetId));
+            const querySnapshot = await getDocs(q);
+            const reviews = querySnapshot.docs.map(doc => doc.data());
+
+            // Client-side Sort (Newest First)
+            reviews.sort((a, b) => {
+                const timeA = a.createdAt ? a.createdAt.seconds : 0;
+                const timeB = b.createdAt ? b.createdAt.seconds : 0;
+                return timeB - timeA;
+            });
+
+            // Update Header Stats
+            if (reviews.length === 0) {
+                 if(avgRatingDisplay) avgRatingDisplay.textContent = "0.0";
+                 if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(0);
+                 if(totalReviewsDisplay) totalReviewsDisplay.textContent = "(0 reviews)";
+                 reviewsListContainer.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to review!</div>';
+            } else {
+                const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+                const avgRating = (totalRating / reviews.length).toFixed(1);
+                
+                if(avgRatingDisplay) avgRatingDisplay.textContent = avgRating;
+                if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(avgRating);
+                if(totalReviewsDisplay) totalReviewsDisplay.textContent = `(${reviews.length} review${reviews.length !== 1 ? 's' : ''})`;
+
+                // Render List
+                reviewsListContainer.innerHTML = reviews.map(review => {
+                    const date = review.createdAt ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() : 'Just now';
+                    const avatar = review.reviewerPhoto || `https://api.dicebear.com/9.x/avataaars/svg?seed=${review.reviewerName || 'Anonymous'}`;
+                    
+                    return `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <img src="${avatar}" class="reviewer-avatar" alt="Reviewer">
+                                <div>
+                                    <div class="reviewer-name">${review.reviewerName || 'Anonymous'}</div>
+                                    <div class="review-date">${date}</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                ${generateStars(review.rating, 12)}
+                            </div>
+                        </div>
+                        <div class="review-text">${review.comment || ''}</div>
+                    </div>`;
+                }).join('');
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            reviewsListContainer.innerHTML = '<div class="no-reviews">Error loading reviews.</div>';
+        }
+    }
+
+    function generateStars(rating, size = 18) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) stars += '<i class="fa-solid fa-star"></i>';
+            else if (i - 0.5 <= rating) stars += '<i class="fa-solid fa-star-half-stroke"></i>';
+            else stars += '<i class="fa-regular fa-star"></i>';
+        }
+        return stars;
+    }
+
+    // --- Event Delegation for Cards ---
     if (container) {
         container.addEventListener('click', (e) => {
             const card = e.target.closest('.listing-card');
             const chatBtn = e.target.closest('.btn-contact');
+            const reviewBtn = e.target.closest('.btn-review'); // Star Button
 
-            if (card) {
-                // Check if Chat Button was clicked
-                if (chatBtn) {
-                    e.preventDefault();
-                    if (!currentUser) {
-                        window.location.href = 'regimob.html?mode=login';
-                        return;
-                    }
+            if (!card) return;
 
-                    const id = card.dataset.id;
-                    const type = card.dataset.type;
+            // 1. Star Button Click (Open Unified Review Modal)
+            if (reviewBtn) {
+                e.preventDefault();
+                e.stopPropagation();
 
-                    if (type === 'Roommates' || type === 'Flats') {
-                        // 1. Verification Check
-                        const item = type === 'Roommates'
-                            ? allUsers.find(u => u.id === id)
-                            : flatsData.find(f => f.id === id);
-
-                        // Check Current User
-                        if (!currentUserData || !currentUserData.isVerified) {
-                            showToast("You must be verified to start a chat.", "warning");
-                            return;
-                        }
-
-                        // Check Target User
-                        if (!item || !item.isVerified) {
-                            showToast("You can only chat with verified users.", "warning");
-                            return;
-                        }
-
-                        if (item && window.startChat) {
-                            // 2. Map Correct User Data for Chat (Requirement/Flat -> User)
-                            const targetUser = {
-                                id: item.userId, // Use the actual User ID
-                                name: type === 'Roommates' ? item.userName : item.ownerName, // Use the resolved User Name
-                                avatar: type === 'Roommates' ? item.userPhoto : item.ownerPhoto, // Use the resolved User Photo
-                                isVerified: item.isVerified
-                            };
-                            window.startChat(targetUser);
-                        }
-                    }
-                    return; // Prevent card click navigation
-                }
-
-                // Normal Card Click -> Navigation
-                // Check Auth
-                if (!currentUser) {
-                    // Not logged in -> Redirect to Login
-                    window.location.href = 'regimob.html?mode=login';
-                    return;
-                }
-
-                // Logged in -> Navigate to details
                 const id = card.dataset.id;
                 const type = card.dataset.type;
 
-                if (type === 'Roommates') {
-                    window.location.href = `lookingroom.html?id=${id}`;
-                } else {
-                    window.location.href = `lookingroommate.html?id=${id}&type=flat`;
+                // Find data object
+                let item = null;
+                if (type === 'Roommates') item = allUsers.find(u => u.id === id);
+                else if (type === 'Flats') item = flatsData.find(f => f.id === id);
+                else if (type === 'PGs') item = pgsData.find(p => p.id === id);
+
+                if (item) {
+                    const name = item.ownerName || item.pgName || item.userName || 'Property';
+                    if (viewReviewTargetName) viewReviewTargetName.innerText = `Reviews for ${name}`;
+                    
+                    // Set Hidden Inputs for Unified Form
+                    const unifiedTargetId = document.getElementById('unifiedTargetId');
+                    const unifiedTargetType = document.getElementById('unifiedTargetType');
+                    const unifiedOwnerId = document.getElementById('unifiedOwnerId');
+
+                    if (unifiedTargetId) unifiedTargetId.value = id;
+                    if (unifiedTargetType) unifiedTargetType.value = type;
+                    if (unifiedOwnerId) unifiedOwnerId.value = item.userId || '';
+
+                    // Open Modal
+                    if(viewReviewsModal) viewReviewsModal.classList.remove('hidden');
+                    
+                    // Fetch existing reviews
+                    fetchAndShowReviews(id);
                 }
+                return;
             }
+
+            // 2. Chat Button Click
+            if (chatBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!currentUser) {
+                    window.location.href = 'regimob.html?mode=login';
+                    return;
+                }
+                // Chat Logic...
+                const id = card.dataset.id;
+                const type = card.dataset.type;
+                let item = null;
+                if (type === 'Roommates') item = allUsers.find(u => u.id === id);
+                else if (type === 'Flats') item = flatsData.find(f => f.id === id);
+                else if (type === 'PGs') item = pgsData.find(p => p.id === id);
+
+                if (item) {
+                     // Check if verified
+                     if (!currentUserData || !currentUserData.isVerified) {
+                        showToast("You must be verified to start a chat.", "warning");
+                        return;
+                    }
+                    if (!item.isVerified) {
+                         showToast("You can only chat with verified users.", "warning");
+                         return;
+                    }
+                    if (window.startChat) {
+                        const targetUser = {
+                            id: item.userId,
+                            name: type === 'Roommates' ? item.userName : item.ownerName,
+                            avatar: type === 'Roommates' ? item.userPhoto : item.ownerPhoto,
+                            isVerified: item.isVerified
+                        };
+                        window.startChat(targetUser);
+                    }
+                }
+                return;
+            }
+
+            // 3. Card Click (Navigation)
+            if (!currentUser) {
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+            const id = card.dataset.id;
+            const type = card.dataset.type;
+
+            if (type === 'Roommates') window.location.href = `lookingroom.html?id=${id}`;
+            else if (type === 'Flats') window.location.href = `lookingroommate.html?id=${id}&type=flat`;
+            else if (type === 'PGs') window.location.href = `lookingroommate.html?id=${id}&type=pg`;
         });
     }
 

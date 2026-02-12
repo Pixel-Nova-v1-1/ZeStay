@@ -11,12 +11,17 @@
     <link rel="stylesheet" href="src/css/chat.css">
     <link rel="stylesheet" href="src/css/toast.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="src/css/footer.css">
 </head>
 
 <body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading details...</div>
+    </div>
     <header class="main-header">
         <div class="header-container">
             <div class="logo-section">
@@ -34,6 +39,10 @@
                     </a>
 
                     <div id="auth-buttons" class="auth-buttons">
+                        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+                            style="margin-right: 10px;">
+                            <i class="fa-solid fa-sun"></i>
+                        </button>
                         <a href="regimob.html?mode=login" class="btn-secondary">Login</a>
                         <a href="regimob.html?mode=register" class="btn-secondary btn-register">Register</a>
                     </div>
@@ -63,6 +72,8 @@
                 <h2 class="profile-name" id="profileName">Name of person</h2>
                 <i class="fa-solid fa-circle-check" id="verificationBadge"
                     style="color: #2ecc71; display: none; font-size: 1.2rem;" title="Verified User"></i>
+                <i class="fa-solid fa-building-user" id="pgOwnerBadge"
+                    style="color: #FFD700; display: none; font-size: 1.2rem;" title="PG Owner"></i>
             </div>
             <div class="action-buttons">
                 <button class="btn-action"><i class="fa-solid fa-comments"></i> Chat</button>
@@ -133,8 +144,18 @@
                 <!-- <div class="divider"></div> -->
             </section>
 
+            <!-- Lister Details -->
+            <section id="listerDetailsSection" style="display: none;">
+                <h3 class="section-header">Lister Details</h3>
+                <div class="info-grid" id="listerDetailsGrid">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="divider"></div>
+            </section>
+
+
             <!-- Preferences -->
-            <section>
+            <section id="preferencesSection">
                 <h3 class="section-header" style="margin-top: 20px;">Preferences</h3>
                 <div class="items-row" id="preferencesContainer">
                     <!-- Populated by JS -->
@@ -265,8 +286,7 @@
         <div class="modal-content">
             <button class="close-modal">&times;</button>
             <div class="modal-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/4201/4201973.png"
-                    alt="Report Illustration">
+                <img src="https://cdn-icons-png.flaticon.com/512/4201/4201973.png" alt="Report Illustration">
             </div>
             <h2>Found Wrong Information?</h2>
             <p class="modal-subtitle">Please choose from the following option</p>
@@ -317,10 +337,9 @@
         <span class="chat-badge" style="display: none;"></span>
     </button>
 
+    <script src="src/js/theme.js" defer></script>
     <script type="module" src="src/js/lookingroommate.js"></script>
     <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>
-
-

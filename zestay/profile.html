@@ -7,7 +7,8 @@
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>My Profile - Zestay</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/header.css">
@@ -20,6 +21,10 @@
 </head>
 
 <body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading your profile...</div>
+    </div>
 
     <header class="main-header">
         <div class="header-container">
@@ -32,6 +37,9 @@
 
             <nav class="header-nav">
                 <div class="header-actions">
+                    <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
                     <a href="why.html" class="btn-primary">
                         <i class="fa-solid fa-plus"></i>
                         <span>Post Listing</span>
@@ -74,6 +82,10 @@
                         <i class="fa-solid fa-circle-check"></i>
                         <span class="tooltip-text">Verified User</span>
                     </span>
+                    <span id="pgOwnerBadge" class="verification-badge-wrapper" style="display: none;">
+                        <i class="fa-solid fa-building-user" style="color: #FFD700;"></i>
+                        <span class="tooltip-text">PG Owner</span>
+                    </span>
                 </h1>
             </div>
         </section>
@@ -83,7 +95,7 @@
             <button class="tab-btn active" data-tab="my-profile">
                 <i class="fa-solid fa-user"></i> My Profile
             </button>
-            <button class="tab-btn" data-tab="preferences">
+            <button class="tab-btn" data-tab="preferences" id="preferencesTabBtn">
                 <i class="fa-solid fa-sliders"></i> My Preferences
             </button>
             <button class="tab-btn" data-tab="listings">
@@ -106,31 +118,46 @@
                             <label for="display-name">Name</label>
                             <input type="text" id="display-name" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Occupation (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label for="display-occupation">Occupation</label>
                             <input type="text" id="display-occupation" class="profile-input" readonly>
                         </div>
+                        <!-- Mobile (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-mobile">Mobile Number</label>
+                            <input type="tel" id="display-mobile" class="profile-input" maxlength="10" minlength="10"
+                                readonly>
+                        </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group-half">
                             <label for="display-email">Email</label>
                             <input type="email" id="display-email" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Gender (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label for="display-gender">Gender</label>
                             <div class="gender-pill-display" id="display-gender">
-                                <!-- Will be populated with both options, active class on selected -->
                                 <span class="gender-option">Male</span>
                                 <span class="gender-option">Female</span>
                             </div>
                         </div>
+                        <!-- PG Name (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-pgName">PG Name</label>
+                            <input type="text" id="display-pgName" class="profile-input" readonly>
+                        </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group-half">
                             <label for="display-dob">Date of Birth</label>
                             <input type="date" id="display-dob" class="profile-input" readonly>
                         </div>
-                        <div class="form-group-half">
+                        <!-- Hobbies (Normal User only) -->
+                        <div class="form-group-half normal-user-only">
                             <label>Hobbies</label>
                             <div class="hobbies-selection profile-input" id="display-hobbies-container"
                                 style="height: auto; min-height: 50px; display: flex; flex-wrap: wrap; gap: 10px;">
@@ -141,6 +168,22 @@
                                 <div class="hobby-option" data-value="music">Music</div>
                                 <div class="hobby-option" data-value="cooking">Cooking</div>
                             </div>
+                        </div>
+                        <!-- Role Type (PG Owner only) -->
+                        <div class="form-group-half pg-owner-only" style="display: none;">
+                            <label for="display-roleType">Role Type</label>
+                            <select id="display-roleType" class="profile-input" disabled>
+                                <option value="Owner">Owner</option>
+                                <option value="Agent">Agent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Address (PG Owner only) -->
+                    <div class="form-row pg-owner-only" style="display: none;">
+                        <div class="form-group-full" style="width: 100%;">
+                            <label for="display-address">PG Address</label>
+                            <input type="text" id="display-address" class="profile-input" readonly>
                         </div>
                     </div>
                     <div class="save-btn-container">
@@ -523,14 +566,121 @@
         </div>
     </div>
 
+    <!-- PG Modal (Hidden by default) -->
+    <div class="modal-overlay" id="pgModal">
+        <div class="modal-card">
+            <button class="close-btn" id="closePgModal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header">
+                <h1>Edit Your PG Details</h1>
+                <p>Update your PG listing.</p>
+            </div>
+            <form class="req-form" id="pgForm">
+                <input type="hidden" name="docId" id="pgDocId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Approx Rent (Per Year)*</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-indian-rupee-sign icon"></i>
+                            <input type="number" name="rent" placeholder="0000" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>City/State</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-location-dot icon"></i>
+                            <input type="text" name="location" id="pgLocation" placeholder="City/State" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>PG Name</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-building icon"></i>
+                        <input type="text" name="pgName" placeholder="Enter PG Name" required>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Full Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-map-pin icon"></i>
+                        <input type="text" name="fullAddress" placeholder="Enter full address" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Looking For</label>
+                        <div class="toggle-group single-select" data-group="gender">
+                            <button type="button" class="toggle-btn" data-value="male">Male</button>
+                            <button type="button" class="toggle-btn" data-value="female">Female</button>
+                            <button type="button" class="toggle-btn active" data-value="any">Any</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Occupancy Type</label>
+                        <div class="toggle-group single-select" data-group="occupancy">
+                            <button type="button" class="toggle-btn active" data-value="single">Single</button>
+                            <button type="button" class="toggle-btn" data-value="double">Double</button>
+                            <button type="button" class="toggle-btn" data-value="triple">Triple</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Choose Highlights of the PG</label>
+                    <div class="chips-container multi-select">
+                        <button type="button" class="chip active">WiFi Included</button>
+                        <button type="button" class="chip">Food Included</button>
+                        <button type="button" class="chip">Laundry Service</button>
+                        <button type="button" class="chip">Housekeeping</button>
+                        <button type="button" class="chip">CCTV Security</button>
+                        <button type="button" class="chip">Biometric Access</button>
+                        <button type="button" class="chip">Power Backup</button>
+                        <button type="button" class="chip">AC Rooms</button>
+                        <button type="button" class="chip">Attached Washroom</button>
+                        <button type="button" class="chip">TV in Room</button>
+                        <button type="button" class="chip">Study Table</button>
+                        <button type="button" class="chip">Geyser</button>
+                        <button type="button" class="chip">Refrigerator</button>
+                        <button type="button" class="chip">RO Water</button>
+                        <button type="button" class="chip">Lift</button>
+                        <button type="button" class="chip">No Gate Closing Time</button>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Upload 3 Photos Of Your PG</label>
+                    <div class="upload-area">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Click or Drag Image to Upload<br><span>(JPG, JPEG, PNG)</span></p>
+                        <input type="file" id="pgFileInput" name="roomPhotos" multiple hidden>
+                    </div>
+                    <p class="note">Upload an image upto 10mb</p>
+                    <div id="pgExistingPhotos" style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;"></div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Description*</label>
+                    <textarea name="description" placeholder="Describe your PG, rules, and nearby amenities..."
+                        required></textarea>
+                </div>
+
+                <div class="form-footer">
+                    <button type="submit" class="submit-btn">Update PG</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ================= GOOGLE MAPS + PLACES ================= -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxom0xHmJdK3s9Sk2PVgq12c8uBnG79Wk&libraries=places"
         defer></script>
 
+    <script src="src/js/theme.js" defer></script>
     <script type="module" src="src/js/profile.js"></script>
     <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>
-
-

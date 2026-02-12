@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>Verification - ZeStay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="src/css/veri.css">
     <link rel="stylesheet" href="src/css/chat.css">
@@ -19,6 +21,10 @@
         <header>
             <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;"><span
                         class="brand-text">ZeStay</span></a></div>
+            <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+                style="position: absolute; right: 20px; top: 20px;">
+                <i class="fa-solid fa-sun"></i>
+            </button>
         </header>
 
         <main class="content-wrapper">
@@ -104,8 +110,10 @@
                             <img id="captured-image" style="display:none;" alt="Captured Selfie">
                             <div class="camera-controls">
                                 <button type="button" id="start-camera" class="btn-camera">Start Camera</button>
-                                <button type="button" id="capture-btn" class="btn-camera" style="display:none;">Capture</button>
-                                <button type="button" id="retake-btn" class="btn-camera" style="display:none;">Retake</button>
+                                <button type="button" id="capture-btn" class="btn-camera"
+                                    style="display:none;">Capture</button>
+                                <button type="button" id="retake-btn" class="btn-camera"
+                                    style="display:none;">Retake</button>
                             </div>
                         </div>
                     </div>
@@ -149,10 +157,9 @@
         <span class="chat-badge" style="display: none;"></span>
     </button>
 
+    <script src="src/js/theme.js" defer></script>
     <script type="module" src="src/js/veri.js"></script>
     <script type="module" src="src/js/chat.js"></script>
 </body>
 
 </html>
-
-

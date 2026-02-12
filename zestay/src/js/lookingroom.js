@@ -74,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error fetching details:", error);
             showToast("Error loading details.", "error");
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
         }
     }
 
@@ -85,8 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Verification Badge
         const verificationBadge = document.getElementById('verificationBadge');
+        const pgOwnerBadge = document.getElementById('pgOwnerBadge');
+        const isPgOwner = data.role === 'PG_OWNER';
+
         if (verificationBadge) {
-            verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
+            verificationBadge.style.display = (data.isVerified && !isPgOwner) ? 'inline-block' : 'none';
+        }
+
+        if (pgOwnerBadge) {
+            pgOwnerBadge.style.display = isPgOwner ? 'inline-block' : 'none';
         }
 
         document.getElementById('displayLocation').textContent = data.location || 'Not specified';
@@ -121,7 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoGrid.appendChild(verifiedBox);
             }
 
-            if (data.isVerified) {
+            if (isPgOwner) {
+                verifiedBox.innerHTML = `
+                    <h4>Status</h4>
+                    <p><i class="fa-solid fa-building-user" style="color: #FFD700;"></i> PG Owner</p>
+                `;
+            } else if (data.isVerified) {
                 verifiedBox.innerHTML = `
                     <h4>Status</h4>
                     <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>

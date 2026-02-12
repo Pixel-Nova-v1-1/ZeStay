@@ -1,0 +1,102 @@
+/* === DARK MODE FOR MATCH PAGE === */
+[data-theme="dark"] body {
+    background-color: #202124;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .loading-overlay {
+    background-color: #202124;
+}
+
+[data-theme="dark"] h1 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .location-search {
+    background-color: #303134;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .location-search i {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .location-search input {
+    color: #e8eaed;
+    background: transparent;
+}
+
+[data-theme="dark"] .dropdown-content {
+    background-color: #303134;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .dropdown-content a {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .dropdown-content a:hover {
+    background-color: #3c4043;
+}
+
+[data-theme="dark"] .listing-card {
+    background-color: #303134;
+    border-color: #5f6368;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .listing-card:hover {
+    border-color: #00C4B4;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .card-details h3 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .location {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .info-item .label {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .info-item .value {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .card-avatar {
+    background-color: #3c4043;
+    border-color: #5f6368;
+}
+
+[data-theme="dark"] .card-footer {
+    background-color: #292a2d;
+    border-top-color: #5f6368;
+}
+
+[data-theme="dark"] .interests-tooltip {
+    background-color: #303134;
+    border-color: #5f6368;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .interests-tooltip::after {
+    border-color: #303134 transparent transparent transparent;
+}
+
+[data-theme="dark"] .tooltip-title {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .interest-tag {
+    background-color: #1e3a5f;
+    color: #7dd3fc;
+    border-color: #2563eb;
+}
+
+[data-theme="dark"] .view-more {
+    color: #9aa0a6;
+    border-color: #5f6368;
+}

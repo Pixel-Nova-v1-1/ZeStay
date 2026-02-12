@@ -370,7 +370,136 @@ body {
     .preference-grid {
         grid-template-columns: 1fr;
     }
+
     body {
         padding: 1rem;
     }
 }
+
+/* Dark Mode Styles */
+[data-theme="dark"] body {
+    background-color: #202124;
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .page-header h1 {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .subtitle {
+    color: #9aa0a6;
+}
+
+[data-theme="dark"] .icon-circle {
+    background-color: #303134;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .pref-label {
+    color: #bdc1c6;
+}
+
+[data-theme="dark"] .pref-item:hover .icon-circle {
+    border-color: rgba(0, 196, 180, 0.3);
+    box-shadow: 0 15px 30px rgba(0, 196, 180, 0.1);
+}
+
+[data-theme="dark"] .pref-item.selected .icon-circle {
+    background-color: rgba(0, 196, 180, 0.15);
+    border-color: #00c4b4;
+    box-shadow: 0 15px 30px rgba(0, 196, 180, 0.15);
+}
+
+[data-theme="dark"] .pref-item.selected .icon-circle i {
+    color: #00c4b4;
+}
+
+[data-theme="dark"] .pref-item.selected .pref-label {
+    color: #00c4b4;
+}
+
+[data-theme="dark"] .pref-item.selected .icon-circle::after {
+    background: #00c4b4;
+    border-color: #303134;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: transparent;
+    border: 2px solid #00c4b4;
+    color: #00c4b4;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(0, 196, 180, 0.1);
+    transform: rotate(15deg);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+    border-color: #f1c40f;
+    color: #f1c40f;
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+    background: rgba(241, 196, 15, 0.1);
+}
+/* Background Shapes Dark Mode Support - High Z-Index */
+[data-theme='dark'] .bg-shape {
+    z-index: 10; 
+}
+
+[data-theme='dark'] body {
+    position: relative;
+    z-index: 1; 
+    background-color: #202124;
+}
+
+/* Specific shape overrides */
+[data-theme='dark'] .top-right-circle-outline {
+    border-color: #bdc1c6; 
+    background-color: transparent;
+    z-index: 10;
+}
+
+[data-theme='dark'] .bg-shape.top-right-circle-solid {
+    background-color: var(--primary-teal);
+    opacity: 0.8;
+    z-index: 10;
+}
+
+[data-theme='dark'] .bg-shape.right-small-circle-1,
+[data-theme='dark'] .bg-shape.right-small-circle-2 {
+    background-color: var(--primary-teal);
+    border: none;
+    opacity: 0.8;
+    z-index: 10;
+}
+
+[data-theme='dark'] .img {
+    filter: brightness(0.8) contrast(1.1);
+    z-index: 0;
+}
+
+
+/* Ensure main content is above background designs */
+[data-theme='dark'] body {
+    position: relative;
+    z-index: 1;
+}
+
+[data-theme='dark'] .header-container,
+[data-theme='dark'] .preference-grid {
+    position: relative;
+    z-index: 20; /* Higher than background shapes (10) */
+}
+
