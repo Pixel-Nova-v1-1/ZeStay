@@ -755,3 +755,39 @@ textarea:focus {
 [data-theme="dark"] .footer-link a {
   color: #e8eaed;
 }
+
+/* Google Maps Autocomplete Z-Index Fix */
+.pac-container {
+  z-index: 10000 !important;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  margin-top: 5px;
+  border: none;
+}
+
+.pac-item {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.pac-item:hover {
+  background-color: #f1f1f1;
+}
+
+[data-theme="dark"] .pac-container {
+  background-color: #292a2d;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .pac-item {
+  border-top: 1px solid #5f6368;
+}
+
+[data-theme="dark"] .pac-item:hover {
+  background-color: #3c4043;
+}
+
+[data-theme="dark"] .pac-item-query {
+  color: #e8eaed;
+}

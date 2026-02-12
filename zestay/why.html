@@ -35,15 +35,21 @@
     </p>
   </div>
   <section class="main">
-    <div class="box" id="openRoomModal">
+    <div class="box" id="openRoomModal" style="display: none;">
       <p>Need a Roomate</p>
       <p class="p">For your Room ></p>
       <img src="public/images/roommates_v2.png" alt="Roommates" class="box-image" />
     </div>
-    <div class="box" id="openReqModal">
+    <div class="box" id="openReqModal" style="display: none;">
       <p>Need a Room/Flat?</p>
       <p class="p">With a Roommate ></p>
       <img src="public/images/house-removebg-preview.png" alt="House" class="box-image" />
+    </div>
+    <!-- New PG Owner Option (Hidden by default) -->
+    <div class="box" id="openPgModal" style="display: none;">
+      <p>List Your PG</p>
+      <p class="p">Find Tenants ></p>
+      <img src="public/images/house-removebg-preview.png" alt="PG" class="box-image" />
     </div>
   </section>
   <section>
@@ -359,6 +365,128 @@
             Looking For Room?
             <a href="#" id="switchToReqModal">Add Requirement ></a>
           </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PG Modal -->
+  <div class="modal-overlay" id="pgModal">
+    <div class="modal-card">
+      <button class="close-btn" id="closePgModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-header">
+        <h1>List Your PG</h1>
+        <p>so that tenants can contact you.</p>
+      </div>
+      <form class="req-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Approx Rent (Per Year)*</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-indian-rupee-sign icon"></i>
+              <input type="number" name="rent" placeholder="0000" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>City/State</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot icon"></i>
+              <input type="text" name="location" id="pgLocation" placeholder="City/State" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>PG Name</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-building icon"></i>
+            <input type="text" name="pgName" placeholder="Enter PG Name" required />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Full Address</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-map-pin icon"></i>
+            <input type="text" name="address" placeholder="Enter full address" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Looking For</label>
+            <div class="toggle-group single-select" data-group="gender">
+              <button type="button" class="toggle-btn" data-value="male">
+                Male
+              </button>
+              <button type="button" class="toggle-btn" data-value="female">
+                Female
+              </button>
+              <button type="button" class="toggle-btn active" data-value="any">
+                Any
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Occupancy Type</label>
+            <div class="toggle-group single-select" data-group="occupancy">
+              <button type="button" class="toggle-btn active" data-value="single">
+                Single
+              </button>
+              <button type="button" class="toggle-btn" data-value="double">
+                Double
+              </button>
+              <button type="button" class="toggle-btn" data-value="triple">
+                Triple
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Choose Highlights of the PG</label>
+          <div class="chips-container multi-select">
+            <button type="button" class="chip active">WiFi Included</button>
+            <button type="button" class="chip">Food Included</button>
+            <button type="button" class="chip">Laundry Service</button>
+            <button type="button" class="chip">Housekeeping</button>
+            <button type="button" class="chip">CCTV Security</button>
+            <button type="button" class="chip">Biometric Access</button>
+            <button type="button" class="chip">Power Backup</button>
+            <button type="button" class="chip">AC Rooms</button>
+            <button type="button" class="chip">Attached Washroom</button>
+            <button type="button" class="chip">TV in Room</button>
+            <button type="button" class="chip">Study Table</button>
+            <button type="button" class="chip">Geyser</button>
+            <button type="button" class="chip">Refrigerator</button>
+            <button type="button" class="chip">RO Water</button>
+            <button type="button" class="chip">Lift</button>
+            <button type="button" class="chip">No Gate Closing Time</button>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Upload 3 Photos Of Your PG</label>
+          <div class="upload-area">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>
+              Click or Drag Image to Upload<br /><span>(JPG, JPEG, PNG)</span>
+            </p>
+            <input type="file" id="pgFileInput" name="roomPhotos" multiple hidden />
+          </div>
+          <p class="note">Upload an image upto 10mb</p>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Description*</label>
+          <textarea name="description" placeholder="Describe your PG, rules, and nearby amenities..."
+            required></textarea>
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="submit-btn">List PG</button>
         </div>
       </form>
     </div>
