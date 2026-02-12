@@ -94,7 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 data.name = userData.name || "Flat Owner";
                                 data.avatar = userData.photoUrl || data.avatar;
                                 data.isVerified = userData.isVerified;
+                                data.role = userData.role;
                                 data.gender = userData.gender || "Not Specified";
+                                data.pgName = userData.pgName;
+                                data.mobile = userData.mobile;
+                                data.roleType = userData.roleType;
+                                data.occupation = userData.occupation;
+                                data.dob = userData.dob;
                             }
                         } catch (e) {
                             console.log("Could not fetch owner details");
@@ -103,6 +109,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 } else {
                     console.log("No such flat document!");
+                }
+            } else if (id && type === 'pg') {
+                const docRef = doc(db, "pgs", id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const pgData = docSnap.data();
+                    currentOwnerId = pgData.userId;
+
+                    data = {
+                        name: pgData.pgName || "PG Listing",
+                        avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=PG",
+                        location: pgData.location || "Location not specified",
+                        fullAddress: pgData.address || "",
+                        address: pgData.address || "",
+                        gender: "N/A",
+                        rent: pgData.rent || "N/A",
+                        occupancy: pgData.occupancy || "Any",
+                        lookingFor: pgData.gender || "Any",
+                        description: pgData.description || "No description provided.",
+                        images: pgData.photos || [],
+                        preferences: [],
+                        // Map highlights to amenities to get icons
+                        amenities: (pgData.highlights || []).map(h => ({ label: h, icon: 'fa-check' })),
+                        highlights: pgData.highlights || []
+                    };
+
+                    // Fetch Owner Details
+                    if (pgData.userId) {
+                        try {
+                            const userDoc = await getDoc(doc(db, "users", pgData.userId));
+                            if (userDoc.exists()) {
+                                const userData = userDoc.data();
+                                data.avatar = userData.photoUrl || data.avatar;
+                                data.isVerified = userData.isVerified;
+                                data.role = userData.role;
+                                data.pgName = pgData.pgName;
+                                data.mobile = userData.mobile;
+                                data.roleType = userData.roleType;
+                            }
+                        } catch (e) {
+                            console.error("Error fetching owner details", e);
+                        }
+                    }
+                } else {
+                    console.log("No such PG document!");
                 }
             } else if (id) {
                 // It's a User/Roommate ID
@@ -120,6 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             location: userData.location || data.location,
                             gender: userData.gender || data.gender,
                             isVerified: userData.isVerified,
+                            role: userData.role,
+                            occupation: userData.occupation,
+                            dob: userData.dob,
+                            mobile: userData.mobile,
                         };
                     }
                 } catch (e) { console.error("Error fetching user", e); }
@@ -205,20 +261,101 @@ document.addEventListener('DOMContentLoaded', () => {
             currentImages = data.images.length > 0 ? data.images : ['/images/house-removebg-preview.png'];
             updateSlider(0);
 
-            // Preferences
-            const prefsContainer = document.getElementById('preferencesContainer');
-            prefsContainer.innerHTML = '';
-            if (data.preferences && data.preferences.length > 0) {
-                data.preferences.forEach(pref => {
-                    prefsContainer.innerHTML += `
-                        <div class="item-circle">
-                            <div class="circle-icon"><img src="${pref.img}" alt="${pref.label}"></div>
-                            <span class="item-label">${pref.label}</span>
+            // Lister Details Section
+            const listerSection = document.getElementById('listerDetailsSection');
+            const listerGrid = document.getElementById('listerDetailsGrid');
+
+            if (listerSection && listerGrid) {
+                listerGrid.innerHTML = '';
+                let hasDetails = false;
+
+                if (isPgOwner) {
+                    // PG Owner Details
+                    hasDetails = true;
+                    // PG Name
+                    if (data.pgName) {
+                        listerGrid.innerHTML += `
+                        <div class="info-item">
+                            <h4>PG Name</h4>
+                            <p><i class="fa-solid fa-building"></i> ${data.pgName}</p>
+                        </div>
+                        `;
+                    }
+                    // Role Type
+                    if (data.roleType) {
+                        listerGrid.innerHTML += `
+                        <div class="info-item">
+                            <h4>Role</h4>
+                            <p><i class="fa-solid fa-user-tag"></i> ${data.roleType}</p>
+                        </div>
+                        `;
+                    }
+                    // Contact (Mobile)
+                    if (data.mobile) {
+                        listerGrid.innerHTML += `
+                        <div class="info-item">
+                            <h4>Contact</h4>
+                            <p><i class="fa-solid fa-phone"></i> ${data.mobile}</p>
+                        </div>
+                        `;
+                    }
+
+                } else {
+                    // Normal User Details
+                    hasDetails = true;
+                    // Occupation
+                    if (data.occupation) {
+                        listerGrid.innerHTML += `
+                        <div class="info-item">
+                            <h4>Occupation</h4>
+                            <p><i class="fa-solid fa-briefcase"></i> ${data.occupation}</p>
                         </div>
                     `;
-                });
+                    }
+                    // Age
+                    if (data.dob) {
+                        const dobDate = new Date(data.dob);
+                        const diffMs = Date.now() - dobDate.getTime();
+                        const ageDate = new Date(diffMs); // miliseconds from epoch
+                        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+                        listerGrid.innerHTML += `
+                        <div class="info-item">
+                            <h4>Age</h4>
+                            <p><i class="fa-solid fa-cake-candles"></i> ${age} years</p>
+                        </div>
+                    `;
+                    }
+                }
+
+                if (hasDetails) {
+                    listerSection.style.display = 'block';
+                } else {
+                    listerSection.style.display = 'none';
+                }
+            }
+
+            // Preferences
+            const prefsSection = document.getElementById('preferencesSection');
+            const prefsContainer = document.getElementById('preferencesContainer');
+
+            if (isPgOwner && prefsSection) {
+                prefsSection.style.display = 'none';
             } else {
-                prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
+                if (prefsSection) prefsSection.style.display = 'block';
+                prefsContainer.innerHTML = '';
+                if (data.preferences && data.preferences.length > 0) {
+                    data.preferences.forEach(pref => {
+                        prefsContainer.innerHTML += `
+                            <div class="item-circle">
+                                <div class="circle-icon"><img src="${pref.img}" alt="${pref.label}"></div>
+                                <span class="item-label">${pref.label}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    prefsContainer.innerHTML = '<p>No specific preferences listed.</p>';
+                }
             }
 
             // Amenities
