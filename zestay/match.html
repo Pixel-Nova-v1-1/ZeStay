@@ -159,6 +159,58 @@
         </div>
     </footer>
 
+    <!-- ================= VIEW REVIEWS MODAL ================= -->
+    <div id="viewReviewsModal" class="review-modal-overlay hidden">
+        <div class="modal-content review-modal-content view-reviews-content">
+            <button class="modal-close-btn" id="closeViewReviewsModal">&times;</button>
+            <h2>Reviews</h2>
+            <p class="review-target-name" id="viewReviewTargetName">Property Reviews</p>
+
+            <div class="reviews-summary">
+                <div class="average-rating">
+                    <span id="avgRatingDisplay">0.0</span>
+                    <div class="stars-display" id="avgStarsDisplay"></div>
+                </div>
+                <span class="total-reviews" id="totalReviewsDisplay">(0 reviews)</span>
+            </div>
+
+            <div class="write-review-container">
+                <button id="toggleReviewFormBtn" class="btn-toggle-review">
+                    <i class="fa-solid fa-pen-to-square"></i> Write a Review
+                </button>
+                <form id="unifiedReviewForm" class="review-form hidden">
+                    <input type="hidden" id="unifiedTargetId">
+                    <input type="hidden" id="unifiedTargetType">
+                    <input type="hidden" id="unifiedOwnerId">
+
+                    <div class="rating-group">
+                        <label>Your Rating</label>
+                        <div class="rating-stars" id="unifiedRatingStars">
+                            <i class="fa-regular fa-star" data-rating="1"></i>
+                            <i class="fa-regular fa-star" data-rating="2"></i>
+                            <i class="fa-regular fa-star" data-rating="3"></i>
+                            <i class="fa-regular fa-star" data-rating="4"></i>
+                            <i class="fa-regular fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="unifiedReviewRating" value="0" required>
+                        <p class="rating-error hidden" id="unifiedRatingError">Please select a rating</p>
+                    </div>
+
+                    <div class="form-group">
+                        <textarea id="unifiedReviewComment" placeholder="Share your experience..." rows="3" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit-review">Post Review</button>
+                </form>
+            </div>
+
+            <div id="reviewsList" class="reviews-list">
+                <!-- Reviews will be injected here -->
+                <div class="loading-reviews">Loading reviews...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= CHAT WIDGET ================= -->
     <div id="chatWidget" class="chat-widget closed">
         <div class="chat-header">
