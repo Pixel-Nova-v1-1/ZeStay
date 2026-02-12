@@ -19,11 +19,12 @@ function loadGoogleMaps() {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.defer = true;
     script.async = true;
-    
+
     script.onload = () => {
         // Initialize autocomplete only after script loads
         initAutocomplete('reqLocation');
         initAutocomplete('roomLocation');
+        initAutocomplete('pgLocation');
     };
 
     document.head.appendChild(script);
@@ -41,14 +42,38 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
-                    isVerified = userDoc.data().isVerified || false;
+                    const userData = userDoc.data();
+                    isVerified = userData.isVerified || false;
+                    const userRole = userData.role || 'USER';
+
+                    // Toggle visibility based on Role
+                    const openRoomModalBtn = document.getElementById("openRoomModal");
+                    const openReqModalBtn = document.getElementById("openReqModal");
+                    const openPgModalBtn = document.getElementById("openPgModal");
+
+                    if (userRole === 'PG_OWNER') {
+                        if (openRoomModalBtn) openRoomModalBtn.style.display = 'none';
+                        if (openReqModalBtn) openReqModalBtn.style.display = 'none';
+                        if (openPgModalBtn) openPgModalBtn.style.display = 'flex';
+                    } else {
+                        // Normal User
+                        if (openRoomModalBtn) openRoomModalBtn.style.display = 'flex';
+                        if (openReqModalBtn) openReqModalBtn.style.display = 'flex';
+                        if (openPgModalBtn) openPgModalBtn.style.display = 'none';
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching user verification status:", error);
             }
         } else {
-            // Optional: Redirect to login or show warning
-            console.log("User not logged in");
+            // User not logged in, show default options
+            const openRoomModalBtn = document.getElementById("openRoomModal");
+            const openReqModalBtn = document.getElementById("openReqModal");
+            const openPgModalBtn = document.getElementById("openPgModal");
+
+            if (openRoomModalBtn) openRoomModalBtn.style.display = 'flex';
+            if (openReqModalBtn) openReqModalBtn.style.display = 'flex';
+            if (openPgModalBtn) openPgModalBtn.style.display = 'none';
         }
     });
 
@@ -85,6 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const verificationModal = document.getElementById('verificationModal');
     const closeVerificationModal = document.getElementById('closeVerificationModal');
+
+    const openPgBtn = document.getElementById('openPgModal');
+    const closePgBtn = document.getElementById('closePgModal');
+    const pgModal = document.getElementById('pgModal');
 
 
 
@@ -256,6 +285,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- PG Modal Logic ---
+    if (openPgBtn && pgModal) {
+        openPgBtn.addEventListener('click', async () => {
+            if (!currentUser) {
+                showToast("Please login to post.", "warning");
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+
+            // PG Owners are auto-verified usually, but check isVerified anyway
+            if (!isVerified) {
+                verificationModal.classList.add('active');
+                return;
+            }
+
+            if (await checkExistingListing(currentUser.uid, 'pgs')) {
+                showToast("You have already listed your PG. You can only list one.", "warning");
+                return;
+            }
+
+            pgModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log("PG Modal Opened");
+        });
+    }
+
+    if (closePgBtn && pgModal) {
+        closePgBtn.addEventListener('click', () => {
+            pgModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+
+    if (pgModal) {
+        pgModal.addEventListener('click', (e) => {
+            if (e.target === pgModal) {
+                pgModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
     // --- Verification Modal Logic ---
     if (closeVerificationModal && verificationModal) {
         closeVerificationModal.addEventListener('click', () => {
@@ -413,6 +484,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         submitBtn.disabled = false;
                         return;
                     }
+                } else if (parentModal.id === 'pgModal') {
+                    collectionName = 'pgs';
+                    if (filesToUpload.length < 3) {
+                        showToast("Please upload exactly 3 photos of your PG.", "warning");
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
                 }
 
                 // Double-check for existing listing to prevent duplication
@@ -491,12 +570,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Google Maps Autocomplete ---
     // Moved initialization logic to loadGoogleMaps callback to ensure API is ready
-    window.initAutocomplete = function(inputId) {
+    window.initAutocomplete = function (inputId) {
         const input = document.getElementById(inputId);
         if (!input) return;
 
         if (window.google && google.maps && google.maps.places) {
-             new google.maps.places.Autocomplete(input, {
+            new google.maps.places.Autocomplete(input, {
                 types: ['(cities)'],
                 componentRestrictions: { country: 'in' }
             });

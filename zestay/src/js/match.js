@@ -8,6 +8,7 @@ console.log("match.js loaded");
 document.addEventListener('DOMContentLoaded', () => {
     let allUsers = [];
     let flatsData = [];
+    let pgsData = []; // New PG Data Array
 
     let currentType = 'Roommates';
     let currentFilter = 'Any';
@@ -238,6 +239,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function fetchPGs() {
+        if (pgsData.length > 0) {
+            if (currentType === 'PGs') init();
+            return;
+        }
+
+        container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Loading PGs...</p>';
+
+        try {
+            const querySnapshot = await getDocs(collection(db, "pgs"));
+
+            const pgPromises = querySnapshot.docs.map(async (docSnapshot) => {
+                const pgData = docSnapshot.data();
+                const pgId = docSnapshot.id;
+
+                if (currentUser && pgData.userId === currentUser.uid) return null;
+
+                let ownerData = {};
+                let matchScore = 0;
+
+                if (pgData.userId) {
+                    try {
+                        // Check if we already have this user
+                        if (currentUser && pgData.userId === currentUser.uid) {
+                            ownerData = currentUserData;
+                        } else {
+                            const userDocRef = doc(db, "users", pgData.userId);
+                            const userDocSnap = await getDoc(userDocRef);
+                            if (userDocSnap.exists()) {
+                                ownerData = userDocSnap.data();
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching PG owner:", err);
+                    }
+                }
+
+                // Match Score for PGs can be simple for now or similar to Flats
+                // PGs might not have 'preferences' to match against, keeping it simple or default
+                if (currentUserData && ownerData) {
+                    matchScore = calculateMatchScore(currentUserData, ownerData);
+                }
+
+                return {
+                    id: pgId,
+                    ...pgData,
+                    ownerName: ownerData.name || 'PG Owner',
+                    ownerPhoto: ownerData.photoUrl || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + (pgData.userId || 'PG'),
+                    isVerified: ownerData.isVerified || false,
+                    ownerRole: ownerData.role || 'PG_OWNER',
+                    matchScore: matchScore
+                };
+            });
+
+            const pgs = (await Promise.all(pgPromises)).filter(p => p !== null);
+            pgs.sort((a, b) => b.matchScore - a.matchScore);
+            pgsData = pgs;
+
+            if (currentType === 'PGs') {
+                init();
+            }
+
+        } catch (error) {
+            console.error("Error fetching PGs:", error);
+            if (currentType === 'PGs') {
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">Error loading PGs.</p>';
+            }
+        } finally {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        }
+    }
+
     function calculateMatchScore(user1, user2) {
         // 1. Personality Score (33%)
         // Max difference approx 20 (5 questions * 4 max diff). 
@@ -298,25 +372,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function getCardHTML(item, type, index = 0) {
         const delay = index * 0.1;
         const style = `style="animation-delay: ${delay}s"`;
-        // Store type and ID in data attributes for delegation
         const dataAttrs = `data-id="${item.id}" data-type="${type}"`;
 
-        const verifiedIcon = item.isVerified ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
-        const pgIcon = (item.userRole === 'PG_OWNER' || item.ownerRole === 'PG_OWNER') ? '<i class="fa-solid fa-building-user" style="color: #FFD700; margin-left: 5px;" title="PG Owner"></i>' : '';
+        const isListingPgOwner = item.userRole === 'PG_OWNER' || item.ownerRole === 'PG_OWNER';
+        const isViewerPgOwner = currentUserData && currentUserData.role === 'PG_OWNER';
+        const hideMatch = isListingPgOwner || isViewerPgOwner;
+
+        const verifiedIcon = (item.isVerified && !isListingPgOwner) ? '<i class="fa-solid fa-circle-check" style="color: #4CAF50; margin-left: 5px;"></i>' : '';
+        const pgIcon = isListingPgOwner ? '<i class="fa-solid fa-building-user" style="color: #FFD700; margin-left: 5px;" title="PG Owner"></i>' : '';
 
         if (type === 'Roommates') {
-
             let interestsHTML = '';
-            // Use preferences from User Data (fetched in fetchMatches)
             const interests = item.userPreferences || [];
-            // Also add hobbies if available
             let hobbies = [];
             if (item.hobbies) {
                 if (Array.isArray(item.hobbies)) hobbies = item.hobbies;
                 else hobbies = item.hobbies.split(',').map(s => s.trim());
             }
 
-            // Combine and take top 5
             const allInterests = [...interests, ...hobbies].slice(0, 5);
 
             if (allInterests.length > 0) {
@@ -330,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const location = item.location || 'Location not specified';
             const address = item.address ? item.address + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
-            const lookingFor = item.gender ? `Gender: ${item.gender}` : 'Any'; // Displaying Gender as "Looking For" context is ambiguous in UI, but let's show Gender.
 
             return `
             <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
@@ -356,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-footer">
                     <div class="match-wrapper">
+                        ${!hideMatch ? `
                         <span class="match-score">${item.matchScore}% match!</span>
                         <div class="interests-tooltip">
                             <div class="tooltip-title">Common Interests</div>
@@ -363,10 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${interestsHTML}
                             </div>
                         </div>
+                        ` : ''}
                     </div>
                     <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
+
         } else if (type === 'Flats') {
             const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
             const location = item.location || 'Location not specified';
@@ -375,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
             const occupancy = item.occupancy || 'Any';
 
-            // Amenities Logic
             const amenities = item.amenities || [];
             let amenitiesHTML = '';
 
@@ -433,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-footer">
                     <div class="match-wrapper">
-                        <span class="match-score">${item.matchScore}% match!</span>
+                        ${!hideMatch ? `<span class="match-score">${item.matchScore}% match!</span>` : ''}
                         ${amenitiesHTML ? `
                         <div class="interests-tooltip">
                             <div class="tooltip-title">Amenities</div>
@@ -445,14 +519,91 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
                 </div>
             </div>`;
+        } else if (type === 'PGs') {
+            const avatar = item.ownerPhoto || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + item.id;
+            const location = item.location || 'Location not specified';
+            const address = item.address ? item.address + ', ' : '';
+            const rent = item.rent ? `₹ ${item.rent}/year` : 'Rent not specified';
+            const occupancy = item.occupancy || 'Any';
+            const pgName = item.pgName || 'PG Name';
+
+            const amenities = item.highlights || item.amenities || [];
+            let amenitiesHTML = '';
+
+            if (amenities.length > 0) {
+                amenitiesHTML = amenities.slice(0, 5).map(am => {
+                    let icon = '<i class="fa-solid fa-check"></i> ';
+                    const lower = am.toLowerCase();
+                    if (lower.includes('wifi')) icon = '<i class="fa-solid fa-wifi"></i> ';
+                    else if (lower.includes('food')) icon = '<i class="fa-solid fa-utensils"></i> ';
+                    else if (lower.includes('laundry')) icon = '<i class="fa-solid fa-shirt"></i> ';
+                    else if (lower.includes('ac')) icon = '<i class="fa-solid fa-wind"></i> ';
+                    else if (lower.includes('tv')) icon = '<i class="fa-solid fa-tv"></i> ';
+                    else if (lower.includes('power')) icon = '<i class="fa-solid fa-battery-full"></i> ';
+                    else if (lower.includes('security') || lower.includes('cctv')) icon = '<i class="fa-solid fa-shield-halved"></i> ';
+                    else if (lower.includes('washroom')) icon = '<i class="fa-solid fa-bath"></i> ';
+
+                    return `<span class="interest-tag">${icon}${am}</span>`;
+                }).join('');
+
+                if (amenities.length > 5) {
+                    amenitiesHTML += `<span class="interest-tag view-more" style="background: transparent;">+${amenities.length - 5}</span>`;
+                }
+            }
+
+            return `
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+                <div class="card-content">
+                    <div class="card-avatar">
+                       <img src="${avatar}" alt="PG Owner">
+                    </div>
+                    <div class="card-details">
+                        <h3>${pgName}${verifiedIcon}${pgIcon}</h3>
+                        <p class="location" style="font-size: 0.85rem; color: #666;">By ${item.ownerName}</p>
+                        <p class="location"><i class="fa-solid fa-location-dot"></i> ${address}${location}</p>
+                        
+                        <div class="card-info-grid">
+                            <div class="info-item">
+                                <span class="label">Rent</span>
+                                <span class="value">${rent}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Looking For</span>
+                                <span class="value">${item.gender ? item.gender.charAt(0).toUpperCase() + item.gender.slice(1) : 'Any'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Occupancy</span>
+                                <span class="value">${occupancy}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="match-wrapper">
+                        ${!hideMatch ? `<span class="match-score">${item.matchScore}% match!</span>` : ''}
+                        ${amenitiesHTML ? `
+                        <div class="interests-tooltip">
+                            <div class="tooltip-title">Highlights</div>
+                            <div class="interests-grid">
+                                ${amenitiesHTML}
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                </div>
+            </div>`;
         } else {
-            // Fallback
             return ``;
         }
     }
 
     function getFilteredData() {
-        const data = currentType === 'Roommates' ? allUsers : flatsData;
+        // const data = currentType === 'Roommates' ? allUsers : flatsData;
+        let data = [];
+        if (currentType === 'Roommates') data = allUsers;
+        else if (currentType === 'Flats') data = flatsData;
+        else if (currentType === 'PGs') data = pgsData;
+
         let filtered = data;
 
         // 1. Filter by Dropdown (Gender)
@@ -460,15 +611,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentFilter.toLowerCase() !== 'any') {
             if (currentType === 'Roommates') {
                 filtered = filtered.filter(item => (item.userGender || '').toLowerCase() === currentFilter.toLowerCase());
-            } else {
-                // For Flats, we might filter by owner gender or flat preference? 
-                // Assuming owner gender for now as per previous logic, or maybe flat "looking for"?
-                // Previous logic used item.gender. 
-                // Flats data has 'gender' field (Looking For) from roomModal.
-                // But wait, roomModal has "Looking For" (gender) field.
-                // Let's check if flatsData has 'gender' field. Yes, from roomModal.
-                // But wait, I changed flatsData to include owner details.
-                // The flat doc itself has 'gender' (Looking For).
+            } else if (currentType === 'Flats') {
+                // Flats data has 'gender' field (Looking For)
+                filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
+            } else if (currentType === 'PGs') {
                 filtered = filtered.filter(item => (item.gender || '').toLowerCase() === currentFilter.toLowerCase());
             }
         }
@@ -488,6 +634,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filteredData.length === 0) {
             if (currentType === 'Flats') {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No flats available yet.</p>';
+            } else if (currentType === 'PGs') {
+                container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No PGs available yet.</p>';
             } else {
                 container.innerHTML = '<p style="text-align:center; width:100%; margin-top: 20px;">No matches found.</p>';
             }
@@ -552,6 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchFlats();
             } else if (currentType === 'Roommates') {
                 fetchMatches();
+            } else if (currentType === 'PGs') {
+                fetchPGs();
             } else {
                 init();
             }
@@ -597,9 +747,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // So just setting the value here is enough for the initial render.
         }
 
-        // 3. Check URL for Type (Roommates vs Flats)
+        // 3. Check URL for Type
         const typeParam = urlParams.get('type');
-        if (typeParam && (typeParam === 'Flats' || typeParam === 'Roommates')) {
+        if (typeParam && (typeParam === 'Flats' || typeParam === 'Roommates' || typeParam === 'PGs')) {
             currentType = typeParam;
 
             // Update UI Toggles
@@ -637,11 +787,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const id = card.dataset.id;
                     const type = card.dataset.type;
 
-                    if (type === 'Roommates' || type === 'Flats') {
+                    if (type === 'Roommates' || type === 'Flats' || type === 'PGs') {
                         // 1. Verification Check
-                        const item = type === 'Roommates'
-                            ? allUsers.find(u => u.id === id)
-                            : flatsData.find(f => f.id === id);
+                        let item = null;
+                        if (type === 'Roommates') item = allUsers.find(u => u.id === id);
+                        else if (type === 'Flats') item = flatsData.find(f => f.id === id);
+                        else if (type === 'PGs') item = pgsData.find(p => p.id === id);
 
                         // Check Current User
                         if (!currentUserData || !currentUserData.isVerified) {
@@ -683,8 +834,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (type === 'Roommates') {
                     window.location.href = `lookingroom.html?id=${id}`;
-                } else {
+                } else if (type === 'Flats') {
                     window.location.href = `lookingroommate.html?id=${id}&type=flat`;
+                } else if (type === 'PGs') {
+                    // Reuse lookingroommate or create new? Reuse for now efficiently
+                    window.location.href = `lookingroommate.html?id=${id}&type=pg`;
                 }
             }
         });

@@ -78,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeRoomBtn = document.getElementById('closeRoomModal');
     const reqForm = document.getElementById('reqForm');
     const roomForm = document.getElementById('roomForm');
+    const pgModal = document.getElementById('pgModal');
+    const closePgBtn = document.getElementById('closePgModal');
+    const pgForm = document.getElementById('pgForm');
 
     let isEditing = false;
     let currentUser = null;
@@ -166,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Verification Badge
                 const verificationBadge = document.getElementById('verificationBadge');
                 if (verificationBadge) {
-                    if (data.isVerified) {
+                    if (data.isVerified && data.role !== 'PG_OWNER') {
                         verificationBadge.style.display = 'inline-flex';
                     } else {
                         verificationBadge.style.display = 'none';
@@ -748,10 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             listingsContainer.innerHTML = ''; // Clear loading
 
-            if (flatsSnapshot.empty && reqSnapshot.empty) {
-                listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
-                return;
-            }
+            // Will check empty state after fetching all
 
             // Render Flats
             flatsSnapshot.forEach(doc => {
@@ -764,6 +764,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = doc.data();
                 renderListingCard(doc.id, data, 'requirement');
             });
+
+            // Check for PGs
+            const pgQuery = query(collection(db, "pgs"), where("userId", "==", uid));
+            const pgSnapshot = await getDocs(pgQuery);
+
+            pgSnapshot.forEach(doc => {
+                const data = doc.data();
+                renderListingCard(doc.id, data, 'pg');
+            });
+
+            if (flatsSnapshot.empty && reqSnapshot.empty && pgSnapshot.empty) {
+                listingsContainer.innerHTML = '<p style="text-align:center; width:100%;">No listings found.</p>';
+                return;
+            }
 
         } catch (error) {
             console.error("Error loading listings:", error);
@@ -869,8 +883,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Standardized Display: Always show Location (City/State) only, as requested.
         // Full Address is still saved but only shown on the detailed public page (for Flats).
         const displayLocation = data.location || 'Location not specified';
-        const rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
-        const typeLabel = type === 'flat' ? 'Room/Flat' : 'Roommate Requirement';
+        let rent = data.rent ? `₹ ${data.rent}` : 'Rent not specified';
+        if (type === 'pg') rent += '/year';
+
+        let typeLabel = 'Roommate Requirement';
+        if (type === 'flat') typeLabel = 'Room/Flat';
+        else if (type === 'pg') typeLabel = 'PG Listing';
         const gender = data.gender || 'Any';
 
         const card = document.createElement('div');
@@ -898,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="card-footer" style="justify-content: space-between;">
-                 <span class="match-score" style="background: #e0f7fa; color: #006064;">${type === 'flat' ? 'My Room' : 'My Request'}</span>
+                 <span class="match-score" style="background: #e0f7fa; color: #006064;">${type === 'flat' ? 'My Room' : (type === 'pg' ? 'My PG' : 'My Request')}</span>
                  <div class="listing-actions">
                     <button class="btn-edit-listing" data-id="${docId}" data-type="${type}" style="background: #e3f2fd; color: #1565c0; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-right: 5px;">
                         <i class="fa-solid fa-pen"></i> Edit
@@ -922,15 +940,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirm("Are you sure you want to delete this listing? This action cannot be undone.");
             if (confirmed) {
                 try {
-                    // Delete photos from Nhost if it's a flat and has photos
-                    if (type === 'flat' && data.photos && Array.isArray(data.photos)) {
-                        console.log("Deleting photos for flat:", docId);
+                    // Delete photos from Nhost if it's a flat/pg and has photos
+                    if ((type === 'flat' || type === 'pg') && data.photos && Array.isArray(data.photos)) {
+                        console.log("Deleting photos for listing:", docId);
                         for (const photoUrl of data.photos) {
                             await deleteOldNhostFile(photoUrl);
                         }
                     }
 
-                    const collectionName = type === 'flat' ? 'flats' : 'requirements';
+                    let collectionName = 'requirements';
+                    if (type === 'flat') collectionName = 'flats';
+                    else if (type === 'pg') collectionName = 'pgs';
                     await deleteDoc(doc(db, collectionName, docId));
                     card.remove();
 
@@ -955,9 +975,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close Modals
     if (closeReqBtn) closeReqBtn.onclick = () => reqModal.classList.remove('active');
     if (closeRoomBtn) closeRoomBtn.onclick = () => roomModal.classList.remove('active');
+    if (closePgBtn) closePgBtn.onclick = () => pgModal.classList.remove('active');
     window.onclick = (e) => {
         if (e.target === reqModal) reqModal.classList.remove('active');
         if (e.target === roomModal) roomModal.classList.remove('active');
+        if (e.target === pgModal) pgModal.classList.remove('active');
     };
 
     // Initialize UI Interactions (Toggles, Chips, Amenities)
@@ -1024,6 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (reqModal) initModalUI(reqModal);
     if (roomModal) initModalUI(roomModal);
+    if (pgModal) initModalUI(pgModal);
 
     // Google Maps Autocomplete for Edit Modals
     function initEditAutocomplete() {
@@ -1045,6 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         componentRestrictions: { country: 'in' }
                     });
                 }
+                const pgInput = document.getElementById('pgLocation');
+                if (pgInput) {
+                    new google.maps.places.Autocomplete(pgInput, {
+                        types: ['(cities)'],
+                        componentRestrictions: { country: 'in' }
+                    });
+                }
             }
         }, 100);
     }
@@ -1057,8 +1087,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let newPhotoFiles = []; // New File objects
 
     function openEditModal(docId, data, type) {
-        const modal = type === 'flat' ? roomModal : reqModal;
-        const form = type === 'flat' ? roomForm : reqForm;
+        let modal, form;
+        if (type === 'flat') {
+            modal = roomModal;
+            form = roomForm;
+        } else if (type === 'pg') {
+            modal = pgModal;
+            form = pgForm;
+        } else {
+            modal = reqModal;
+            form = reqForm;
+        }
 
         if (!modal || !form) return;
 
@@ -1078,6 +1117,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const faInput = form.querySelector('input[name="fullAddress"]');
         if (faInput) {
             faInput.value = data.fullAddress || data.address || data.location || '';
+        }
+
+        // PG Specific
+        if (type === 'pg') {
+            if (data.pgName) form.querySelector('input[name="pgName"]').value = data.pgName;
         }
 
         if (data.description) form.querySelector('textarea[name="description"]').value = data.description;
@@ -1126,8 +1170,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Show Photos (for Room)
-        if (type === 'flat') {
+        // Show Photos (for Room or PG)
+        if (type === 'flat' || type === 'pg') {
             renderAllEditPhotos();
         }
 
@@ -1136,8 +1180,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Unified Render Function
     function renderAllEditPhotos() {
-        const existingPhotosDiv = document.getElementById('existingPhotos');
-        const uploadArea = document.querySelector('.upload-area');
+        // Dynamically find the existing photos container in the active modal
+        const activeModal = document.querySelector('.modal-overlay.active');
+        if (!activeModal) return;
+
+        // Try both IDs
+        const existingPhotosDiv = activeModal.querySelector('#existingPhotos, #pgExistingPhotos');
+        const uploadArea = activeModal.querySelector('.upload-area');
         if (!existingPhotosDiv) return;
 
         existingPhotosDiv.innerHTML = '';
@@ -1279,7 +1328,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const form = e.target;
         const docId = form.querySelector('input[name="docId"]').value;
-        const collectionName = type === 'flat' ? 'flats' : 'requirements';
+
+        let collectionName = 'requirements';
+        if (type === 'flat') collectionName = 'flats';
+        else if (type === 'pg') collectionName = 'pgs';
+
         const submitBtn = form.querySelector('.submit-btn');
 
         submitBtn.innerText = "Updating...";
@@ -1320,13 +1373,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             for (let [key, value] of formData.entries()) {
-                if (key !== 'roomPhotos' && key !== 'docId' && key !== 'location' && key !== 'fullAddress') { // Skip special or already handled
+                if (key !== 'roomPhotos' && key !== 'docId' && key !== 'location' && key !== 'fullAddress' && key !== 'pgName') { // Skip handled
                     data[key] = value;
                 }
             }
 
-            // Handle Photos (Update Room)
-            if (type === 'flat') {
+            if (type === 'pg' && formData.get('pgName')) {
+                data.pgName = formData.get('pgName');
+            }
+
+            // Handle Photos (Update Room or PG)
+            if (type === 'flat' || type === 'pg') {
                 // 1. Process Deletions
                 for (const urlToDelete of photosToDelete) {
                     await deleteOldNhostFile(urlToDelete);
@@ -1363,6 +1420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Listing updated successfully!", "success");
             // Close Modal & Refresh
             if (type === 'flat') roomModal.classList.remove('active');
+            else if (type === 'pg') pgModal.classList.remove('active');
             else reqModal.classList.remove('active');
 
             loadUserListings(currentUser, currentUser.uid); // Refresh list
@@ -1371,7 +1429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error updating listing:", error);
             showToast("Failed to update listing.", "error");
         } finally {
-            submitBtn.innerText = type === 'flat' ? "Update Room" : "Update Requirement";
+            if (type === 'flat') submitBtn.innerText = "Update Room";
+            else if (type === 'pg') submitBtn.innerText = "Update PG";
+            else submitBtn.innerText = "Update Requirement";
             submitBtn.disabled = false;
         }
     };
@@ -1379,6 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (reqForm) reqForm.addEventListener('submit', (e) => handleUpdate(e, 'requirement'));
     if (roomForm) roomForm.addEventListener('submit', (e) => handleUpdate(e, 'flat'));
+    if (pgForm) pgForm.addEventListener('submit', (e) => handleUpdate(e, 'pg'));
 
 
     // --- Preferences Edit/Save Logic ---

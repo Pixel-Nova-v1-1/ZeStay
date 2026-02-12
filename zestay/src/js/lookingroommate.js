@@ -131,10 +131,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Verification Badge
             const verificationBadge = document.getElementById('verificationBadge');
+            const pgOwnerBadge = document.getElementById('pgOwnerBadge');
+            const isPgOwner = data.role === 'PG_OWNER';
+
             if (verificationBadge) {
-                verificationBadge.style.display = data.isVerified ? 'inline-block' : 'none';
-                if (data.isVerified) {
+                verificationBadge.style.display = (data.isVerified && !isPgOwner) ? 'inline-block' : 'none';
+                if (data.isVerified && !isPgOwner) {
                     verificationBadge.style.flexShrink = '0';
+                }
+            }
+
+            if (pgOwnerBadge) {
+                pgOwnerBadge.style.display = isPgOwner ? 'inline-block' : 'none';
+                if (isPgOwner) {
+                    pgOwnerBadge.style.flexShrink = '0';
                 }
             }
 
@@ -173,7 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     infoGrid.appendChild(verifiedBox);
                 }
 
-                if (data.isVerified) {
+                if (isPgOwner) {
+                    verifiedBox.innerHTML = `
+                        <h4>Status</h4>
+                        <p><i class="fa-solid fa-building-user" style="color: #FFD700;"></i> PG Owner</p>
+                    `;
+                } else if (data.isVerified) {
                     verifiedBox.innerHTML = `
                         <h4>Status</h4>
                         <p><i class="fa-solid fa-circle-check" style="color: #2ecc71;"></i> Verified</p>
