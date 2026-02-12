@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, addDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
 import { showToast } from "./toast.js";
 
 console.log("match.js loaded");
@@ -516,7 +516,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>` : ''}
                     </div>
-                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="btn-review" title="See Reviews">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    </div>
                 </div>
             </div>`;
         } else if (type === 'PGs') {
@@ -589,7 +594,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>` : ''}
                     </div>
-                    <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="btn-review" title="See Reviews">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        <button class="btn-contact"><i class="fa-solid fa-message"></i></button>
+                    </div>
                 </div>
             </div>`;
         } else {
@@ -769,78 +779,302 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Access Control (Event Delegation) ---
+    // --- Unified Review Logic ---
+    const unifiedReviewForm = document.getElementById('unifiedReviewForm');
+    const toggleReviewFormBtn = document.getElementById('toggleReviewFormBtn');
+    const unifiedRatingStars = document.querySelectorAll('#unifiedRatingStars i');
+    const unifiedReviewRatingInput = document.getElementById('unifiedReviewRating');
+    const unifiedRatingError = document.getElementById('unifiedRatingError');
+
+    // Toggle Form Visibility
+    if (toggleReviewFormBtn) {
+        toggleReviewFormBtn.onclick = () => {
+             if (!currentUser) {
+                // If not logged in, redirect
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+            unifiedReviewForm.classList.toggle('hidden');
+        };
+    }
+
+    // Star Rating Logic (Unified)
+    function resetUnifiedStars() {
+        unifiedRatingStars.forEach(star => {
+            star.classList.replace('fa-solid', 'fa-regular');
+        });
+        if (unifiedReviewRatingInput) unifiedReviewRatingInput.value = '0';
+        if (unifiedRatingError) unifiedRatingError.classList.add('hidden');
+        if (unifiedReviewForm) {
+            unifiedReviewForm.reset();
+            unifiedReviewForm.classList.add('hidden');
+        }
+    }
+
+    unifiedRatingStars.forEach(star => {
+        star.onclick = () => {
+            const rating = star.dataset.rating;
+            unifiedReviewRatingInput.value = rating;
+
+            // Fill stars up to selected
+            unifiedRatingStars.forEach(s => {
+                const r = s.dataset.rating;
+                if (r <= rating) {
+                    s.classList.replace('fa-regular', 'fa-solid');
+                } else {
+                    s.classList.replace('fa-solid', 'fa-regular');
+                }
+            });
+            if (unifiedRatingError) unifiedRatingError.classList.add('hidden');
+        };
+    });
+
+    // Submit Unified Review
+    if (unifiedReviewForm) {
+        unifiedReviewForm.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const rating = parseInt(unifiedReviewRatingInput.value);
+            const comment = document.getElementById('unifiedReviewComment').value.trim();
+            const targetId = document.getElementById('unifiedTargetId').value;
+            const targetType = document.getElementById('unifiedTargetType').value;
+            const ownerId = document.getElementById('unifiedOwnerId').value;
+
+            if (rating === 0) {
+                unifiedRatingError.classList.remove('hidden');
+                return;
+            }
+
+            if (!currentUser) {
+                showToast("You must be logged in to submit a review", "error");
+                return;
+            }
+
+            const submitBtn = unifiedReviewForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    reviewerId: currentUser.uid,
+                    reviewerName: currentUserData.name || 'Anonymous',
+                    reviewerPhoto: currentUserData.photoUrl || null,
+                    targetId: targetId,
+                    targetType: targetType,
+                    ownerId: ownerId,
+                    rating: rating,
+                    comment: comment,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast("Review submitted successfully!", "success");
+                
+                // Hide Form and Reset
+                unifiedReviewForm.classList.add('hidden');
+                unifiedReviewForm.reset();
+                resetUnifiedStars();
+
+                // Refresh Reviews List !
+                fetchAndShowReviews(targetId);
+
+            } catch (error) {
+                console.error("Error submitting review:", error);
+                showToast("Failed to submit review. Try again.", "error");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        };
+    }
+
+    // --- View Reviews Modal (Unified) ---
+    const viewReviewsModal = document.getElementById('viewReviewsModal');
+    const closeViewReviewsModal = document.getElementById('closeViewReviewsModal');
+    const reviewsListContainer = document.getElementById('reviewsList');
+    const avgRatingDisplay = document.getElementById('avgRatingDisplay');
+    const avgStarsDisplay = document.getElementById('avgStarsDisplay');
+    const totalReviewsDisplay = document.getElementById('totalReviewsDisplay');
+    const viewReviewTargetName = document.getElementById('viewReviewTargetName');
+
+    if (closeViewReviewsModal) {
+        closeViewReviewsModal.onclick = () => {
+            viewReviewsModal.classList.add('hidden');
+            if (typeof resetUnifiedStars === 'function') resetUnifiedStars();
+        };
+        viewReviewsModal.onclick = (e) => {
+            if (e.target === viewReviewsModal) {
+                viewReviewsModal.classList.add('hidden');
+                if (typeof resetUnifiedStars === 'function') resetUnifiedStars();
+            }
+        };
+    }
+
+    async function fetchAndShowReviews(targetId) {
+        if (!reviewsListContainer) return;
+        reviewsListContainer.innerHTML = '<div class="loading-reviews">Loading reviews...</div>';
+        
+        try {
+            // Updated Query: Removed orderBy to avoid index requirement errors. Sorting client-side instead.
+            const q = query(collection(db, "reviews"), where("targetId", "==", targetId));
+            const querySnapshot = await getDocs(q);
+            const reviews = querySnapshot.docs.map(doc => doc.data());
+
+            // Client-side Sort (Newest First)
+            reviews.sort((a, b) => {
+                const timeA = a.createdAt ? a.createdAt.seconds : 0;
+                const timeB = b.createdAt ? b.createdAt.seconds : 0;
+                return timeB - timeA;
+            });
+
+            // Update Header Stats
+            if (reviews.length === 0) {
+                 if(avgRatingDisplay) avgRatingDisplay.textContent = "0.0";
+                 if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(0);
+                 if(totalReviewsDisplay) totalReviewsDisplay.textContent = "(0 reviews)";
+                 reviewsListContainer.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to review!</div>';
+            } else {
+                const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+                const avgRating = (totalRating / reviews.length).toFixed(1);
+                
+                if(avgRatingDisplay) avgRatingDisplay.textContent = avgRating;
+                if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(avgRating);
+                if(totalReviewsDisplay) totalReviewsDisplay.textContent = `(${reviews.length} review${reviews.length !== 1 ? 's' : ''})`;
+
+                // Render List
+                reviewsListContainer.innerHTML = reviews.map(review => {
+                    const date = review.createdAt ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() : 'Just now';
+                    const avatar = review.reviewerPhoto || `https://api.dicebear.com/9.x/avataaars/svg?seed=${review.reviewerName || 'Anonymous'}`;
+                    
+                    return `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <img src="${avatar}" class="reviewer-avatar" alt="Reviewer">
+                                <div>
+                                    <div class="reviewer-name">${review.reviewerName || 'Anonymous'}</div>
+                                    <div class="review-date">${date}</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                ${generateStars(review.rating, 12)}
+                            </div>
+                        </div>
+                        <div class="review-text">${review.comment || ''}</div>
+                    </div>`;
+                }).join('');
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            reviewsListContainer.innerHTML = '<div class="no-reviews">Error loading reviews.</div>';
+        }
+    }
+
+    function generateStars(rating, size = 18) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) stars += '<i class="fa-solid fa-star"></i>';
+            else if (i - 0.5 <= rating) stars += '<i class="fa-solid fa-star-half-stroke"></i>';
+            else stars += '<i class="fa-regular fa-star"></i>';
+        }
+        return stars;
+    }
+
+    // --- Event Delegation for Cards ---
     if (container) {
         container.addEventListener('click', (e) => {
             const card = e.target.closest('.listing-card');
             const chatBtn = e.target.closest('.btn-contact');
+            const reviewBtn = e.target.closest('.btn-review'); // Star Button
 
-            if (card) {
-                // Check if Chat Button was clicked
-                if (chatBtn) {
-                    e.preventDefault();
-                    if (!currentUser) {
-                        window.location.href = 'regimob.html?mode=login';
-                        return;
-                    }
+            if (!card) return;
 
-                    const id = card.dataset.id;
-                    const type = card.dataset.type;
+            // 1. Star Button Click (Open Unified Review Modal)
+            if (reviewBtn) {
+                e.preventDefault();
+                e.stopPropagation();
 
-                    if (type === 'Roommates' || type === 'Flats' || type === 'PGs') {
-                        // 1. Verification Check
-                        let item = null;
-                        if (type === 'Roommates') item = allUsers.find(u => u.id === id);
-                        else if (type === 'Flats') item = flatsData.find(f => f.id === id);
-                        else if (type === 'PGs') item = pgsData.find(p => p.id === id);
-
-                        // Check Current User
-                        if (!currentUserData || !currentUserData.isVerified) {
-                            showToast("You must be verified to start a chat.", "warning");
-                            return;
-                        }
-
-                        // Check Target User
-                        if (!item || !item.isVerified) {
-                            showToast("You can only chat with verified users.", "warning");
-                            return;
-                        }
-
-                        if (item && window.startChat) {
-                            // 2. Map Correct User Data for Chat (Requirement/Flat -> User)
-                            const targetUser = {
-                                id: item.userId, // Use the actual User ID
-                                name: type === 'Roommates' ? item.userName : item.ownerName, // Use the resolved User Name
-                                avatar: type === 'Roommates' ? item.userPhoto : item.ownerPhoto, // Use the resolved User Photo
-                                isVerified: item.isVerified
-                            };
-                            window.startChat(targetUser);
-                        }
-                    }
-                    return; // Prevent card click navigation
-                }
-
-                // Normal Card Click -> Navigation
-                // Check Auth
-                if (!currentUser) {
-                    // Not logged in -> Redirect to Login
-                    window.location.href = 'regimob.html?mode=login';
-                    return;
-                }
-
-                // Logged in -> Navigate to details
                 const id = card.dataset.id;
                 const type = card.dataset.type;
 
-                if (type === 'Roommates') {
-                    window.location.href = `lookingroom.html?id=${id}`;
-                } else if (type === 'Flats') {
-                    window.location.href = `lookingroommate.html?id=${id}&type=flat`;
-                } else if (type === 'PGs') {
-                    // Reuse lookingroommate or create new? Reuse for now efficiently
-                    window.location.href = `lookingroommate.html?id=${id}&type=pg`;
+                // Find data object
+                let item = null;
+                if (type === 'Roommates') item = allUsers.find(u => u.id === id);
+                else if (type === 'Flats') item = flatsData.find(f => f.id === id);
+                else if (type === 'PGs') item = pgsData.find(p => p.id === id);
+
+                if (item) {
+                    const name = item.ownerName || item.pgName || item.userName || 'Property';
+                    if (viewReviewTargetName) viewReviewTargetName.innerText = `Reviews for ${name}`;
+                    
+                    // Set Hidden Inputs for Unified Form
+                    const unifiedTargetId = document.getElementById('unifiedTargetId');
+                    const unifiedTargetType = document.getElementById('unifiedTargetType');
+                    const unifiedOwnerId = document.getElementById('unifiedOwnerId');
+
+                    if (unifiedTargetId) unifiedTargetId.value = id;
+                    if (unifiedTargetType) unifiedTargetType.value = type;
+                    if (unifiedOwnerId) unifiedOwnerId.value = item.userId || '';
+
+                    // Open Modal
+                    if(viewReviewsModal) viewReviewsModal.classList.remove('hidden');
+                    
+                    // Fetch existing reviews
+                    fetchAndShowReviews(id);
                 }
+                return;
             }
+
+            // 2. Chat Button Click
+            if (chatBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!currentUser) {
+                    window.location.href = 'regimob.html?mode=login';
+                    return;
+                }
+                // Chat Logic...
+                const id = card.dataset.id;
+                const type = card.dataset.type;
+                let item = null;
+                if (type === 'Roommates') item = allUsers.find(u => u.id === id);
+                else if (type === 'Flats') item = flatsData.find(f => f.id === id);
+                else if (type === 'PGs') item = pgsData.find(p => p.id === id);
+
+                if (item) {
+                     // Check if verified
+                     if (!currentUserData || !currentUserData.isVerified) {
+                        showToast("You must be verified to start a chat.", "warning");
+                        return;
+                    }
+                    if (!item.isVerified) {
+                         showToast("You can only chat with verified users.", "warning");
+                         return;
+                    }
+                    if (window.startChat) {
+                        const targetUser = {
+                            id: item.userId,
+                            name: type === 'Roommates' ? item.userName : item.ownerName,
+                            avatar: type === 'Roommates' ? item.userPhoto : item.ownerPhoto,
+                            isVerified: item.isVerified
+                        };
+                        window.startChat(targetUser);
+                    }
+                }
+                return;
+            }
+
+            // 3. Card Click (Navigation)
+            if (!currentUser) {
+                window.location.href = 'regimob.html?mode=login';
+                return;
+            }
+            const id = card.dataset.id;
+            const type = card.dataset.type;
+
+            if (type === 'Roommates') window.location.href = `lookingroom.html?id=${id}`;
+            else if (type === 'Flats') window.location.href = `lookingroommate.html?id=${id}&type=flat`;
+            else if (type === 'PGs') window.location.href = `lookingroommate.html?id=${id}&type=pg`;
         });
     }
 

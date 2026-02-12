@@ -1,5 +1,5 @@
-import { auth, db } from "../firebase";
-import { nhost } from "../nhost";
+import { auth, db } from "../firebase.js";
+import { nhost } from "../nhost.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
