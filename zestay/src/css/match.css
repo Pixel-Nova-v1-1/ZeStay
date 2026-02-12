@@ -913,6 +913,7 @@ h1 {
 [data-theme="dark"] .toggle-option:hover {
     color: #e8eaed;
 }
+
 /* Review Modal Styles */
 .review-modal-overlay {
     position: fixed;
@@ -986,7 +987,8 @@ h1 {
     text-align: center;
 }
 
-.rating-group label, .form-group label {
+.rating-group label,
+.form-group label {
     display: block;
     margin-bottom: 10px;
     font-weight: 500;
@@ -1082,7 +1084,7 @@ h1 {
     border-bottom-color: #5f6368;
 }
 
-[data-theme='dark'] .rating-group label, 
+[data-theme='dark'] .rating-group label,
 [data-theme='dark'] .form-group label {
     color: #e8eaed;
 }
@@ -1193,7 +1195,8 @@ h1 {
     line-height: 1.5;
 }
 
-.loading-reviews, .no-reviews {
+.loading-reviews,
+.no-reviews {
     text-align: center;
     padding: 20px;
     color: #666;
@@ -1266,8 +1269,15 @@ h1 {
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 [data-theme='dark'] .write-review-container {
@@ -1286,4 +1296,3 @@ h1 {
 [data-theme='dark'] .btn-toggle-review:hover {
     background-color: rgba(0, 196, 180, 0.1);
 }
-
