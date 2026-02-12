@@ -120,7 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayGender').textContent = data.userGender || 'Not specified';
         document.getElementById('displayRent').textContent = data.rent ? `₹ ${data.rent}` : 'Not specified';
         document.getElementById('displayOccupancy').textContent = data.occupancy || 'Single';
-        document.getElementById('displayLookingFor').textContent = data.lookingForGender || 'Any';
+        const lookingForGender = data.lookingForGender || 'Any';
+        document.getElementById('displayLookingFor').textContent = lookingForGender;
+        const lookingForIcon = document.querySelector('#displayLookingFor').parentElement.querySelector('i');
+        if (lookingForIcon) {
+            lookingForIcon.className = 'fa-solid ' + (lookingForGender.toLowerCase() === 'male' ? 'fa-mars' : lookingForGender.toLowerCase() === 'female' ? 'fa-venus' : 'fa-mars-and-venus');
+        }
         document.getElementById('displayDescription').textContent = data.description || 'No description provided.';
 
         // Verified/Unverified Box in Basic Info
