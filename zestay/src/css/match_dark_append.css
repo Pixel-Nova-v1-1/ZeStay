@@ -1,4 +1,3 @@
-
 /* === DARK MODE FOR MATCH PAGE === */
 [data-theme="dark"] body {
     background-color: #202124;
@@ -60,7 +59,7 @@
 }
 
 [data-theme="dark"] .info-item .label {
-    color: #9aa0a6;
+    color: #ffffff;
 }
 
 [data-theme="dark"] .info-item .value {

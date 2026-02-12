@@ -674,9 +674,12 @@ textarea:focus {
   color: #e8eaed;
 }
 
-[data-theme="dark"] .modal-header p,
-[data-theme="dark"] label {
+[data-theme="dark"] .modal-header p {
   color: #9aa0a6;
+}
+
+[data-theme="dark"] label {
+  color: #ffffff;
 }
 
 [data-theme="dark"] .input-wrapper input,
@@ -697,6 +700,10 @@ textarea:focus {
 
 [data-theme="dark"] .toggle-group .toggle-btn {
   color: #9aa0a6;
+}
+
+[data-theme="dark"] .toggle-group .toggle-btn.active {
+  color: #ffffff;
 }
 
 [data-theme="dark"] .chips-container .chip {
