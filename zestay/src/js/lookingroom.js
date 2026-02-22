@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (logoutBtn) {
                 logoutBtn.onclick = async () => {
                     await signOut(auth);
-                    window.location.reload();
+                    window.location.href = '/index.html';
                 };
             }
         } else {
