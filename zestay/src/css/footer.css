@@ -1,6 +1,6 @@
 /* ================= FOOTER ================= */
 .main-footer {
-    background-color: #001524;
+    background-color: #050b14;
     color: #e0e0e0;
     padding: 80px 50px 30px;
 }
@@ -15,9 +15,12 @@
 }
 
 .footer-section h2.footer-logo {
-    color: #00C4B4;
+    background: var(--accent-gradient, linear-gradient(135deg, #6366f1 0%, #14b8a6 100%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-size: 28px;
-    font-weight: 500;
+    font-weight: 800;
     margin-bottom: 20px;
 }
 
@@ -52,7 +55,8 @@
 }
 
 .social-icons a:hover {
-    color: #00C4B4;
+    color: #6366f1;
+    transform: translateY(-2px);
 }
 
 .footer-section ul {
@@ -73,10 +77,9 @@
 }
 
 .footer-section ul li a:hover {
-    color: #00C4B4;
+    color: #14b8a6;
     padding-left: 5px;
-    transform: none;
-    /* Reset transform from previous design */
+    opacity: 0.9;
 }
 
 .contact-info li {
@@ -208,7 +211,7 @@
 
 /* Dark Mode Footer (already dark, minimal changes) */
 [data-theme="dark"] .main-footer {
-    background-color: #1a1a1a;
+    background-color: #020617;
 }
 
 [data-theme="dark"] .footer-section p {
