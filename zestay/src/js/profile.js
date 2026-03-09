@@ -1,3 +1,4 @@
+import "./theme.js";
 import { auth, db } from "../firebase.js";
 import { nhost } from "../nhost.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";

@@ -1,3 +1,4 @@
+import "./js/theme.js";
 import "./js/index.js";
 import "./js/regimob.js";
 import "./js/authState.js";
