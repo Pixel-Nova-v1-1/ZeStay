@@ -1,5 +1,4 @@
 import { auth, db } from "../firebase.js";
-import { nhost } from "../nhost.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
@@ -120,24 +119,25 @@ document.addEventListener('DOMContentLoaded', () => {
         'wanderer', 'clean-centric', 'non-alcoholic', 'non-smoker'
     ];
 
-    // Helper: Delete old Nhost file
-    async function deleteOldNhostFile(oldUrl) {
-        if (!oldUrl) return;
+    // Helper: Cloudinary Upload (Unsigned)
+    async function uploadToCloudinary(file, folder) {
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-        const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-        const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        if (folder) formData.append("folder", folder);
 
-        if (oldUrl.includes(subdomain)) {
-            try {
-                console.log("Deleting old file:", oldUrl);
-                const oldFileId = oldUrl.split('/').pop();
-                const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
-                await fetch(deleteUrl, { method: 'DELETE' });
-                console.log("Old file deleted successfully.");
-            } catch (err) {
-                console.warn("Failed to delete old file:", err);
-            }
+        const res = await fetch(uploadUrl, { method: 'POST', body: formData });
+        if (!res.ok) {
+            const errorText = await res.text();
+            let msg = `Cloudinary Error: ${res.status}`;
+            if (res.status === 400) msg += " (Check Overwrite/Preset settings)";
+            throw new Error(msg);
         }
+        return await res.json();
     }
 
     // 1. Auth Check & Load Data
@@ -214,18 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Update Navbar Profile Icon
-                const navProfileBtn = document.getElementById('headerProfileBtn');
-                if (navProfileBtn) {
-                    const navImg = document.createElement('img');
-                    navImg.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
-                    navImg.style.width = '35px';
-                    navImg.style.height = '35px';
-                    navImg.style.borderRadius = '50%';
-                    navImg.style.objectFit = 'cover';
-                    navImg.style.border = '2px solid white';
-                    navProfileBtn.innerHTML = '';
-                    navProfileBtn.appendChild(navImg);
-                }
+                updateHeaderAvatar(data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`);
 
                 document.getElementById('display-name').value = data.name || "";
                 document.getElementById('display-email').value = data.email || "";
@@ -329,6 +318,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Helper: Update Header Avatar
+    function updateHeaderAvatar(url) {
+        const navProfileBtn = document.getElementById('headerProfileBtn');
+        if (navProfileBtn && url) {
+            const navImg = document.createElement('img');
+            navImg.src = url;
+            navImg.style.width = '35px';
+            navImg.style.height = '35px';
+            navImg.style.borderRadius = '50%';
+            navImg.style.objectFit = 'cover';
+            navImg.style.border = '2px solid white';
+            navProfileBtn.innerHTML = '';
+            navProfileBtn.appendChild(navImg);
+        }
+    }
+
     // Helper: Update User Info in All chats
     async function updateUserInChats(uid, updates) {
         try {
@@ -414,60 +419,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // The actual upload task
                 const uploadTask = async () => {
-                    console.log("Uploading to Nhost (Manual Fetch)...");
+                    console.log("Uploading to Cloudinary...");
 
-                    // Rename file to use Firebase UID
-                    const fileExtension = file.name.split('.').pop();
-                    const newFileName = `${currentUser.uid}.${fileExtension}`;
-                    const renamedFile = new File([file], newFileName, { type: file.type });
-
-
-                    // Manual Fetch Upload to bypass SDK "file[]" issue
-                    const formData = new FormData();
-                    // Append bucket-id FIRST (some servers are picky about order)
-                    formData.append("bucket-id", "default");
-
-                    // Use "file[]" as confirmed by Test 3
-                    formData.append("file[]", renamedFile);
-
-                    // Construct URL manually since nhost.storage.url is undefined
-                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-
-                    const res = await fetch(uploadUrl, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!res.ok) {
-                        const errorText = await res.text();
-                        throw new Error(`Upload failed: ${res.status} ${errorText}`);
-                    }
-
-                    const responseData = await res.json();
-                    const fileMetadata = responseData.processedFiles?.[0] || responseData;
-
-                    // Manual Public URL construction
-                    const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
-                    console.log("Download URL:", downloadURL);
-
-                    // --- Delete Old File Logic ---
-                    try {
-                        const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
-                        if (userDocSnap.exists()) {
-                            const oldUrl = userDocSnap.data().photoUrl;
-                            if (oldUrl && oldUrl !== downloadURL) {
-                                await deleteOldNhostFile(oldUrl);
-                            }
-                        }
-                    } catch (delErr) {
-                        console.warn("Failed to delete old file:", delErr);
-                    }
+                    const result = await uploadToCloudinary(
+                        file, 
+                        "avatars"
+                    );
+                    
+                    const downloadURL = `${result.secure_url}?t=${Date.now()}`;
+                    const publicId = result.public_id;
+                    console.log("Download URL:", downloadURL, "Public ID:", publicId);
 
                     // Update Firestore
                     await updateDoc(doc(db, "users", currentUser.uid), {
                         photoUrl: downloadURL,
+                        photoPublicId: publicId,
                         profileOption: 'upload'
                     });
 
@@ -482,6 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Update UI
                 profileAvatarEl.src = downloadURL;
+                updateHeaderAvatar(downloadURL);
+                showToast("Profile photo updated!", "success");
                 console.log("Profile updated successfully");
 
             } catch (error) {
@@ -505,13 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser.displayName || 'User'}`;
 
             try {
-                // Delete old file from Nhost if exists
-                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
-                if (userDocSnap.exists()) {
-                    const oldUrl = userDocSnap.data().photoUrl;
-                    await deleteOldNhostFile(oldUrl);
-                }
-
                 // Update Firestore
                 await updateDoc(doc(db, "users", currentUser.uid), {
                     photoUrl: defaultAvatar,
@@ -555,13 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedUrl = img.dataset.url;
 
             try {
-                // Delete old file from Nhost if exists
-                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
-                if (userDocSnap.exists()) {
-                    const oldUrl = userDocSnap.data().photoUrl;
-                    await deleteOldNhostFile(oldUrl);
-                }
-
                 // Update Firestore
                 await updateDoc(doc(db, "users", currentUser.uid), {
                     photoUrl: selectedUrl,
@@ -940,13 +894,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirm("Are you sure you want to delete this listing? This action cannot be undone.");
             if (confirmed) {
                 try {
-                    // Delete photos from Nhost if it's a flat/pg and has photos
-                    if ((type === 'flat' || type === 'pg') && data.photos && Array.isArray(data.photos)) {
-                        console.log("Deleting photos for listing:", docId);
-                        for (const photoUrl of data.photos) {
-                            await deleteOldNhostFile(photoUrl);
-                        }
-                    }
+                    // Photos will remain in Cloudinary
+                    console.log("Removing listing and photo references for:", docId);
 
                     let collectionName = 'requirements';
                     if (type === 'flat') collectionName = 'flats';
@@ -1384,36 +1333,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Handle Photos (Update Room or PG)
             if (type === 'flat' || type === 'pg') {
-                // 1. Process Deletions
-                for (const urlToDelete of photosToDelete) {
-                    await deleteOldNhostFile(urlToDelete);
-                }
+                // 1. Process Remaining Photos (Exclude those marked for deletion)
                 const remainingPhotos = currentEditPhotos.filter(url => !photosToDelete.has(url));
 
-                // 2. Process New Uploads (Using newPhotoFiles array)
+                // 2. Process New Uploads
                 const newImageUrls = [];
+                const newPublicIds = [];
                 if (newPhotoFiles.length > 0) {
-                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-
                     for (const file of newPhotoFiles) {
-                        const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
-                        const fd = new FormData();
-                        fd.append("bucket-id", "default");
-                        fd.append("file[]", file, fileName);
-
-                        const res = await fetch(uploadUrl, { method: 'POST', body: fd });
-                        if (res.ok) {
-                            const resData = await res.json();
-                            const fileMetadata = resData.processedFiles?.[0] || resData;
-                            newImageUrls.push(`https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`);
+                        try {
+                            const result = await uploadToCloudinary(
+                                file, 
+                                `listings/${docId}`
+                            );
+                            newImageUrls.push(`${result.secure_url}?t=${Date.now()}`);
+                            newPublicIds.push(result.public_id);
+                        } catch (err) {
+                            console.error("Listing photo upload failed:", err);
+                            showToast("Failed to upload one or more photos.", "error");
+                            throw err; // Stop update if upload fails
                         }
                     }
                 }
 
                 // 3. Final Photo List
+                const existingPublicIds = data.photoPublicIds || []; // May not exist yet
                 data.photos = [...remainingPhotos, ...newImageUrls];
+                data.photoPublicIds = [...existingPublicIds, ...newPublicIds];
             }
 
             await updateDoc(doc(db, collectionName, docId), data);

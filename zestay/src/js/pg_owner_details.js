@@ -165,35 +165,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const fileExtension = file.name.split('.').pop();
-            const newFileName = `${user.uid}.${fileExtension}`;
-            const renamedFile = new File([file], newFileName, { type: file.type });
+            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+            const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
             const formData = new FormData();
-            formData.append("bucket-id", "default");
-            formData.append("file[]", renamedFile);
-
-            const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-            const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-            const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+            // Cloudinary will auto-generate a unique ID
+            formData.append("folder", "avatars");
 
             const res = await fetch(uploadUrl, { method: 'POST', body: formData });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+            if (!res.ok) {
+                const error = await res.text();
+                throw new Error(`Upload failed: ${res.status} ${error}`);
+            }
 
             const responseData = await res.json();
-            const fileMetadata = responseData.processedFiles?.[0] || responseData;
-            const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
-
-            // Delete old uploaded file if applicable
-            if (previousUrl && previousUrl.includes(subdomain) && previousUrl !== downloadURL) {
-                try {
-                    const oldFileId = previousUrl.split('/').pop();
-                    const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
-                    await fetch(deleteUrl, { method: 'DELETE' });
-                } catch (delErr) {
-                    console.warn("Failed to delete old file:", delErr);
-                }
-            }
+            const downloadURL = `${responseData.secure_url}?t=${Date.now()}`;
+            const publicId = responseData.public_id;
 
             selectedAvatarUrl = downloadURL;
 
@@ -207,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Save photo immediately
             await setDoc(doc(db, "users", user.uid), {
                 photoUrl: downloadURL,
+                photoPublicId: publicId,
                 profileOption: 'upload'
             }, { merge: true });
 
@@ -285,31 +276,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    async function uploadFilesToNhost(files, userId) {
+    async function uploadFilesToCloudinary(files, userId) {
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
         const uploadPromises = files.map(async (file) => {
-            const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-            const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-            const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-
             const formData = new FormData();
-            formData.append("bucket-id", "default");
-            // Add unique timestamp to filename to prevent collisions or overwrites if needed
-            const newFileName = `${userId}_pg_${Date.now()}_${file.name}`;
-            const renamedFile = new File([file], newFileName, { type: file.type });
-            formData.append("file[]", renamedFile);
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+            formData.append("folder", `listings/${userId}`);
 
-            const res = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData
-            });
+            const res = await fetch(uploadUrl, { method: 'POST', body: formData });
 
             if (!res.ok) {
-                throw new Error(`Upload failed for ${file.name}`);
+                const error = await res.text();
+                throw new Error(`Upload failed factor ${file.name}: ${res.status} ${error}`);
             }
 
             const responseData = await res.json();
-            const fileMetadata = responseData.processedFiles?.[0] || responseData;
-            return `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
+            return {
+                url: `${responseData.secure_url}?t=${Date.now()}`,
+                publicId: responseData.public_id
+            };
         });
 
         return Promise.all(uploadPromises);
@@ -346,12 +335,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             // Upload photos if any
-            let photoUrls = [];
+            let photoData = [];
             if (selectedFiles.length > 0) {
-                console.log("Uploading files...");
-                photoUrls = await uploadFilesToNhost(selectedFiles, user.uid);
-                console.log("Uploaded photos:", photoUrls);
+                console.log("Uploading files to Cloudinary...");
+                photoData = await uploadFilesToCloudinary(selectedFiles, user.uid);
+                console.log("Uploaded photos:", photoData);
             }
+
+            const photoUrls = photoData.map(p => p.url);
+            const photoPublicIds = photoData.map(p => p.publicId);
 
             // Determine profile photo URL
             let finalPhotoUrl = selectedAvatarUrl || "https://api.dicebear.com/9.x/avataaars/svg?seed=User";
@@ -367,8 +359,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 role: 'PG_OWNER', // System role
                 roleType: roleInput.value, // User selection (Owner/Agent)
                 photoUrl: finalPhotoUrl,
+                photoPublicId: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? (await (await getDoc(doc(db, "users", user.uid))).data()?.photoPublicId) : null,
                 profileOption: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? 'upload' : 'avatar',
                 pgPhotoUrls: photoUrls,
+                pgPhotoPublicIds: photoPublicIds,
                 uid: user.uid,
                 updatedAt: new Date().toISOString(),
                 isProfileComplete: true,
