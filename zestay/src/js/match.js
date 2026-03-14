@@ -68,8 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (logoutBtn) {
                 logoutBtn.onclick = async () => {
-                    await signOut(auth);
-                    window.location.reload();
+                    const confirmLogout = confirm("Are you sure you want to log out?");
+                    if (confirmLogout) {
+                        await signOut(auth);
+                        window.location.reload();
+                    }
                 };
             }
         } else {
@@ -790,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Form Visibility
     if (toggleReviewFormBtn) {
         toggleReviewFormBtn.onclick = () => {
-             if (!currentUser) {
+            if (!currentUser) {
                 // If not logged in, redirect
                 window.location.href = 'regimob.html?mode=login';
                 return;
@@ -870,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 showToast("Review submitted successfully!", "success");
-                
+
                 // Hide Form and Reset
                 unifiedReviewForm.classList.add('hidden');
                 unifiedReviewForm.reset();
@@ -914,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndShowReviews(targetId) {
         if (!reviewsListContainer) return;
         reviewsListContainer.innerHTML = '<div class="loading-reviews">Loading reviews...</div>';
-        
+
         try {
             // Updated Query: Removed orderBy to avoid index requirement errors. Sorting client-side instead.
             const q = query(collection(db, "reviews"), where("targetId", "==", targetId));
@@ -930,23 +933,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update Header Stats
             if (reviews.length === 0) {
-                 if(avgRatingDisplay) avgRatingDisplay.textContent = "0.0";
-                 if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(0);
-                 if(totalReviewsDisplay) totalReviewsDisplay.textContent = "(0 reviews)";
-                 reviewsListContainer.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to review!</div>';
+                if (avgRatingDisplay) avgRatingDisplay.textContent = "0.0";
+                if (avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(0);
+                if (totalReviewsDisplay) totalReviewsDisplay.textContent = "(0 reviews)";
+                reviewsListContainer.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to review!</div>';
             } else {
                 const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
                 const avgRating = (totalRating / reviews.length).toFixed(1);
-                
-                if(avgRatingDisplay) avgRatingDisplay.textContent = avgRating;
-                if(avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(avgRating);
-                if(totalReviewsDisplay) totalReviewsDisplay.textContent = `(${reviews.length} review${reviews.length !== 1 ? 's' : ''})`;
+
+                if (avgRatingDisplay) avgRatingDisplay.textContent = avgRating;
+                if (avgStarsDisplay) avgStarsDisplay.innerHTML = generateStars(avgRating);
+                if (totalReviewsDisplay) totalReviewsDisplay.textContent = `(${reviews.length} review${reviews.length !== 1 ? 's' : ''})`;
 
                 // Render List
                 reviewsListContainer.innerHTML = reviews.map(review => {
                     const date = review.createdAt ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() : 'Just now';
                     const avatar = review.reviewerPhoto || `https://api.dicebear.com/9.x/avataaars/svg?seed=${review.reviewerName || 'Anonymous'}`;
-                    
+
                     return `
                     <div class="review-item">
                         <div class="review-header">
@@ -1007,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item) {
                     const name = item.ownerName || item.pgName || item.userName || 'Property';
                     if (viewReviewTargetName) viewReviewTargetName.innerText = `Reviews for ${name}`;
-                    
+
                     // Set Hidden Inputs for Unified Form
                     const unifiedTargetId = document.getElementById('unifiedTargetId');
                     const unifiedTargetType = document.getElementById('unifiedTargetType');
@@ -1018,8 +1021,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (unifiedOwnerId) unifiedOwnerId.value = item.userId || '';
 
                     // Open Modal
-                    if(viewReviewsModal) viewReviewsModal.classList.remove('hidden');
-                    
+                    if (viewReviewsModal) viewReviewsModal.classList.remove('hidden');
+
                     // Fetch existing reviews
                     fetchAndShowReviews(id);
                 }
@@ -1043,14 +1046,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (type === 'PGs') item = pgsData.find(p => p.id === id);
 
                 if (item) {
-                     // Check if verified
-                     if (!currentUserData || !currentUserData.isVerified) {
+                    // Check if verified
+                    if (!currentUserData || !currentUserData.isVerified) {
                         showToast("You must be verified to start a chat.", "warning");
                         return;
                     }
                     if (!item.isVerified) {
-                         showToast("You can only chat with verified users.", "warning");
-                         return;
+                        showToast("You can only chat with verified users.", "warning");
+                        return;
                     }
                     if (window.startChat) {
                         const targetUser = {

@@ -277,8 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (logoutBtn) {
                 logoutBtn.onclick = async () => {
-                    await signOut(auth);
-                    window.location.href = '/index.html';
+                    const confirmLogout = confirm("Are you sure you want to log out?");
+                    if (confirmLogout) {
+                        await signOut(auth);
+                        window.location.href = '/index.html';
+                    }
                 };
             }
         } else {
