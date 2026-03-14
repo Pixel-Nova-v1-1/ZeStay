@@ -1,5 +1,4 @@
 import { auth, db } from "../firebase";
-import { nhost } from "../nhost";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { showToast } from "./toast.js";
@@ -130,23 +129,17 @@ document.addEventListener("DOMContentLoaded", () => {
         filePreview.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i></div>`;
 
         try {
-            console.log("Starting immediate image upload to Nhost (Manual Fetch)...");
+            console.log("Starting immediate image upload to Cloudinary...");
 
-            // Rename file to use Firebase UID
-            const fileExtension = file.name.split('.').pop();
-            const newFileName = `${user.uid}.${fileExtension}`;
-            const renamedFile = new File([file], newFileName, { type: file.type });
+            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+            const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-            // Manual Fetch Upload
             const formData = new FormData();
-            formData.append("bucket-id", "default");
-            formData.append("file[]", renamedFile);
-
-            const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-            const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-            const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
-
-            console.log("Upload URL:", uploadUrl);
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+            // Cloudinary will auto-generate a unique ID
+            formData.append("folder", "avatars");
 
             const res = await fetch(uploadUrl, {
                 method: 'POST',
@@ -155,30 +148,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!res.ok) {
                 const errorText = await res.text();
-                console.error("Upload failed with status:", res.status);
                 throw new Error(`Upload failed: ${res.status} ${errorText}`);
             }
 
             const responseData = await res.json();
-            const fileMetadata = responseData.processedFiles?.[0] || responseData;
-
-            console.log("Upload successful, metadata:", fileMetadata);
-
-            const downloadURL = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
-            console.log("Image URL:", downloadURL);
-
-            // --- Delete Old File Logic ---
-            if (previousUrl && previousUrl.includes(subdomain) && previousUrl !== downloadURL) {
-                try {
-                    console.log("Deleting old file:", previousUrl);
-                    const oldFileId = previousUrl.split('/').pop();
-                    const deleteUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${oldFileId}`;
-                    await fetch(deleteUrl, { method: 'DELETE' });
-                    console.log("Old file deleted.");
-                } catch (delErr) {
-                    console.warn("Failed to delete old file:", delErr);
-                }
-            }
+            const downloadURL = `${responseData.secure_url}?t=${Date.now()}`;
+            const publicId = responseData.public_id;
+            console.log("Image uploaded to Cloudinary:", downloadURL, publicId);
 
             selectedAvatarUrl = downloadURL;
             selectedFile = null;
@@ -192,12 +168,17 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update user profile immediately (using setDoc to ensure doc exists)
             await setDoc(doc(db, "users", user.uid), {
                 photoUrl: downloadURL,
+                photoPublicId: publicId,
                 profileOption: 'upload'
             }, { merge: true });
 
+            showToast("Profile photo uploaded!", "success");
+
         } catch (error) {
             console.error("Image upload failed:", error);
-            showToast("Failed to upload image. Please try again.", "error");
+            let errMsg = "Failed to upload image.";
+            if (error.message.includes("400")) errMsg += " (Check Cloudinary Preset)";
+            showToast(errMsg, "error");
             filePreview.classList.add("hidden");
             filePreview.style.backgroundImage = '';
         }

@@ -467,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parentModal = form.closest('.modal-overlay');
                 let collectionName = 'requirements'; // Default
                 let imageUrls = [];
+                let publicIds = [];
 
                 // Retrieve files from the form's specific upload area
                 const formUploadArea = form.querySelector('.upload-area');
@@ -502,18 +503,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Upload Photos to Nhost
+                // Upload Photos to Cloudinary
                 if (filesToUpload.length > 0) {
-                    const subdomain = import.meta.env.VITE_NHOST_SUBDOMAIN || "ksjzlfxzphvcavnuqlhw";
-                    const region = import.meta.env.VITE_NHOST_REGION || "ap-south-1";
-                    const uploadUrl = `https://${subdomain}.storage.${region}.nhost.run/v1/files`;
+                    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+                    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+                    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
                     for (const file of filesToUpload) {
                         try {
-                            const fileName = `${currentUser.uid}/${Date.now()}_${file.name}`;
                             const formData = new FormData();
-                            formData.append("bucket-id", "default");
-                            formData.append("file[]", file, fileName);
+                            formData.append("file", file);
+                            formData.append("upload_preset", uploadPreset);
+                            formData.append("folder", `listings/${currentUser.uid}`);
 
                             const response = await fetch(uploadUrl, {
                                 method: 'POST',
@@ -526,9 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
 
                             const responseData = await response.json();
-                            const fileMetadata = responseData.processedFiles?.[0] || responseData;
-                            const url = `https://${subdomain}.storage.${region}.nhost.run/v1/files/${fileMetadata.id}`;
-                            imageUrls.push(url);
+                            imageUrls.push(`${responseData.secure_url}?t=${Date.now()}`);
+                            publicIds.push(responseData.public_id);
                         } catch (err) {
                             console.error("Image upload failed:", err);
                             showToast("Failed to upload one or more images.", "error");
@@ -537,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 data.photos = imageUrls;
+                data.photoPublicIds = publicIds;
 
                 data.userId = currentUser.uid;
                 data.userEmail = currentUser.email;
