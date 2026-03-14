@@ -1,3 +1,4 @@
+import "./theme.js";
 import { auth } from "../firebase";
 import {
   createUserWithEmailAndPassword,
@@ -5,7 +6,10 @@ import {
   sendEmailVerification,
   applyActionCode,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo
 } from "firebase/auth";
 import { showToast } from "./toast.js";
 
@@ -20,6 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
   const passwordHint = document.getElementById("passwordHint");
   const authActionBtn = document.getElementById("authActionBtn");
+  const googleSignInBtn = document.getElementById("googleSignInBtn");
   const togglePasswordBtn = document.getElementById("togglePasswordBtn");
   const toggleConfirmPasswordBtn = document.getElementById("toggleConfirmPasswordBtn");
 
@@ -340,6 +345,37 @@ document.addEventListener("DOMContentLoaded", async () => {
         showToast(error.message, "error");
         authActionBtn.disabled = false;
         authActionBtn.textContent = mode === "register" ? "Register" : "Login";
+      }
+    });
+  }
+
+  // Handle Google Sign-In
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener("click", async () => {
+      googleSignInBtn.disabled = true;
+      const originalHTML = googleSignInBtn.innerHTML;
+      googleSignInBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span style="font-weight: 600;">Connecting...</span>';
+
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const additionalInfo = getAdditionalUserInfo(result);
+
+        if (additionalInfo.isNewUser) {
+          // Ask if they are a PG Owner, which routes to register.html or pg_owner_details.html
+          showPxOwnerModal();
+        } else {
+          // Send returning users to index.html, where authState.js will correctly route them
+          // to preference.html or their dashboard (/why.html) based on their account completeness.
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        console.error(error);
+        if (error.code !== "auth/popup-closed-by-user") {
+          showToast(error.message, "error");
+        }
+        googleSignInBtn.disabled = false;
+        googleSignInBtn.innerHTML = originalHTML;
       }
     });
   }

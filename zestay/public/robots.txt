@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow paths that shouldn't be indexed by search engines
+Disallow: /admin.html
+Disallow: /profile.html
+Disallow: /preference.html
+
+Sitemap: https://zestay0.web.app/sitemap.xml
