@@ -304,8 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // When we deploy the site, window.location.hostname will naturally be your real domain (e.g. zestay.com)
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     const urlObj = new URL(shareUrl);
-                    // Replace 'zestay.com' below with your *actual* domain name when you know it!
-                    shareUrl = shareUrl.replace(urlObj.origin, 'https://zestay.com');
+                    // Replace 'zestay0.web.app' below with your *actual* domain name when you know it!
+                    shareUrl = shareUrl.replace(urlObj.origin, 'https://zestay0.web.app');
                 } else if (!shareUrl.startsWith('http://') && !shareUrl.startsWith('https://')) {
                     shareUrl = 'https://' + shareUrl;
                 }
