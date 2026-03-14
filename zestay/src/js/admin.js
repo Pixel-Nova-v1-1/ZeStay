@@ -38,12 +38,15 @@ onAuthStateChanged(auth, async (user) => {
 
 // Logout
 logoutBtn.addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        window.location.replace("/index.html");
-    } catch (error) {
-        console.error("Error signing out:", error);
-        showToast("Error signing out", "error");
+    const confirmLogout = confirm("Are you sure you want to log out?");
+    if (confirmLogout) {
+        try {
+            await signOut(auth);
+            window.location.replace("/index.html");
+        } catch (error) {
+            console.error("Error signing out:", error);
+            showToast("Error signing out", "error");
+        }
     }
 });
 

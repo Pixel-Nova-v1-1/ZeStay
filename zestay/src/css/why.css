@@ -5,6 +5,10 @@
   font-family: "Poppins", sans-serif;
 }
 
+body {
+  background-color: #ffffff;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -33,7 +37,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  
+
   color: black;
   font-size: 24px;
   margin-bottom: 20px;
@@ -41,6 +45,8 @@
   opacity: 0;
   animation-fill-mode: forwards;
   width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .subtitle h2 {
@@ -807,6 +813,7 @@ textarea:focus {
 [data-theme="dark"] .pac-item-query {
   color: #e8eaed;
 }
+
 /* ================= DARK MODE OVERRIDES ================= */
 [data-theme="dark"] .subtitle {
   color: var(--text-primary);
@@ -878,9 +885,9 @@ textarea:focus {
 }
 
 [data-theme="dark"] .chip {
-   background-color: var(--bg-tertiary);
-   color: var(--text-secondary);
-   border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
 [data-theme="dark"] .chip.active {
@@ -898,5 +905,5 @@ textarea:focus {
 }
 
 [data-theme="dark"] .title a {
-    color: var(--text-primary);
+  color: var(--text-primary);
 }

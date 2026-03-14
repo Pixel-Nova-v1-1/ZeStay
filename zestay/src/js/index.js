@@ -205,8 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (logoutBtn) {
                 logoutBtn.onclick = async () => {
-                    await signOut(auth);
-                    window.location.reload();
+                    const confirmLogout = confirm("Are you sure you want to log out?");
+                    if (confirmLogout) {
+                        await signOut(auth);
+                        window.location.reload();
+                    }
                 };
             }
 
