@@ -1,3 +1,4 @@
+import "./theme.js";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
