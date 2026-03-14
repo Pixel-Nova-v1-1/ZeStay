@@ -13,7 +13,9 @@ const PUBLIC_PAGES = [
   "/how-it-works.html",
   "/safety.html",
   "/faq.html",
-  "/blog.html"
+  "/blog.html",
+  "/lookingroommate.html",
+  "/lookingroom.html"
 ];
 
 let unsubscribeNotifications = null;
