@@ -13,7 +13,9 @@ const PUBLIC_PAGES = [
   "/how-it-works.html",
   "/safety.html",
   "/faq.html",
-  "/blog.html"
+  "/blog.html",
+  "/lookingroommate.html",
+  "/lookingroom.html"
 ];
 
 let unsubscribeNotifications = null;
@@ -207,8 +209,11 @@ function updateHeaderUI(user, userData) {
 
   if (logoutBtn) {
     logoutBtn.onclick = async () => {
-      await auth.signOut();
-      window.location.href = "/index.html";
+      const confirmLogout = confirm("Are you sure you want to log out?");
+      if (confirmLogout) {
+        await auth.signOut();
+        window.location.href = "/index.html";
+      }
     };
   }
 
