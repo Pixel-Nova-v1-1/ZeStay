@@ -488,8 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (logoutBtn) {
                 logoutBtn.onclick = async () => {
-                    await signOut(auth);
-                    window.location.href = '/index.html';
+                    const confirmLogout = confirm("Are you sure you want to log out?");
+                    if (confirmLogout) {
+                        await signOut(auth);
+                        window.location.href = '/index.html';
+                    }
                 };
             }
         } else {
@@ -497,6 +500,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userProfile) userProfile.style.display = 'none';
         }
     });
+
+    // --- SHARE BUTTON LOGIC ---
+    const shareBtn = document.getElementById('shareProfileBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+            try {
+                let shareUrl = window.location.href;
+                
+                // If you are testing locally, replace the localhost URL with your actual domain
+                // When we deploy the site, window.location.hostname will naturally be your real domain (e.g. zestay.com)
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    const urlObj = new URL(shareUrl);
+                    // Replace 'zestay0.web.app' below with your *actual* domain name when you know it!
+                    shareUrl = shareUrl.replace(urlObj.origin, 'https://zestay0.web.app');
+                } else if (!shareUrl.startsWith('http://') && !shareUrl.startsWith('https://')) {
+                    shareUrl = 'https://' + shareUrl;
+                }
+
+                await navigator.clipboard.writeText(shareUrl);
+                showToast("Link copied to clipboard!", "success");
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showToast("Failed to copy link.", "error");
+            }
+        });
+    }
 
     // --- CHAT BUTTON LOGIC ---
     const chatBtn = document.querySelector('.btn-action');
