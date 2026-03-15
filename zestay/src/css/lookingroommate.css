@@ -162,8 +162,10 @@ body {
 }
 
 .btn-action {
+    flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 12px 28px;
     border: none;
@@ -181,6 +183,28 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0, 196, 180, 0.4);
     background-color: #00b0a0;
+}
+
+.btn-share {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.06);
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-share:hover {
+    transform: translateY(-3px);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .main-content {
@@ -902,4 +926,13 @@ body {
 
 [data-theme="dark"] .close-modal:hover {
     color: #e74c3c;
+}
+
+[data-theme="dark"] .btn-share {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .btn-share:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
