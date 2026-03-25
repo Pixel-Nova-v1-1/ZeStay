@@ -6,7 +6,16 @@ import { showToast } from "./toast.js";
 
 console.log("match.js loaded");
 
+// Global fallback to ensure loading overlay hides
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 1500); // 1.5s fallback
+});
+
 document.addEventListener('DOMContentLoaded', () => {
+
     let allUsers = [];
     let flatsData = [];
     let pgsData = []; // New PG Data Array

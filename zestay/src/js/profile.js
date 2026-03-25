@@ -3,6 +3,15 @@ import { auth, db } from "../firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, orderBy } from "firebase/firestore";
 import { showToast, showConfirm } from "./toast.js";
+import { compressAndUpload, deleteFromFirebase, getStoragePath, validateImage } from "./firebaseUpload.js";
+
+// Global fallback to ensure loading overlay hides
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 1500); // 1.5s fallback
+});
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -120,25 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'wanderer', 'clean-centric', 'non-alcoholic', 'non-smoker'
     ];
 
-    // Helper: Cloudinary Upload (Unsigned)
-    async function uploadToCloudinary(file, folder) {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", uploadPreset);
-        if (folder) formData.append("folder", folder);
-
-        const res = await fetch(uploadUrl, { method: 'POST', body: formData });
-        if (!res.ok) {
-            const errorText = await res.text();
-            let msg = `Cloudinary Error: ${res.status}`;
-            if (res.status === 400) msg += " (Check Overwrite/Preset settings)";
-            throw new Error(msg);
-        }
-        return await res.json();
+    // Helper: Firebase Storage Upload (with compression)
+    async function uploadToStorage(file, folder) {
+        const storagePath = getStoragePath(folder, currentUser.uid, `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
+        const { url, storagePath: savedPath } = await compressAndUpload(file, storagePath);
+        return { url, storagePath: savedPath };
     }
 
     // 1. Auth Check & Load Data
@@ -210,8 +205,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Update Avatar
+                // Update Avatar and Show Loading Until Loaded
                 if (profileAvatarEl) {
-                    profileAvatarEl.src = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
+                    const avatarUrl = data.photoUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.name || 'User'}`;
+                    
+                    // Show loading overlay while image loads
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+                    profileAvatarEl.onload = () => {
+                        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                    };
+                    
+                    profileAvatarEl.onerror = () => {
+                        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                    };
+
+                    profileAvatarEl.src = avatarUrl;
                 }
 
                 // Update Navbar Profile Icon
@@ -280,11 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error("Error loading profile:", error);
-        } finally {
             const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                loadingOverlay.classList.add('hidden');
-            }
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
         }
     }
 
@@ -379,35 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (!file || !currentUser) return;
 
-            // Visual Feedback: Show spinner/opacity
-            const avatarWrapper = document.querySelector('.profile-avatar-wrapper');
+            // Visual Feedback: Show main loading overlay
             const originalSrc = profileAvatarEl.src;
-
-            // Ensure wrapper is relative for absolute positioning of spinner
-            avatarWrapper.style.position = 'relative';
-
-            // Create spinner overlay if it doesn't exist
-            let spinner = avatarWrapper.querySelector('.upload-spinner');
-            if (!spinner) {
-                spinner = document.createElement('div');
-                spinner.className = 'upload-spinner';
-                spinner.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                spinner.style.position = 'absolute';
-                spinner.style.top = '0';
-                spinner.style.left = '0';
-                spinner.style.width = '100%';
-                spinner.style.height = '100%';
-                spinner.style.background = 'rgba(0,0,0,0.5)';
-                spinner.style.color = 'white';
-                spinner.style.display = 'flex';
-                spinner.style.alignItems = 'center';
-                spinner.style.justifyContent = 'center';
-                spinner.style.borderRadius = '50%';
-                spinner.style.fontSize = '2rem';
-                spinner.style.zIndex = '10'; // Ensure it's on top
-                avatarWrapper.appendChild(spinner);
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.querySelector('.loading-text').textContent = 'Uploading new profile picture...';
+                loadingOverlay.classList.remove('hidden');
             }
-            spinner.style.display = 'flex';
+
             profileUploadModal.style.display = 'none'; // Close modal immediately
 
             try {
@@ -420,21 +406,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // The actual upload task
                 const uploadTask = async () => {
-                    console.log("Uploading to Cloudinary...");
+                    // Validate file size first
+                    const validation = validateImage(file);
+                    if (!validation.valid) {
+                        throw new Error(validation.error);
+                    }
 
-                    const result = await uploadToCloudinary(
-                        file, 
-                        "avatars"
-                    );
+                    console.log("Compressing & uploading to Firebase Storage...");
+
+                    // Delete old photo from storage if it exists
+                    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                    if (userDoc.exists() && userDoc.data().storagePath) {
+                        await deleteFromFirebase(userDoc.data().storagePath);
+                    }
+
+                    const result = await uploadToStorage(file, "avatars");
                     
-                    const downloadURL = `${result.secure_url}?t=${Date.now()}`;
-                    const publicId = result.public_id;
-                    console.log("Download URL:", downloadURL, "Public ID:", publicId);
+                    const downloadURL = result.url;
+                    const storagePath = result.storagePath;
+                    console.log("Download URL:", downloadURL, "Storage Path:", storagePath);
 
                     // Update Firestore
                     await updateDoc(doc(db, "users", currentUser.uid), {
                         photoUrl: downloadURL,
-                        photoPublicId: publicId,
+                        storagePath: storagePath,
                         profileOption: 'upload'
                     });
 
@@ -447,7 +442,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Race them
                 const downloadURL = await Promise.race([uploadTask(), timeoutPromise]);
 
-                // Update UI
+                // Wait for the new image to actually load before hiding the overlay
+                profileAvatarEl.onload = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...'; // Reset text
+                    }
+                };
+                
+                profileAvatarEl.onerror = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...'; // Reset text
+                    }
+                };
+
+                // Update UI (this triggers the onload)
                 profileAvatarEl.src = downloadURL;
                 updateHeaderAvatar(downloadURL);
                 showToast("Profile photo updated!", "success");
@@ -457,8 +467,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error uploading avatar:", error);
                 showToast("Failed to upload avatar: " + error.message, "error");
                 profileAvatarEl.src = originalSrc; // Revert on error
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...'; // Reset text
+                }
             } finally {
-                spinner.style.display = 'none';
                 avatarUploadInput.value = '';
             }
         });
@@ -474,23 +487,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser.displayName || 'User'}`;
 
             try {
+                // Show loading overlay
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.querySelector('.loading-text').textContent = 'Removing profile picture...';
+                    loadingOverlay.classList.remove('hidden');
+                }
+
+                // Delete old photo from Firebase Storage if it was an upload
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists() && userDoc.data().storagePath) {
+                    await deleteFromFirebase(userDoc.data().storagePath);
+                }
+
                 // Update Firestore
                 await updateDoc(doc(db, "users", currentUser.uid), {
                     photoUrl: defaultAvatar,
-                    profileOption: 'default'
+                    profileOption: 'default',
+                    storagePath: null // Clear storage path
                 });
 
                 // --- SYNC CHATS ---
                 updateUserInChats(currentUser.uid, { photoUrl: defaultAvatar });
 
+                // Wait for image load
+                profileAvatarEl.onload = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                    }
+                };
+                profileAvatarEl.onerror = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                    }
+                };
+
                 // Update UI
                 profileAvatarEl.src = defaultAvatar;
+                updateHeaderAvatar(defaultAvatar);
                 profileUploadModal.style.display = 'none';
                 showToast("Profile photo removed.", "success");
 
             } catch (error) {
                 console.error("Error removing photo:", error);
                 showToast("Failed to remove photo.", "error");
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                }
             }
         });
     }
@@ -510,13 +557,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Avatar Selection Logic
     avatarOptionsModal.forEach(img => {
         img.addEventListener('click', async () => {
             if (!currentUser) return;
             const selectedUrl = img.dataset.url;
 
             try {
+                // Show loading overlay
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.querySelector('.loading-text').textContent = 'Updating profile picture...';
+                    loadingOverlay.classList.remove('hidden');
+                }
+
                 // Update Firestore
                 await updateDoc(doc(db, "users", currentUser.uid), {
                     photoUrl: selectedUrl,
@@ -526,13 +579,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- SYNC CHATS ---
                 updateUserInChats(currentUser.uid, { photoUrl: selectedUrl });
 
+                // Wait for image load
+                profileAvatarEl.onload = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                    }
+                };
+                profileAvatarEl.onerror = () => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.add('hidden');
+                        loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                    }
+                };
+
                 // Update UI
                 profileAvatarEl.src = selectedUrl;
+                updateHeaderAvatar(selectedUrl);
                 profileUploadModal.style.display = 'none';
+                showToast("Profile photo updated.", "success");
 
             } catch (error) {
                 console.error("Error updating avatar:", error);
                 showToast("Failed to update avatar.", "error");
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.querySelector('.loading-text').textContent = 'Loading your profile...';
+                }
             }
         });
     });
@@ -895,7 +969,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirm("Are you sure you want to delete this listing? This action cannot be undone.");
             if (confirmed) {
                 try {
-                    // Photos will remain in Cloudinary
+                    // Delete photos from Firebase Storage
+                    const listingDoc = await getDoc(doc(db, collectionName, docId));
+                    if (listingDoc.exists()) {
+                        const storagePaths = listingDoc.data().storagePaths || [];
+                        for (const path of storagePaths) {
+                            await deleteFromFirebase(path);
+                        }
+                    }
                     console.log("Removing listing and photo references for:", docId);
 
                     let collectionName = 'requirements';
@@ -1034,6 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Track photos to delete and new photos to add
     let photosToDelete = new Set();
     let currentEditPhotos = []; // Existing URLs
+    let currentEditStoragePaths = []; // Existing Storage Paths
     let newPhotoFiles = []; // New File objects
 
     function openEditModal(docId, data, type) {
@@ -1054,6 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset State
         photosToDelete.clear();
         currentEditPhotos = data.photos || [];
+        currentEditStoragePaths = data.storagePaths || [];
         newPhotoFiles = [];
 
         // Set Doc ID
@@ -1120,12 +1203,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Show Photos (for Room or PG)
+        modal.classList.add('active');
+
+        // Show Photos (for Room or PG) — must be after modal is active
+        // because renderAllEditPhotos looks for '.modal-overlay.active'
         if (type === 'flat' || type === 'pg') {
             renderAllEditPhotos();
         }
-
-        modal.classList.add('active');
     }
 
     // Unified Render Function
@@ -1339,16 +1423,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 2. Process New Uploads
                 const newImageUrls = [];
-                const newPublicIds = [];
+                const newStoragePaths = [];
                 if (newPhotoFiles.length > 0) {
                     for (const file of newPhotoFiles) {
                         try {
-                            const result = await uploadToCloudinary(
+                            const result = await uploadToStorage(
                                 file, 
-                                `listings/${docId}`
+                                "listings"
                             );
-                            newImageUrls.push(`${result.secure_url}?t=${Date.now()}`);
-                            newPublicIds.push(result.public_id);
+                            newImageUrls.push(result.url);
+                            newStoragePaths.push(result.storagePath);
                         } catch (err) {
                             console.error("Listing photo upload failed:", err);
                             showToast("Failed to upload one or more photos.", "error");
@@ -1357,10 +1441,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // Delete removed photos from Firebase Storage
+                if (photosToDelete.size > 0) {
+                    for (const photoUrl of photosToDelete) {
+                        const idx = currentEditPhotos.indexOf(photoUrl);
+                        if (idx !== -1 && currentEditStoragePaths[idx]) {
+                            await deleteFromFirebase(currentEditStoragePaths[idx]);
+                        }
+                    }
+                }
+
                 // 3. Final Photo List
-                const existingPublicIds = data.photoPublicIds || []; // May not exist yet
+                const remainingStoragePaths = currentEditStoragePaths.filter((_, idx) => !photosToDelete.has(currentEditPhotos[idx]));
                 data.photos = [...remainingPhotos, ...newImageUrls];
-                data.photoPublicIds = [...existingPublicIds, ...newPublicIds];
+                data.storagePaths = [...remainingStoragePaths, ...newStoragePaths];
             }
 
             await updateDoc(doc(db, collectionName, docId), data);

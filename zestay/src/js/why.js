@@ -2,8 +2,8 @@ import "./theme.js";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc } from "firebase/firestore";
-import { nhost } from "../nhost";
 import { showToast } from "./toast.js";
+import { compressAndUpload, getStoragePath, validateImage } from "./firebaseUpload.js";
 
 // --- DYNAMIC GOOGLE MAPS LOADER ---
 function loadGoogleMaps() {
@@ -504,41 +504,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Upload Photos to Cloudinary
+                // Upload Photos to Firebase Storage (with compression)
                 if (filesToUpload.length > 0) {
-                    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-                    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-                    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
                     for (const file of filesToUpload) {
                         try {
-                            const formData = new FormData();
-                            formData.append("file", file);
-                            formData.append("upload_preset", uploadPreset);
-                            formData.append("folder", `listings/${currentUser.uid}`);
-
-                            const response = await fetch(uploadUrl, {
-                                method: 'POST',
-                                body: formData
-                            });
-
-                            if (!response.ok) {
-                                const errorText = await response.text();
-                                throw new Error(`Upload failed: ${response.status} ${errorText}`);
+                            // Validate each file
+                            const validation = validateImage(file);
+                            if (!validation.valid) {
+                                showToast(validation.error, "error");
+                                throw new Error(validation.error);
                             }
 
-                            const responseData = await response.json();
-                            imageUrls.push(`${responseData.secure_url}?t=${Date.now()}`);
-                            publicIds.push(responseData.public_id);
+                            const storagePath = getStoragePath("listings", currentUser.uid, `${Date.now()}_${file.name}`);
+                            const { url, storagePath: savedPath } = await compressAndUpload(file, storagePath);
+                            imageUrls.push(url);
+                            publicIds.push(savedPath);
                         } catch (err) {
                             console.error("Image upload failed:", err);
-                            showToast("Failed to upload one or more images.", "error");
+                            showToast(err.message || "Failed to upload one or more images.", "error");
                             throw err;
                         }
                     }
                 }
                 data.photos = imageUrls;
-                data.photoPublicIds = publicIds;
+                data.storagePaths = publicIds;
 
                 data.userId = currentUser.uid;
                 data.userEmail = currentUser.email;

@@ -5,6 +5,14 @@ import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/fires
 import { startChat } from "./chat.js";
 import { showToast } from "./toast.js";
 
+// Global fallback to ensure loading overlay hides
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 1500); // 1.5s fallback
+});
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);

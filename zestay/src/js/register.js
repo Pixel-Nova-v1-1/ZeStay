@@ -3,6 +3,7 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { showToast } from "./toast.js";
+import { compressAndUpload, deleteFromFirebase, getStoragePath, validateImage } from "./firebaseUpload.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("registerForm");
@@ -130,32 +131,25 @@ document.addEventListener("DOMContentLoaded", () => {
         filePreview.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i></div>`;
 
         try {
-            console.log("Starting immediate image upload to Cloudinary...");
-
-            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-            const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", uploadPreset);
-            // Cloudinary will auto-generate a unique ID
-            formData.append("folder", "avatars");
-
-            const res = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`Upload failed: ${res.status} ${errorText}`);
+            // Validate file size
+            const validation = validateImage(file);
+            if (!validation.valid) {
+                showToast(validation.error, "error");
+                filePreview.classList.add("hidden");
+                return;
             }
 
-            const responseData = await res.json();
-            const downloadURL = `${responseData.secure_url}?t=${Date.now()}`;
-            const publicId = responseData.public_id;
-            console.log("Image uploaded to Cloudinary:", downloadURL, publicId);
+            console.log("Starting image compression + upload to Firebase Storage...");
+
+            // Delete old photo from storage if it exists
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().storagePath) {
+                await deleteFromFirebase(userDoc.data().storagePath);
+            }
+
+            const storagePath = getStoragePath("avatars", user.uid, `profile_${Date.now()}`);
+            const { url: downloadURL, storagePath: savedPath } = await compressAndUpload(file, storagePath);
+            console.log("Image compressed & uploaded:", downloadURL);
 
             selectedAvatarUrl = downloadURL;
             selectedFile = null;
@@ -169,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update user profile immediately (using setDoc to ensure doc exists)
             await setDoc(doc(db, "users", user.uid), {
                 photoUrl: downloadURL,
-                photoPublicId: publicId,
+                storagePath: savedPath,
                 profileOption: 'upload'
             }, { merge: true });
 
@@ -177,9 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Image upload failed:", error);
-            let errMsg = "Failed to upload image.";
-            if (error.message.includes("400")) errMsg += " (Check Cloudinary Preset)";
-            showToast(errMsg, "error");
+            showToast(error.message || "Failed to upload image.", "error");
             filePreview.classList.add("hidden");
             filePreview.style.backgroundImage = '';
         }

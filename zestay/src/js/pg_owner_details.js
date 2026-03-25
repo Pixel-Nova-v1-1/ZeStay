@@ -3,6 +3,7 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { showToast } from "./toast.js";
+import { compressAndUpload, deleteFromFirebase, getStoragePath, validateImage } from "./firebaseUpload.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const pgOwnerForm = document.getElementById("pgOwnerForm");
@@ -166,25 +167,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-            const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", uploadPreset);
-            // Cloudinary will auto-generate a unique ID
-            formData.append("folder", "avatars");
-
-            const res = await fetch(uploadUrl, { method: 'POST', body: formData });
-            if (!res.ok) {
-                const error = await res.text();
-                throw new Error(`Upload failed: ${res.status} ${error}`);
+            // Validate file size
+            const validation = validateImage(file);
+            if (!validation.valid) {
+                showToast(validation.error, "error");
+                if (profilePreview) {
+                    profilePreview.classList.add("hidden");
+                    profilePreview.style.backgroundImage = '';
+                }
+                return;
             }
 
-            const responseData = await res.json();
-            const downloadURL = `${responseData.secure_url}?t=${Date.now()}`;
-            const publicId = responseData.public_id;
+            // Delete old photo from storage if it exists
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().storagePath) {
+                await deleteFromFirebase(userDoc.data().storagePath);
+            }
+
+            const storagePath = getStoragePath("avatars", user.uid, `profile_${Date.now()}`);
+            const { url: downloadURL, storagePath: savedPath } = await compressAndUpload(file, storagePath);
 
             selectedAvatarUrl = downloadURL;
 
@@ -198,13 +199,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Save photo immediately
             await setDoc(doc(db, "users", user.uid), {
                 photoUrl: downloadURL,
-                photoPublicId: publicId,
+                storagePath: savedPath,
                 profileOption: 'upload'
             }, { merge: true });
 
         } catch (error) {
             console.error("Profile image upload failed:", error);
-            showToast("Failed to upload image. Please try again.", "error");
+            showToast(error.message || "Failed to upload image. Please try again.", "error");
             if (profilePreview) {
                 profilePreview.classList.add("hidden");
                 profilePreview.style.backgroundImage = '';
@@ -277,28 +278,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    async function uploadFilesToCloudinary(files, userId) {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
+    async function uploadFilesToFirebaseStorage(files, userId) {
         const uploadPromises = files.map(async (file) => {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", uploadPreset);
-            formData.append("folder", `listings/${userId}`);
-
-            const res = await fetch(uploadUrl, { method: 'POST', body: formData });
-
-            if (!res.ok) {
-                const error = await res.text();
-                throw new Error(`Upload failed factor ${file.name}: ${res.status} ${error}`);
+            // Validate each file
+            const validation = validateImage(file);
+            if (!validation.valid) {
+                throw new Error(validation.error);
             }
 
-            const responseData = await res.json();
+            const storagePath = getStoragePath("listings", userId, `${Date.now()}_${file.name}`);
+            const { url, storagePath: savedPath } = await compressAndUpload(file, storagePath);
             return {
-                url: `${responseData.secure_url}?t=${Date.now()}`,
-                publicId: responseData.public_id
+                url: url,
+                storagePath: savedPath
             };
         });
 
@@ -338,13 +330,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Upload photos if any
             let photoData = [];
             if (selectedFiles.length > 0) {
-                console.log("Uploading files to Cloudinary...");
-                photoData = await uploadFilesToCloudinary(selectedFiles, user.uid);
+                console.log("Uploading files to Firebase Storage...");
+                photoData = await uploadFilesToFirebaseStorage(selectedFiles, user.uid);
                 console.log("Uploaded photos:", photoData);
             }
 
             const photoUrls = photoData.map(p => p.url);
-            const photoPublicIds = photoData.map(p => p.publicId);
+            const photoStoragePaths = photoData.map(p => p.storagePath);
 
             // Determine profile photo URL
             let finalPhotoUrl = selectedAvatarUrl || "https://api.dicebear.com/9.x/avataaars/svg?seed=User";
@@ -360,10 +352,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 role: 'PG_OWNER', // System role
                 roleType: roleInput.value, // User selection (Owner/Agent)
                 photoUrl: finalPhotoUrl,
-                photoPublicId: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? (await (await getDoc(doc(db, "users", user.uid))).data()?.photoPublicId) : null,
+                storagePath: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? (await (await getDoc(doc(db, "users", user.uid))).data()?.storagePath) : null,
                 profileOption: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? 'upload' : 'avatar',
                 pgPhotoUrls: photoUrls,
-                pgPhotoPublicIds: photoPublicIds,
+                pgPhotoStoragePaths: photoStoragePaths,
                 uid: user.uid,
                 updatedAt: new Date().toISOString(),
                 isProfileComplete: true,
