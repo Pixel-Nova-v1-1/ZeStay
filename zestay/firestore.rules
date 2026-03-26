@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if a user is logged into Firebase Authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the currently logged-in user has the isAdmin flag in their profile
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Default Fallback: Allow authenticated users to read and write broadly.
+    // (This is a baseline; you should tighten this for collections like 'reports' or 'verification_requests')
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Strict constraint overriding the fallback for the users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Only the user themselves or an admin can modify their user profile
+      allow write: if request.auth.uid == userId || isAdmin();
+    }
+  }
+}

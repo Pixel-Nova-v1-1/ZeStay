@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -32,6 +33,31 @@ export default async function handler(req, res) {
             initializeApp({
                 credential: cert(serviceAccount)
             });
+        }
+
+        // Security measure: Extract and verify ID token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, error: 'Unauthorized: Missing or invalid token' });
+        }
+        
+        const idToken = authHeader.split('Bearer ')[1];
+        let decodedToken;
+        try {
+            decodedToken = await getAuth().verifyIdToken(idToken);
+        } catch (e) {
+            return res.status(401).json({ success: false, error: 'Unauthorized: Invalid token' });
+        }
+
+        // Security measure: Check if caller is an Admin
+        try {
+            const userDoc = await getFirestore().collection('users').doc(decodedToken.uid).get();
+            if (!userDoc.exists || userDoc.data().isAdmin !== true) {
+                return res.status(403).json({ success: false, error: 'Forbidden: Admin access required' });
+            }
+        } catch (e) {
+            console.error('Error verifying admin status:', e);
+            return res.status(500).json({ success: false, error: 'Error verifying admin status' });
         }
 
         const { uid } = req.body;
