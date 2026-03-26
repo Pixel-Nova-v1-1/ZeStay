@@ -596,9 +596,15 @@ window.deleteUser = async (userId) => {
                 // For now, we'll try the relative path. If it fails (404), we could try localhost:3000
             }
 
+            // Security addition: Get user's active token to prove authorization
+            const idToken = await auth.currentUser.getIdToken();
+
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
                 body: JSON.stringify({ uid: userId })
             });
 
@@ -607,7 +613,10 @@ window.deleteUser = async (userId) => {
                 console.log("API route not found, trying local backend...");
                 const localResponse = await fetch('http://localhost:3000/delete-user', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}` // Added Bearer token
+                    },
                     body: JSON.stringify({ uid: userId })
                 });
                 const localResult = await localResponse.json();

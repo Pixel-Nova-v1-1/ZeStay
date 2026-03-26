@@ -260,6 +260,19 @@ function subscribeToChatList() {
   });
 }
 
+function escapeHTML(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
 function formatTime(timestamp) {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -298,9 +311,9 @@ function renderList() {
             ${c.online ? '<span class="chat-status-dot"></span>' : ''}
             </div>
             <div class="chat-info">
-            <span class="chat-name">${c.name}</span>
+            <span class="chat-name">${escapeHTML(c.name)}</span>
             <div class="chat-preview" style="${c.unread > 0 ? 'font-weight:bold; color:#000;' : ''}">
-                ${c.preview.length > 30 ? c.preview.substring(0, 30) + '...' : c.preview}
+                ${escapeHTML(c.preview.length > 30 ? c.preview.substring(0, 30) + '...' : c.preview)}
             </div>
             </div>
             <div class="chat-meta">
@@ -717,7 +730,7 @@ function appendMessageToUI(text, isMe) {
 
   bubble.innerHTML = `
     ${avatarHtml}
-    <div class="message-content">${text}</div>
+    <div class="message-content">${escapeHTML(text)}</div>
   `;
 
   convoBody.appendChild(bubble);
