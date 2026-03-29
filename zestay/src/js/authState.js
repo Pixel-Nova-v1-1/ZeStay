@@ -116,8 +116,8 @@ onAuthStateChanged(auth, async (user) => {
 
       if (!hasPreferences) {
         // If they haven't picked preferences yet, force them to preference.html
-        // But don't redirect if they are already there!
-        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
+        // But don't redirect if they are already there or on a public page!
+        if (!PUBLIC_PAGES.includes(path) && path !== "/preference.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
           console.log("Preferences missing. Redirecting to selection...");
           window.location.replace("/preference.html");
         }
