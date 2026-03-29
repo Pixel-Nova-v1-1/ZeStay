@@ -18,6 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const resendOtpLink = document.getElementById("resendOtpLink");
     const otpSubtitle = document.getElementById("otpSubtitle");
     
+    // New Resend/Timer elements
+    const changeNumberLink = document.getElementById("changeNumberLink");
+    const resendTimerText = document.getElementById("resendTimerText");
+    const resendTimer = document.getElementById("resendTimer");
+    let resendInterval = null;
+    let timeLeft = 60; // 1 min
+    let currentPhoneNumber = "";
+    
     const phoneFormContainer = document.getElementById("phoneFormContainer");
     const otpFormContainer = document.getElementById("otpFormContainer");
     const successMessageContainer = document.getElementById("successMessageContainer");
@@ -25,6 +33,26 @@ document.addEventListener("DOMContentLoaded", () => {
     let confirmationResult = null;
     let windowRecaptchaVerifier = null;
     let currentUser = null;
+
+    function startResendTimer() {
+        clearInterval(resendInterval);
+        timeLeft = 60;
+        if(resendTimerText) resendTimerText.style.display = "inline";
+        if(resendOtpLink) resendOtpLink.style.display = "none";
+        
+        resendInterval = setInterval(() => {
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            if(resendTimer) resendTimer.textContent = `${m}:${s}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(resendInterval);
+                if(resendTimerText) resendTimerText.style.display = "none";
+                if(resendOtpLink) resendOtpLink.style.display = "inline";
+            }
+        }, 1000);
+    }
 
     // Wait to confirm user is logged in
     onAuthStateChanged(auth, (user) => {
@@ -94,12 +122,15 @@ document.addEventListener("DOMContentLoaded", () => {
         linkWithPhoneNumber(currentUser, phoneNumber, appVerifier)
             .then((result) => {
                 confirmationResult = result;
+                currentPhoneNumber = phoneNumber;
                 showToast("OTP sent successfully!", "success");
                 
                 // Update UI
                 phoneFormContainer.style.display = "none";
                 otpFormContainer.style.display = "block";
                 otpSubtitle.textContent = `We sent a code to ${phoneNumber}`;
+                
+                startResendTimer();
             })
             .catch((error) => {
                 console.error("Error during linkWithPhoneNumber", error);
@@ -151,21 +182,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resendOtpLink.addEventListener("click", (e) => {
         e.preventDefault();
-        // To resend, we simply go back to the phone number input 
-        // because RecaptchaVerifier requires a new token for a new request.
-        otpFormContainer.style.display = "none";
-        phoneFormContainer.style.display = "block";
-        
-        sendOtpBtn.disabled = false;
-        sendOtpBtn.innerHTML = "Send OTP";
-        otpInput.value = "";
-        
-        if (windowRecaptchaVerifier) {
-            windowRecaptchaVerifier.render().then(function(widgetId) {
-                grecaptcha.reset(widgetId);
+        if (timeLeft > 0) return;
+
+        resendOtpLink.style.display = "none";
+        resendTimerText.style.display = "inline";
+        resendTimer.textContent = "Sending...";
+
+        linkWithPhoneNumber(currentUser, currentPhoneNumber, windowRecaptchaVerifier)
+            .then((result) => {
+                confirmationResult = result;
+                showToast("OTP resent successfully!", "success");
+                startResendTimer();
+            })
+            .catch((error) => {
+                console.error("Error resending OTP", error);
+                resendOtpLink.style.display = "inline";
+                resendTimerText.style.display = "none";
+                if (error.code === 'auth/too-many-requests') {
+                    showToast("Too many requests sent. Please wait for the time until it resets.", "error");
+                } else {
+                    showToast(error.message, "error");
+                }
+                if (windowRecaptchaVerifier) {
+                    windowRecaptchaVerifier.render().then(function(widgetId) {
+                        grecaptcha.reset(widgetId);
+                    });
+                }
             });
-        }
     });
+
+    if (changeNumberLink) {
+        changeNumberLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            clearInterval(resendInterval);
+            otpFormContainer.style.display = "none";
+            phoneFormContainer.style.display = "block";
+            
+            sendOtpBtn.disabled = false;
+            sendOtpBtn.innerHTML = "Send OTP";
+            otpInput.value = "";
+            
+            if (windowRecaptchaVerifier) {
+                windowRecaptchaVerifier.render().then(function(widgetId) {
+                    grecaptcha.reset(widgetId);
+                });
+            }
+        });
+    }
 
     cancelBtn.addEventListener("click", () => {
         // Go back to main registration flow if they choose not to proceed

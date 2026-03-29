@@ -79,9 +79,14 @@
                         Verify & Continue
                     </button>
 
-                    <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666;">
-                        Didn't receive code? <a href="#" id="resendOtpLink" style="color: #2e7d32; text-decoration: none; font-weight: 600;">Resend</a>
-                    </p>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            Didn't receive code? 
+                            <span id="resendTimerText">Resend OTP in <span id="resendTimer" style="font-weight: 600;">01:00</span></span>
+                            <a href="#" id="resendOtpLink" style="color: #2e7d32; text-decoration: none; font-weight: 600; display: none;">Resend OTP</a>
+                        </div>
+                        <a href="#" id="changeNumberLink" style="color: #666; text-decoration: underline;">Change Phone Number</a>
+                    </div>
                 </div>
                 
                 <div id="successMessageContainer" style="display: none; text-align: center;">
