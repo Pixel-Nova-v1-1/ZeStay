@@ -15,34 +15,45 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedAvatarUrl = null;
     let selectedFile = null;
 
-    // --- DOB Validation Logic ---
+    // --- DOB Dropdown Setup ---
+    const dobDay = document.getElementById("dob-day");
+    const dobMonth = document.getElementById("dob-month");
+    const dobYear = document.getElementById("dob-year");
     const dobInput = document.getElementById("dob");
-    if (dobInput) {
-        const today = new Date();
-        const minAge = 18;
-        const maxAge = 100;
 
-        // Calculate max date (18 years ago)
-        const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
-        // Calculate min date (100 years ago)
-        const minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+    if (dobDay && dobMonth && dobYear && dobInput) {
+        // Populate Days
+        for (let i = 1; i <= 31; i++) {
+            const option = document.createElement("option");
+            option.value = i < 10 ? `0${i}` : i;
+            option.textContent = i;
+            dobDay.appendChild(option);
+        }
 
-        dobInput.setAttribute("max", maxDate);
-        dobInput.setAttribute("min", minDate);
+        // Populate Years (18 years ago to 100 years ago)
+        const currentYear = new Date().getFullYear();
+        const minYear = currentYear - 100;
+        const maxYear = currentYear - 18;
+        for (let i = maxYear; i >= minYear; i--) {
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = i;
+            dobYear.appendChild(option);
+        }
 
-        // Add input listener to enforce validation on typing
-        dobInput.addEventListener('change', function() {
-            const value = new Date(this.value);
-            const min = new Date(minDate);
-            const max = new Date(maxDate);
-
-            if (value > max) {
-                showToast(`You must be at least ${minAge} years old.`, "warning");
-                this.value = maxDate;
-            } else if (value < min) {
-                showToast("Please enter a valid date of birth.", "warning");
-                this.value = minDate;
+        function updateDobHiddenInput() {
+            const d = dobDay.value;
+            const m = dobMonth.value;
+            const y = dobYear.value;
+            if (d && m && y) {
+                dobInput.value = `${y}-${m}-${d}`;
+            } else {
+                dobInput.value = "";
             }
+        }
+
+        [dobDay, dobMonth, dobYear].forEach(el => {
+            el.addEventListener("change", updateDobHiddenInput);
         });
     }
 
@@ -58,9 +69,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Optional: Pre-fill other fields if editing
                 const data = docSnap.data();
                 document.getElementById("name").value = data.name || "";
-                document.getElementById("dob").value = data.dob || "";
                 document.getElementById("occupation").value = data.occupation || "";
                 document.getElementById("gender").value = data.gender || "";
+                
+                // Pre-fill DOB Selects
+                if (data.dob) {
+                    const [y, m, d] = data.dob.split('-');
+                    if (y && m && d) {
+                        dobYear.value = y;
+                        dobMonth.value = m;
+                        dobDay.value = d;
+                        dobInput.value = data.dob;
+                    }
+                }
                 
                 // Pre-fill hobbies
                 const hobbies = data.hobbies || "";
