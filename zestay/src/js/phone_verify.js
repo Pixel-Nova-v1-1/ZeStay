@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else if (error.code === 'auth/credential-already-in-use') {
                     showToast("This phone number is already registered to another user.", "error");
                 } else if (error.code === 'auth/too-many-requests') {
-                    showToast("Too many requests sent. Please wait for the time until it resets, or use a test number.", "error");
+                    showToast("Too many requests sent. Please wait for the time until it resets.", "error");
                 } else {
                     showToast(error.message, "error");
                 }
