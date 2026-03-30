@@ -417,8 +417,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const address = item.address ? item.address + ', ' : '';
             const rent = item.rent ? `₹ ${item.rent}` : 'Rent not specified';
 
+            const listingStatus = item.listingStatus || 'active';
+            const statusBadgeClass = listingStatus === 'inactive' ? 'inactive-status' : 'active-status';
+            const statusBadgeText = listingStatus === 'inactive' ? 'Inactive' : 'Active';
+            const statusBadgeIcon = listingStatus === 'inactive' ? 'fa-circle-xmark' : 'fa-circle-check';
+
             return `
-            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer; position: relative;">
+                <span class="vacancy-badge ${statusBadgeClass}"><i class="fa-solid ${statusBadgeIcon}"></i> ${statusBadgeText}</span>
                 <div class="card-content">
                     <div class="card-avatar">
                        <img src="${avatar}" alt="Avatar">
@@ -492,8 +498,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            const vacancyStatus = item.vacancyStatus || 'vacant';
+            const vacancyBadgeClass = vacancyStatus === 'occupied' ? 'occupied' : 'vacant';
+            const vacancyBadgeText = vacancyStatus === 'occupied' ? 'Occupied' : 'Vacant';
+            const vacancyBadgeIcon = vacancyStatus === 'occupied' ? 'fa-door-closed' : 'fa-door-open';
+
             return `
-            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer; position: relative;">
+                <span class="vacancy-badge ${vacancyBadgeClass}"><i class="fa-solid ${vacancyBadgeIcon}"></i> ${vacancyBadgeText}</span>
                 <div class="card-content">
                     <div class="card-avatar">
                        <img src="${avatar}" alt="Owner Avatar">
@@ -570,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return `
-            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer;">
+            <div class="listing-card" ${style} ${dataAttrs} style="cursor: pointer; position: relative;">
                 <div class="card-content">
                     <div class="card-avatar">
                        <img src="${avatar}" alt="PG Owner">
