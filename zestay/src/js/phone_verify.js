@@ -9,6 +9,10 @@ import {
 import { showToast } from "./toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Determine flow from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const flow = urlParams.get('flow') || 'pg'; // 'verification' or 'pg'
+
     const phoneNumberInput = document.getElementById("phoneNumberInput");
     const sendOtpBtn = document.getElementById("sendOtpBtn");
     const cancelBtn = document.getElementById("cancelBtn");
@@ -29,6 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const phoneFormContainer = document.getElementById("phoneFormContainer");
     const otpFormContainer = document.getElementById("otpFormContainer");
     const successMessageContainer = document.getElementById("successMessageContainer");
+
+    // Set dynamic subtitle based on flow
+    const phoneSubtitle = document.getElementById("phoneSubtitle");
+    if (phoneSubtitle) {
+        if (flow === 'verification') {
+            phoneSubtitle.textContent = 'Verify your mobile number to complete verification';
+        } else {
+            phoneSubtitle.textContent = 'PG Owners must verify their mobile number';
+        }
+    }
 
     let confirmationResult = null;
     let windowRecaptchaVerifier = null;
@@ -231,8 +245,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     cancelBtn.addEventListener("click", () => {
-        // Go back to main registration flow if they choose not to proceed
-        window.location.href = "regimob.html";
+        // Go back based on flow
+        if (flow === 'verification') {
+            window.location.href = "veri.html";
+        } else {
+            window.location.href = "regimob.html";
+        }
     });
 
     function showSuccessAndRedirect() {
@@ -240,8 +258,18 @@ document.addEventListener("DOMContentLoaded", () => {
         otpFormContainer.style.display = "none";
         successMessageContainer.style.display = "block";
 
-        setTimeout(() => {
-            window.location.href = "pg_owner_details.html";
-        }, 1500);
+        // Set success subtitle based on flow
+        const successSubtitle = document.getElementById("successSubtitle");
+        if (flow === 'verification') {
+            if (successSubtitle) successSubtitle.textContent = 'Redirecting you to complete verification...';
+            setTimeout(() => {
+                window.location.href = "veri_details.html";
+            }, 1500);
+        } else {
+            if (successSubtitle) successSubtitle.textContent = 'Redirecting you to PG Owner details...';
+            setTimeout(() => {
+                window.location.href = "pg_owner_details.html";
+            }, 1500);
+        }
     }
 });

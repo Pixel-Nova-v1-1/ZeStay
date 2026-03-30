@@ -785,12 +785,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Render Flats
             flatsSnapshot.forEach(doc => {
                 const data = doc.data();
+                if (data.softDeleted) return; // Skip soft-deleted listings
                 renderListingCard(doc.id, data, 'flat');
             });
 
             // Render Requirements
             reqSnapshot.forEach(doc => {
                 const data = doc.data();
+                if (data.softDeleted) return; // Skip soft-deleted listings
                 renderListingCard(doc.id, data, 'requirement');
             });
 
@@ -800,6 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pgSnapshot.forEach(doc => {
                 const data = doc.data();
+                if (data.softDeleted) return; // Skip soft-deleted listings
                 renderListingCard(doc.id, data, 'pg');
             });
 

@@ -83,7 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const q = query(collection(db, collectionName), where("userId", "==", uid));
             const snapshot = await getDocs(q);
-            return !snapshot.empty;
+            // Filter out soft-deleted listings
+            const activeDocs = snapshot.docs.filter(doc => !doc.data().softDeleted);
+            return activeDocs.length > 0;
         } catch (error) {
             console.error("Error checking existing listings:", error);
             return false;

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>Verification Details - ZeStay</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/veri_details.css">
+    <link rel="stylesheet" href="src/css/toast.css">
+    <link rel="stylesheet" href="src/css/footer.css">
+</head>
+
+<body>
+    <div class="veri-details-page">
+        <header class="veri-header">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <span class="brand-text">ZeStay</span>
+                </a>
+            </div>
+            <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </header>
+
+        <main class="veri-details-main">
+            <div class="progress-indicator">
+                <div class="progress-step completed">
+                    <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+                    <span>Phone Verified</span>
+                </div>
+                <div class="progress-line completed"></div>
+                <div class="progress-step active">
+                    <div class="step-circle">2</div>
+                    <span>Submit Details</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <div class="step-circle">3</div>
+                    <span>Verified!</span>
+                </div>
+            </div>
+
+            <div class="details-card">
+                <div class="card-header">
+                    <h1>Complete Your Verification</h1>
+                    <p>Almost there! Submit your details to get verified instantly.</p>
+                </div>
+
+                <form id="veriDetailsForm">
+                    <!-- Self Information Section -->
+                    <div class="form-section">
+                        <h3><i class="fa-solid fa-user"></i> Personal Information</h3>
+                        <p class="section-desc">Your phone number has been verified. Please confirm your details below.</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vd-name">Full Name</label>
+                                <input type="text" id="vd-name" required class="form-input" placeholder="Your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="vd-mobile">Phone Number</label>
+                                <input type="tel" id="vd-mobile" required class="form-input" readonly
+                                    style="background-color: #f0f0f0; cursor: not-allowed;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vd-email">Email</label>
+                                <input type="email" id="vd-email" required class="form-input" readonly
+                                    style="background-color: #f0f0f0; cursor: not-allowed;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Card Upload Section -->
+                    <div class="form-section">
+                        <h3><i class="fa-solid fa-id-card"></i> Upload ID Card</h3>
+                        <p class="section-desc">Please upload your Valid College/Office ID to verify your affiliation.</p>
+
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label class="upload-label">Front Side</label>
+                                <div class="file-upload-box" id="drop-zone-front">
+                                    <input type="file" id="id-front" accept="image/jpeg,image/png" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fa-regular fa-file-image"></i>
+                                        <span>Click or Drag Image<br>(JPG, PNG)</span>
+                                    </div>
+                                    <div class="file-preview"></div>
+                                </div>
+                            </div>
+                            <div class="upload-group">
+                                <label class="upload-label">Back Side</label>
+                                <div class="file-upload-box" id="drop-zone-back">
+                                    <input type="file" id="id-back" accept="image/jpeg,image/png" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fa-regular fa-file-image"></i>
+                                        <span>Click or Drag Image<br>(JPG, PNG)</span>
+                                    </div>
+                                    <div class="file-preview"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="note-text"><i class="fa-solid fa-shield-halved"></i> NOTE: We collect your ID only to verify your affiliation. It will not be shared.</p>
+                    </div>
+
+                    <!-- Live Selfie Section -->
+                    <div class="form-section">
+                        <h3><i class="fa-solid fa-camera"></i> Take a Live Selfie</h3>
+                        <p class="section-desc">Please take a live selfie to verify your identity.</p>
+                        <div class="camera-container" id="camera-container">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <img id="captured-image" style="display:none;" alt="Captured Selfie">
+                            <div class="camera-controls">
+                                <button type="button" id="start-camera" class="btn-camera">
+                                    <i class="fa-solid fa-camera"></i> Start Camera
+                                </button>
+                                <button type="button" id="capture-btn" class="btn-camera" style="display:none;">
+                                    <i class="fa-solid fa-circle-dot"></i> Capture
+                                </button>
+                                <button type="button" id="retake-btn" class="btn-camera btn-retake" style="display:none;">
+                                    <i class="fa-solid fa-rotate-left"></i> Retake
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="form-footer">
+                        <button type="submit" class="btn-submit-veri">
+                            <i class="fa-solid fa-shield-check"></i> Submit & Get Verified
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="how-it-works.html">How it Works</a></li>
+                    <li><a href="safety.html">Safety Tips</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@zestay.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ZeStay. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="src/js/theme.js"></script>
+    <script type="module" src="src/js/veri_details.js"></script>
+</body>
+
+</html>

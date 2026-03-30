@@ -240,62 +240,132 @@ async function renderUsers() {
 }
 
 async function renderVerificationRequests() {
-    contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Requests...</h2></div>';
+    contentArea.innerHTML = '<div class="recent-activity"><h2>Loading Verification Data...</h2></div>';
 
     try {
-        const q = query(collection(db, "verification_requests"), where("status", "==", "pending"));
-        const querySnapshot = await getDocs(q);
+        // Fetch ALL verification requests (not just pending)
+        const allRequestsSnapshot = await getDocs(collection(db, "verification_requests"));
 
-        if (querySnapshot.empty) {
-            contentArea.innerHTML = '<div class="recent-activity"><h2>Verification Requests</h2><p>No pending requests.</p></div>';
-            return;
-        }
+        const pendingReview = [];
+        const verifiedAccepted = [];
 
-        let html = `
-            <div class="recent-activity">
-                <h2>Pending Verification Requests</h2>
-                <div style="display: grid; gap: 20px; margin-top: 20px;">
-        `;
+        allRequestsSnapshot.forEach((docSnap) => {
+            const data = { id: docSnap.id, ...docSnap.data() };
+            
+            // Handle BOTH old schema (status: pending/approved) and new schema (adminStatus)
+            const status = data.status || '';
+            const adminStatus = data.adminStatus || '';
 
-        querySnapshot.forEach((doc) => {
-            const req = doc.data();
-            html += `
-                <div class="request-card">
-                    <div class="request-header">
-                        <div class="request-info">
-                            <h3>${req.name}</h3>
-                            <p><strong>Email:</strong> ${req.email}</p>
-                            <p><strong>Mobile:</strong> ${req.mobile}</p>
-                            <p><strong>UID:</strong> ${req.userId}</p>
-                        </div>
-                        <div>
-                            <button onclick="window.approveVerification('${doc.id}', '${req.userId}')" class="btn btn-success">Approve</button>
-                            <button onclick="window.rejectVerification('${doc.id}')" class="btn btn-danger">Reject</button>
-                        </div>
-                    </div>
-                    <div class="request-images">
-                        <div class="request-img-container">
-                            <p>ID Front</p>
-                            <img src="${req.idFrontUrl}" onclick="window.openImage(this.src)">
-                        </div>
-                        <div class="request-img-container">
-                            <p>ID Back</p>
-                            <img src="${req.idBackUrl}" onclick="window.openImage(this.src)">
-                        </div>
-                        <div class="request-img-container">
-                            <p>Selfie</p>
-                            <img src="${req.selfieUrl}" onclick="window.openImage(this.src)">
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Pending Review: new verified users OR old pending users
+            if ((status === 'verified' && adminStatus === 'pending_review') || 
+                (status === 'pending' && !adminStatus)) {
+                pendingReview.push(data);
+            } 
+            // Verified/Accepted: explicitly accepted OR old approved users
+            else if (adminStatus === 'accepted' || 
+                     (status === 'approved' && !adminStatus)) {
+                verifiedAccepted.push(data);
+            }
         });
 
-        html += `</div></div>`;
+        let html = `<div class="recent-activity">`;
+
+        // ===== SECTION 1: Pending Review =====
+        html += `<h2 style="margin-bottom: 5px;">Pending Review</h2>
+                  <p style="color: #888; font-size: 0.9em; margin-bottom: 20px;">New verified users awaiting admin review</p>`;
+
+        if (pendingReview.length === 0) {
+            html += `<p style="color: #aaa; text-align: center; padding: 20px;">No users pending review.</p>`;
+        } else {
+            html += `<div style="display: grid; gap: 20px; margin-bottom: 30px;">`;
+            pendingReview.forEach((req) => {
+                html += `
+                    <div class="request-card">
+                        <div class="request-header">
+                            <div class="request-info">
+                                <h3>${req.name}</h3>
+                                <p><strong>Email:</strong> ${req.email}</p>
+                                <p><strong>Mobile:</strong> ${req.mobile}</p>
+                                <p><strong>UID:</strong> ${req.userId}</p>
+                                <p><strong>Submitted:</strong> ${req.submittedAt ? new Date(req.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button onclick="window.acceptVerification('${req.id}', '${req.userId}')" class="btn btn-success" style="background: #27ae60;">
+                                    <i class="fa-solid fa-check"></i> Accept
+                                </button>
+                                <button onclick="window.revokeVerification('${req.id}', '${req.userId}')" class="btn btn-danger" style="background: #e74c3c;">
+                                    <i class="fa-solid fa-ban"></i> Revoke
+                                </button>
+                            </div>
+                        </div>
+                        <div class="request-images">
+                            <div class="request-img-container">
+                                <p>ID Front</p>
+                                <img src="${req.idFrontUrl}" onclick="window.openImage(this.src)">
+                            </div>
+                            <div class="request-img-container">
+                                <p>ID Back</p>
+                                <img src="${req.idBackUrl}" onclick="window.openImage(this.src)">
+                            </div>
+                            <div class="request-img-container">
+                                <p>Selfie</p>
+                                <img src="${req.selfieUrl}" onclick="window.openImage(this.src)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+
+        // ===== SECTION 2: Verified Users List =====
+        html += `<hr style="border: none; border-top: 2px solid #eee; margin: 30px 0;">
+                  <h2 style="margin-bottom: 5px;">Verified Users</h2>
+                  <p style="color: #888; font-size: 0.9em; margin-bottom: 20px;">Users accepted by admin</p>`;
+
+        if (verifiedAccepted.length === 0) {
+            html += `<p style="color: #aaa; text-align: center; padding: 20px;">No accepted verified users yet.</p>`;
+        } else {
+            html += `
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Accepted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            verifiedAccepted.forEach((req) => {
+                const acceptedDate = req.acceptedAt 
+                    ? new Date(req.acceptedAt.seconds * 1000).toLocaleDateString() 
+                    : 'N/A';
+                html += `
+                    <tr>
+                        <td>${req.name}</td>
+                        <td>${req.email}</td>
+                        <td>${req.mobile || 'N/A'}</td>
+                        <td><span style="color: #27ae60; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> ${acceptedDate}</span></td>
+                        <td>
+                            <button onclick="window.revokeVerification('${req.id}', '${req.userId}')" class="btn btn-danger" style="background: #e74c3c; font-size: 0.85em;">
+                                <i class="fa-solid fa-ban"></i> Revoke
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table></div>`;
+        }
+
+        html += `</div>`;
         contentArea.innerHTML = html;
 
     } catch (error) {
-        console.error("Error fetching requests:", error);
+        console.error("Error fetching verification data:", error);
         contentArea.innerHTML = `<div class="recent-activity"><h2>Error</h2><p>${error.message}</p></div>`;
     }
 }
@@ -307,83 +377,100 @@ window.openImage = (src) => {
     w.document.close();
 };
 
-// Expose functions to window for onclick handlers
-window.approveVerification = async (requestId, userId) => {
-    const confirmed = await showConfirm("Are you sure you want to approve this user?");
+// ===== ACCEPT VERIFICATION =====
+window.acceptVerification = async (requestId, userId) => {
+    const confirmed = await showConfirm("Accept this user as credible?");
     if (!confirmed) return;
 
     try {
-        // 1. Update Request
+        // Update verification request
         await updateDoc(doc(db, "verification_requests", requestId), {
-            status: "approved",
-            processedAt: new Date()
-        });
-
-        // Update User Profile
-        // Note: 'verificationRequests' is not defined in this scope.
-        // Assuming it's meant to be fetched or passed.
-        // For now, we'll fetch the request directly to get userId.
-        const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
-        const request = requestDoc.exists() ? requestDoc.data() : null;
-
-
-        if (request) {
-            await updateDoc(doc(db, "users", request.userId), {
-                isVerified: true
-            });
-
-            // Send Notification
-            await addDoc(collection(db, "notifications"), {
-                userId: request.userId,
-                title: "Verification Approved",
-                message: "Congratulations! Your profile has been verified.",
-                type: "success",
-                read: false,
-                timestamp: new Date()
-            });
-        }
-
-        showToast("User verified successfully!", "success");
-        renderVerificationRequests(); // Refresh list
-    } catch (error) {
-        console.error("Error approving:", error);
-        showToast("Error approving user: " + error.message, "error");
-    }
-};
-
-window.rejectVerification = async (requestId) => {
-    const confirmed = await showConfirm("Are you sure you want to reject this request?");
-    if (!confirmed) return;
-    const reason = prompt("Please enter the reason for rejection:");
-    if (reason === null) return; // User cancelled
-
-    try {
-        await updateDoc(doc(db, "verification_requests", requestId), {
-            status: "rejected",
-            rejectionReason: reason,
-            processedAt: new Date()
+            adminStatus: "accepted",
+            acceptedAt: serverTimestamp()
         });
 
         // Send Notification
-        const requestDoc = await getDoc(doc(db, "verification_requests", requestId));
-        const request = requestDoc.exists() ? requestDoc.data() : null;
+        await addDoc(collection(db, "notifications"), {
+            userId: userId,
+            title: "Verification Accepted",
+            message: "Your verification has been reviewed and accepted by an admin. You are a trusted member!",
+            type: "success",
+            read: false,
+            timestamp: new Date()
+        });
 
-        if (request) {
-            await addDoc(collection(db, "notifications"), {
-                userId: request.userId,
-                title: "Verification Rejected",
-                message: `Your verification request was rejected. Reason: ${reason}`,
-                type: "error",
-                read: false,
-                timestamp: new Date()
-            });
+        showToast("User accepted successfully!", "success");
+        renderVerificationRequests(); // Refresh
+    } catch (error) {
+        console.error("Error accepting:", error);
+        showToast("Error accepting user: " + error.message, "error");
+    }
+};
+
+// ===== REVOKE VERIFICATION =====
+window.revokeVerification = async (requestId, userId) => {
+    // Show modal with textarea for reason
+    showModal(`
+        <h3>Revoke Verification</h3>
+        <p style="margin-bottom: 15px;">Enter the reason for revoking this user's verification. This message will be sent to the user.</p>
+        <textarea id="revokeReasonInput" class="modal-input" placeholder="e.g., Suspicious documents, fraudulent identity..." style="width: 100%;"></textarea>
+        <div class="modal-actions">
+            <button onclick="window.confirmRevoke('${requestId}', '${userId}')" class="btn-modal btn-action">Revoke Verification</button>
+            <button onclick="window.closeAdminModal()" class="btn-modal btn-cancel">Cancel</button>
+        </div>
+    `);
+};
+
+window.confirmRevoke = async (requestId, userId) => {
+    const reasonInput = document.getElementById('revokeReasonInput');
+    const reason = reasonInput ? reasonInput.value.trim() : '';
+
+    if (!reason) {
+        showToast("Please enter a reason for revoking.", "warning");
+        return;
+    }
+
+    try {
+        // 1. Update verification request
+        await updateDoc(doc(db, "verification_requests", requestId), {
+            status: "revoked",
+            adminStatus: "revoked",
+            revokeReason: reason,
+            revokedAt: serverTimestamp()
+        });
+
+        // 2. Set user isVerified to false
+        await updateDoc(doc(db, "users", userId), {
+            isVerified: false
+        });
+
+        // 3. Soft-delete all user listings (flats, requirements, pgs)
+        const collections = ["flats", "requirements", "pgs"];
+        for (const col of collections) {
+            const listingsQuery = query(collection(db, col), where("userId", "==", userId));
+            const listingsSnap = await getDocs(listingsQuery);
+            const updatePromises = listingsSnap.docs.map(docSnap =>
+                updateDoc(docSnap.ref, { softDeleted: true })
+            );
+            await Promise.all(updatePromises);
         }
 
-        showToast("Request rejected.", "info");
-        renderVerificationRequests(); // Refresh list
+        // 4. Send notification with reason
+        await addDoc(collection(db, "notifications"), {
+            userId: userId,
+            title: "Verification Revoked",
+            message: `Your verification has been revoked by an admin. Reason: ${reason}. Your listings have been hidden. Please re-verify your account.`,
+            type: "error",
+            read: false,
+            timestamp: new Date()
+        });
+
+        window.closeAdminModal();
+        showToast("Verification revoked. User's listings have been hidden.", "success");
+        renderVerificationRequests(); // Refresh
     } catch (error) {
-        console.error("Error rejecting:", error);
-        showToast("Error rejecting request: " + error.message, "error");
+        console.error("Error revoking:", error);
+        showToast("Error revoking verification: " + error.message, "error");
     }
 };
 

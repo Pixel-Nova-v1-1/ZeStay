@@ -109,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Skip if it's the current user's own requirement
                 if (reqData.userId === currentUser.uid) return null;
 
+                // Skip soft-deleted listings
+                if (reqData.softDeleted) return null;
+
                 let userData = {};
                 let matchScore = 0;
 
@@ -186,6 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const flatId = docSnapshot.id;
 
                 if (currentUser && flatData.userId === currentUser.uid) return null;
+
+                // Skip soft-deleted listings
+                if (flatData.softDeleted) return null;
 
                 let ownerData = {};
                 let matchScore = 0;
@@ -268,6 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pgId = docSnapshot.id;
 
                 if (currentUser && pgData.userId === currentUser.uid) return null;
+
+                // Skip soft-deleted listings
+                if (pgData.softDeleted) return null;
 
                 let ownerData = {};
                 let matchScore = 0;

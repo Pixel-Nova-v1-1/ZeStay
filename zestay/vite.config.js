@@ -26,6 +26,7 @@ export default defineConfig({
         terms: resolve(__dirname, 'terms.html'),
         pg_owner_details: resolve(__dirname, 'pg_owner_details.html'),
         phone_verify: resolve(__dirname, 'phone_verify.html'),
+        veri_details: resolve(__dirname, 'veri_details.html'),
       },
     },
   },
