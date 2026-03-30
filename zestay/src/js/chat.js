@@ -573,11 +573,7 @@ async function askGemini(userPrompt) {
   convoBody.appendChild(typingBubble);
   scrollConversationToBottom();
 
-  const PRIMARY_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  const BACKUP_KEY = import.meta.env.VITE_GEMINI_API_KEY_BACKUP;
-
-  async function callGemini(apiKey, text) {
-    if (!apiKey) throw new Error("Missing API Key");
+  async function callGemini(text) {
     // --- FETCH USER CONTEXT FOR AI ---
     let userContext = `User Name: ${currentUser.displayName || 'User'}\n`;
 
@@ -590,7 +586,6 @@ async function askGemini(userPrompt) {
       }
 
       // Fetch verification requests to get details (Pending/Rejected Reason)
-      // We fetch all for this user and sort client-side to avoid "Missing Index" errors
       const vq = query(
         collection(db, "verification_requests"),
         where("userId", "==", currentUser.uid)
@@ -598,25 +593,18 @@ async function askGemini(userPrompt) {
 
       const vSnap = await getDocs(vq);
       if (!vSnap.empty) {
-        // Sort by timestamp desc (or submittedAt/processedAt if timestamp missing)
         const requests = vSnap.docs.map(d => d.data());
         requests.sort((a, b) => {
           const getMillis = (obj) => {
-            // Prioritize submittedAt to ensure chronological order of attempts
             const ts = obj.submittedAt || obj.timestamp || obj.processedAt;
-
             if (!ts) return 0;
-
-            // Handle Firestore Timestamp-like objects (checking .seconds first is safer)
             if (typeof ts.seconds === 'number') return ts.seconds * 1000;
-
             if (typeof ts.toDate === 'function') return ts.toDate().getTime();
             if (ts instanceof Date) return ts.getTime();
             if (typeof ts === 'number') return ts;
-
             return 0;
           };
-          return getMillis(b) - getMillis(a); // Descending
+          return getMillis(b) - getMillis(a);
         });
 
         const vData = requests[0];
@@ -640,43 +628,28 @@ async function askGemini(userPrompt) {
       "3. If 'rejected', explain the reason provided above.\n" +
       "4. If 'approved', tell them to check their profile notifications and badge.";
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    const payload = {
-      system_instruction: { parts: [{ text: fullInstruction }] },
-      contents: [{ parts: [{ text: text }] }]
-    };
-    const response = await fetch(url, {
+    const apiUrl = '/api/chat';
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        prompt: text,
+        systemInstruction: fullInstruction
+      })
     });
+    
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({ error: { message: response.statusText } }));
-      throw new Error(errData.error?.message || `API Error: ${response.status}`);
+      const errData = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(errData.error || `API Error: ${response.status}`);
     }
+    
     const data = await response.json();
-    let replyText = "";
-    if (data.candidates && data.candidates[0].content) {
-      replyText = data.candidates[0].content.parts[0].text;
-    } else if (data.promptFeedback && data.promptFeedback.blockReason) {
-      replyText = `(Blocked: ${data.promptFeedback.blockReason})`;
-    } else {
-      replyText = "I'm having trouble thinking.";
-    }
-    return replyText;
+    return data.response || "I'm having trouble thinking.";
   }
 
   try {
-    let replyText = "";
-    try {
-      replyText = await callGemini(PRIMARY_KEY, userPrompt);
-    } catch (primaryError) {
-      if (BACKUP_KEY && BACKUP_KEY !== "undefined") {
-        replyText = await callGemini(BACKUP_KEY, userPrompt);
-      } else {
-        throw primaryError;
-      }
-    }
+    const replyText = await callGemini(userPrompt);
     removeTypingIndicator(typingId);
     appendMessageToUI(replyText, false);
     saveChatToLocal({
@@ -689,7 +662,7 @@ async function askGemini(userPrompt) {
     removeTypingIndicator(typingId);
     let errMsg = `System Error: ${error.message}`;
     if (error.message.includes('429') || error.message.toLowerCase().includes('quota')) {
-      errMsg = "Z is tired and will answer your questions tomorrow.";
+      errMsg = "Z is tired and will answer your questions later.";
     }
     appendMessageToUI(errMsg, false);
     saveChatToLocal({

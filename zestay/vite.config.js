@@ -27,4 +27,13 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    proxy: {
+      '/api/chat': {
+        target: 'http://localhost:5001/zestay0/us-central1/chatBot',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/chat/, ''),
+      },
+    },
+  },
 })
