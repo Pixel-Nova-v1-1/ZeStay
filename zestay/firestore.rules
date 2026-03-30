@@ -14,16 +14,35 @@ service cloud.firestore {
     }
 
     // Default Fallback: Allow authenticated users to read and write broadly.
-    // (This is a baseline; you should tighten this for collections like 'reports' or 'verification_requests')
-    match /{document=**} {
-      allow read, write: if isAuthenticated();
+    // Specific collections that must be publicly readable for shared links to work
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+    
+    match /flats/{flatId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
-    // Strict constraint overriding the fallback for the users collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      // Only the user themselves or an admin can modify their user profile
-      allow write: if request.auth.uid == userId || isAdmin();
+    match /pgs/{pgId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /requirements/{reqId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Default Fallback: Allow authenticated users to read and write broadly for everything else
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
     }
   }
 }
