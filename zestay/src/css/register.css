@@ -421,8 +421,12 @@ button:disabled,
         width: 100%;
     }
 
-    .img {
-        display: none;
+    .img,
+    .top-right-circle-outline,
+    .top-right-circle-solid,
+    .right-small-circle-1,
+    .right-small-circle-2 {
+        display: none !important;
     }
 }
 
@@ -727,4 +731,10 @@ button:disabled,
 
 [data-theme="dark"] .img {
     filter: brightness(0.8) contrast(1.1);
+}
+
+@media (max-width: 1024px) {
+    .bg-shape, .img, .top-left-blob, .shape-top-left, .top-right-circle-outline, .top-right-circle-solid, .right-small-circle-1, .right-small-circle-2 {
+        display: none !important;
+    }
 }
