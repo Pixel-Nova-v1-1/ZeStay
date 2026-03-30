@@ -1525,6 +1525,79 @@ textarea:focus {
   }
 }
 
+/* === VACANCY TOGGLE BUTTON === */
+.vacancy-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.vacancy-toggle-btn.vacant {
+  background: linear-gradient(135deg, #e6fff5 0%, #d0f5e8 100%);
+  color: #0d9668;
+  border: 1.5px solid #34d399;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.vacancy-toggle-btn.vacant:hover {
+  background: linear-gradient(135deg, #d0f5e8 0%, #b0edd7 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.vacancy-toggle-btn.occupied {
+  background: linear-gradient(135deg, #fff1f1 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1.5px solid #f87171;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.vacancy-toggle-btn.occupied:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.vacancy-toggle-btn i {
+  font-size: 0.75rem;
+}
+
+.vacancy-toggle-btn.active-status {
+  background: linear-gradient(135deg, #e6fff5 0%, #d0f5e8 100%);
+  color: #0d9668;
+  border: 1.5px solid #34d399;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.vacancy-toggle-btn.active-status:hover {
+  background: linear-gradient(135deg, #d0f5e8 0%, #b0edd7 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.vacancy-toggle-btn.inactive-status {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #6b7280;
+  border: 1.5px solid #9ca3af;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.15);
+}
+
+.vacancy-toggle-btn.inactive-status:hover {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.25);
+}
+
 /* === DARK MODE FOR PROFILE PAGE === */
 [data-theme="dark"] body {
   background-color: #202124 !important;
@@ -1715,5 +1788,54 @@ textarea:focus {
 
 [data-theme='dark'] .loading-text {
     color: #e8eaed;
+}
+
+/* Dark mode vacancy toggle */
+[data-theme="dark"] .vacancy-toggle-btn.vacant {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  color: #6ee7b7;
+  border-color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.vacant:hover {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.occupied {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+  color: #fca5a5;
+  border-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.occupied:hover {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.active-status {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  color: #6ee7b7;
+  border-color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.active-status:hover {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.inactive-status {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  color: #9ca3af;
+  border-color: #6b7280;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2);
+}
+
+[data-theme="dark"] .vacancy-toggle-btn.inactive-status:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.35);
 }
 
