@@ -7,15 +7,25 @@ const PUBLIC_PAGES = [
   "/",
   "/index.html",
   "/regimob.html",
+  "/regimob",
   "/terms.html",
+  "/terms",
   "/privacy.html",
+  "/privacy",
   "/about.html",
+  "/about",
   "/how-it-works.html",
+  "/how-it-works",
   "/safety.html",
+  "/safety",
   "/faq.html",
+  "/faq",
   "/blog.html",
+  "/blog",
   "/lookingroommate.html",
-  "/lookingroom.html"
+  "/lookingroommate",
+  "/lookingroom.html",
+  "/lookingroom"
 ];
 
 let unsubscribeNotifications = null;
