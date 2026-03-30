@@ -1296,3 +1296,94 @@ h1 {
 [data-theme='dark'] .btn-toggle-review:hover {
     background-color: rgba(0, 196, 180, 0.1);
 }
+
+/* === VACANCY BADGE === */
+.vacancy-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    z-index: 5;
+    pointer-events: none;
+    animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.vacancy-badge i {
+    font-size: 0.65rem;
+}
+
+.vacancy-badge.vacant {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1.5px solid #34d399;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.vacancy-badge.occupied {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border: 1.5px solid #f87171;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.vacancy-badge.active-status {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1.5px solid #34d399;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.vacancy-badge.inactive-status {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #6b7280;
+    border: 1.5px solid #9ca3af;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2);
+}
+
+@keyframes badgePop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Dark mode vacancy badge */
+[data-theme="dark"] .vacancy-badge.vacant {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    color: #6ee7b7;
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="dark"] .vacancy-badge.occupied {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    color: #fca5a5;
+    border-color: #dc2626;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+[data-theme="dark"] .vacancy-badge.active-status {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    color: #6ee7b7;
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="dark"] .vacancy-badge.inactive-status {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    color: #9ca3af;
+    border-color: #6b7280;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.25);
+}

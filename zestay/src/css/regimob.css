@@ -451,6 +451,14 @@ body {
     }
 }
 
+/* Country Code Prefix */
+.prefix-text {
+    font-weight: 500;
+    color: #333;
+    margin-right: 8px;
+    user-select: none;
+}
+
 /* Dark Mode Styles */
 [data-theme="dark"] .right-section,
 [data-theme="dark"] .modal-content {
@@ -471,7 +479,8 @@ body {
     background-color: #303134;
 }
 
-[data-theme="dark"] .input-group input {
+[data-theme="dark"] .input-group input,
+[data-theme="dark"] .prefix-text {
     color: #e8eaed;
     background-color: transparent;
 }

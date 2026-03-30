@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (pgOwnerYesBtn) {
     pgOwnerYesBtn.addEventListener("click", () => {
-      window.location.href = "pg_owner_details.html";
+      window.location.href = "phone_verify.html";
     });
   }
 

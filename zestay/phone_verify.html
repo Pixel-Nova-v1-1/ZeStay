@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>Phone Verification - ZeStay</title>
+
+    <link rel="stylesheet" href="src/css/index.css" />
+    <link rel="stylesheet" href="src/css/regimob.css" />
+    <link rel="stylesheet" href="src/css/toast.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="src/css/footer.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-section">
+            <div class="image-wrapper">
+                <!-- Using the same illustration as regimob for consistency -->
+                <img src="public/images/roommates copy.png" alt="Friends Group Illustration" />
+            </div>
+        </div>
+
+        <div class="right-section">
+            <div class="content-wrapper">
+                <h2 class="app-name"><a href="index.html" style="text-decoration: none;"><span
+                            class="brand-text">ZeStay</span></a></h2>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark Mode"
+                    style="position: absolute; top: 20px; right: 20px;">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+
+                <div class="form-container" id="phoneFormContainer">
+                    <h1 class="title">Verify Your Phone</h1>
+                    <p class="subtitle">
+                        PG Owners must verify their mobile number
+                    </p>
+
+                    <div class="input-group">
+                        <span class="icon" style="margin-right: 8px;"><i class="fa-solid fa-phone"></i></span>
+                        <span id="countryCodePrefix" class="prefix-text">+91</span>
+                        <input type="tel" id="phoneNumberInput" placeholder="9999999999" maxlength="10" />
+                    </div>
+
+                    <div id="recaptcha-container" style="margin-bottom: 20px;"></div>
+
+                    <button id="sendOtpBtn" class="btn-otp">
+                        Send OTP
+                    </button>
+                    
+                    <button id="cancelBtn" class="btn-otp" style="background-color: transparent; color: #666; border: 1px solid #ccc; margin-top: 15px;">
+                        Cancel
+                    </button>
+                </div>
+
+                <div class="form-container" id="otpFormContainer" style="display: none;">
+                    <div class="icon-circle"
+                        style="margin: 0 auto 20px; width: 60px; height: 60px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-message" style="font-size: 24px; color: #2e7d32;"></i>
+                    </div>
+                    <h1 class="title">Enter OTP</h1>
+                    <p class="subtitle" id="otpSubtitle">
+                        We sent a code to your phone
+                    </p>
+
+                    <div class="input-group">
+                        <span class="icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="text" id="otpInput" placeholder="6-digit code" maxlength="6" />
+                    </div>
+
+                    <button id="verifyOtpBtn" class="btn-otp">
+                        Verify & Continue
+                    </button>
+
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            Didn't receive code? 
+                            <span id="resendTimerText">Resend OTP in <span id="resendTimer" style="font-weight: 600;">01:00</span></span>
+                            <a href="#" id="resendOtpLink" style="color: #2e7d32; text-decoration: none; font-weight: 600; display: none;">Resend OTP</a>
+                        </div>
+                        <a href="#" id="changeNumberLink" style="color: #666; text-decoration: underline;">Change Phone Number</a>
+                    </div>
+                </div>
+                
+                <div id="successMessageContainer" style="display: none; text-align: center;">
+                    <div class="icon-circle"
+                        style="margin: 0 auto 20px; width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-check" style="font-size: 32px; color: #2e7d32;"></i>
+                    </div>
+                    <h2 class="title" style="margin-bottom: 10px;">Phone Verified!</h2>
+                    <p class="subtitle" style="margin-bottom: 30px;">
+                        Redirecting you to PG Owner details...
+                    </p>
+                    <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h2 class="footer-logo"><span class="brand-text">ZeStay</span></h2>
+                <p>Your trusted platform for finding the perfect flatmate and shared living spaces across India.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="how-it-works.html">How it Works</a></li>
+                    <li><a href="safety.html">Safety Tips</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li><i class="fa-regular fa-envelope"></i> support@zestay.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 9876543210</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Panvel, Maharashtra, India</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ZeStay. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="src/js/theme.js"></script>
+    <script type="module" src="src/js/phone_verify.js"></script>
+</body>
+</html>

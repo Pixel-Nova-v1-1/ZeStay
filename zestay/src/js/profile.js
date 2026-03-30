@@ -920,6 +920,29 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (type === 'pg') typeLabel = 'PG Listing';
         const gender = data.gender || 'Any';
 
+        // Status Badge Logic (type-aware)
+        let statusBtnHTML = '';
+        if (type === 'flat') {
+            // Flats: Vacant / Occupied
+            const isVacant = data.vacancyStatus !== 'occupied';
+            const vacancyClass = isVacant ? 'vacant' : 'occupied';
+            const vacancyText = isVacant ? 'Vacant' : 'Occupied';
+            const vacancyIcon = isVacant ? 'fa-door-open' : 'fa-door-closed';
+            statusBtnHTML = `<button class="vacancy-toggle-btn ${vacancyClass}" data-id="${docId}" data-type="${type}" data-status="${isVacant ? 'vacant' : 'occupied'}" data-field="vacancyStatus" title="Click to toggle vacancy status">
+                            <i class="fa-solid ${vacancyIcon}"></i> ${vacancyText}
+                        </button>`;
+        } else if (type === 'requirement') {
+            // Roommates: Active / Inactive
+            const isActive = data.listingStatus !== 'inactive';
+            const activeClass = isActive ? 'active-status' : 'inactive-status';
+            const activeText = isActive ? 'Active' : 'Inactive';
+            const activeIcon = isActive ? 'fa-circle-check' : 'fa-circle-xmark';
+            statusBtnHTML = `<button class="vacancy-toggle-btn ${activeClass}" data-id="${docId}" data-type="${type}" data-status="${isActive ? 'active' : 'inactive'}" data-field="listingStatus" title="Click to toggle active status">
+                            <i class="fa-solid ${activeIcon}"></i> ${activeText}
+                        </button>`;
+        }
+        // PGs: no toggle
+
         const card = document.createElement('div');
         card.className = 'listing-card';
         card.style.maxWidth = '600px';
@@ -929,7 +952,10 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
             <div class="card-content">
                 <div class="card-details" style="margin-left: 0;">
-                    <h3>${typeLabel}</h3>
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="margin: 0;">${typeLabel}</h3>
+                        ${statusBtnHTML}
+                    </div>
                     <p class="location"><i class="fa-solid fa-location-dot"></i> ${displayLocation}</p>
                     
                     <div class="card-info-grid">
@@ -956,6 +982,52 @@ document.addEventListener('DOMContentLoaded', () => {
                  </div>
             </div>
         `;
+
+        // Add Status Toggle Listener (only for flat and requirement)
+        const vacancyBtn = card.querySelector('.vacancy-toggle-btn');
+        if (vacancyBtn) {
+            vacancyBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const btn = e.currentTarget;
+                const currentStatus = btn.dataset.status;
+                const fieldName = btn.dataset.field;
+
+                let colName = 'requirements';
+                if (type === 'flat') colName = 'flats';
+
+                if (type === 'flat') {
+                    // Vacant <-> Occupied
+                    const newStatus = currentStatus === 'vacant' ? 'occupied' : 'vacant';
+                    try {
+                        await updateDoc(doc(db, colName, docId), { [fieldName]: newStatus });
+                        btn.dataset.status = newStatus;
+                        btn.className = `vacancy-toggle-btn ${newStatus === 'vacant' ? 'vacant' : 'occupied'}`;
+                        btn.innerHTML = newStatus === 'vacant'
+                            ? '<i class="fa-solid fa-door-open"></i> Vacant'
+                            : '<i class="fa-solid fa-door-closed"></i> Occupied';
+                        showToast(`Status updated to ${newStatus}!`, 'success');
+                    } catch (err) {
+                        console.error('Error toggling vacancy:', err);
+                        showToast('Failed to update status.', 'error');
+                    }
+                } else if (type === 'requirement') {
+                    // Active <-> Inactive
+                    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                    try {
+                        await updateDoc(doc(db, colName, docId), { [fieldName]: newStatus });
+                        btn.dataset.status = newStatus;
+                        btn.className = `vacancy-toggle-btn ${newStatus === 'active' ? 'active-status' : 'inactive-status'}`;
+                        btn.innerHTML = newStatus === 'active'
+                            ? '<i class="fa-solid fa-circle-check"></i> Active'
+                            : '<i class="fa-solid fa-circle-xmark"></i> Inactive';
+                        showToast(`Status updated to ${newStatus}!`, 'success');
+                    } catch (err) {
+                        console.error('Error toggling status:', err);
+                        showToast('Failed to update status.', 'error');
+                    }
+                }
+            });
+        }
 
         // Add Edit Event Listener
         const editBtn = card.querySelector('.btn-edit-listing');

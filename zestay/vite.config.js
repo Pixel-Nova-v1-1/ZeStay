@@ -24,6 +24,8 @@ export default defineConfig({
         blog: resolve(__dirname, 'blog.html'),
         privacy: resolve(__dirname, 'privacy.html'),
         terms: resolve(__dirname, 'terms.html'),
+        pg_owner_details: resolve(__dirname, 'pg_owner_details.html'),
+        phone_verify: resolve(__dirname, 'phone_verify.html'),
       },
     },
   },

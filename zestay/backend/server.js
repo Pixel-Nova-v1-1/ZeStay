@@ -73,6 +73,30 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
 // Delete User Endpoint
 app.post('/delete-user', async (req, res) => {
+    // Security measure: Extract and verify ID token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: Missing or invalid token' });
+    }
+    const idToken = authHeader.split('Bearer ')[1];
+
+    let decodedToken;
+    try {
+        decodedToken = await admin.auth().verifyIdToken(idToken);
+    } catch (e) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: Invalid token' });
+    }
+
+    // Security measure: Check if caller is an Admin
+    try {
+        const userDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+        if (!userDoc.exists || userDoc.data().isAdmin !== true) {
+            return res.status(403).json({ success: false, error: 'Forbidden: Admin access required' });
+        }
+    } catch (e) {
+        return res.status(500).json({ success: false, error: 'Error verifying admin status' });
+    }
+
     const { uid } = req.body;
 
     if (!uid) {
