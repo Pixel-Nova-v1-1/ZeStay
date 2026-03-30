@@ -72,9 +72,13 @@
     </div>
 
     <div class="admin-container">
-        <aside class="sidebar">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <h2><span class="brand-text">ZeStay Admin</span></h2>
+                <button id="sidebarClose" class="sidebar-close">&times;</button>
             </div>
             <nav>
                 <ul>
@@ -105,7 +109,12 @@
 
         <main class="main-content">
             <header>
-                <h1 id="pageTitle">Dashboard</h1>
+                <div class="header-left">
+                    <button id="sidebarToggle" class="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
                 <div class="user-info">
                     <span id="adminEmail">Loading...</span>
                 </div>

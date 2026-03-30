@@ -57,8 +57,41 @@ navItems.forEach(item => {
         item.classList.add('active');
         const tab = item.getAttribute('data-tab');
         loadTabContent(tab);
+
+        // Close sidebar on mobile after selection
+        if (window.innerWidth <= 992) {
+            closeSidebar();
+        }
     });
 });
+
+// Mobile Sidebar Logic
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarClose = document.getElementById('sidebarClose');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', openSidebar);
+}
+if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeSidebar);
+}
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeSidebar);
+}
+
+function openSidebar() {
+    sidebar.classList.add('active');
+    sidebarOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('active');
+    sidebarOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
 
 function loadTabContent(tab) {
     pageTitle.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
@@ -169,16 +202,17 @@ async function renderUsers() {
                 <h2>User Management</h2>
                 <button onclick="window.cleanDuplicates()" class="btn btn-warning" style="background-color: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Clean Duplicates</button>
             </div>
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>UID</th>
-                        <th>Verified</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>UID</th>
+                            <th>Verified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
 
         querySnapshot.forEach((doc) => {
@@ -196,7 +230,7 @@ async function renderUsers() {
             `;
         });
 
-        html += `</tbody></table></div>`;
+        html += `</tbody></table></div></div>`;
         contentArea.innerHTML = html;
 
     } catch (error) {
@@ -369,17 +403,18 @@ async function renderListings() {
         let html = `
         <div class="recent-activity">
             <h2>All Listings</h2>
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Location</th>
-                        <th>Price</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
@@ -398,7 +433,7 @@ async function renderListings() {
             `;
         });
 
-        html += `</tbody></table></div>`;
+        html += `</tbody></table></div></div>`;
         contentArea.innerHTML = html;
 
     } catch (error) {
@@ -442,18 +477,19 @@ async function renderReports() {
             let html = `
             <div class="recent-activity">
                 <h2>User Reports</h2>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Reason</th>
-                            <th>Type</th>
-                            <th>Entity ID</th>
-                            <th>Reported By</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Reason</th>
+                                <th>Type</th>
+                                <th>Entity ID</th>
+                                <th>Reported By</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
 
             reports.forEach((report) => {
@@ -509,7 +545,7 @@ async function renderReports() {
                 `;
             });
 
-            html += `</tbody></table></div>`;
+            html += `</tbody></table></div></div>`;
             contentArea.innerHTML = html;
 
         }, (error) => {
