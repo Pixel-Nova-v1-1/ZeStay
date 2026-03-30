@@ -7,15 +7,25 @@ const PUBLIC_PAGES = [
   "/",
   "/index.html",
   "/regimob.html",
+  "/regimob",
   "/terms.html",
+  "/terms",
   "/privacy.html",
+  "/privacy",
   "/about.html",
+  "/about",
   "/how-it-works.html",
+  "/how-it-works",
   "/safety.html",
+  "/safety",
   "/faq.html",
+  "/faq",
   "/blog.html",
+  "/blog",
   "/lookingroommate.html",
-  "/lookingroom.html"
+  "/lookingroommate",
+  "/lookingroom.html",
+  "/lookingroom"
 ];
 
 let unsubscribeNotifications = null;
@@ -116,8 +126,8 @@ onAuthStateChanged(auth, async (user) => {
 
       if (!hasPreferences) {
         // If they haven't picked preferences yet, force them to preference.html
-        // But don't redirect if they are already there!
-        if (path !== "/preference.html" && path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
+        // But don't redirect if they are already there or on a public page!
+        if (!PUBLIC_PAGES.includes(path) && path !== "/preference.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
           console.log("Preferences missing. Redirecting to selection...");
           window.location.replace("/preference.html");
         }

@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if a user is logged into Firebase Authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the currently logged-in user has the isAdmin flag in their profile
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Default Fallback: Allow authenticated users to read and write broadly.
+    // Specific collections that must be publicly readable for shared links to work
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+    
+    match /flats/{flatId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /pgs/{pgId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /requirements/{reqId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Default Fallback: Allow authenticated users to read and write broadly for everything else
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

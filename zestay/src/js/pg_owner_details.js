@@ -19,57 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const avatarOptions = document.querySelectorAll(".avatar-option");
     let selectedAvatarUrl = null;
 
-    const mobileInput = document.getElementById("mobile");
     let selectedFiles = [];
-
-    // Restrict mobile input to numbers only and 10 digits
-    if (mobileInput) {
-        mobileInput.addEventListener("input", (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, "");
-            if (val.length > 10) val = val.slice(0, 10);
-            e.target.value = val;
-        });
-    }
-
-    // --- DOB Logic ---
-    const dobDay = document.getElementById("dob-day");
-    const dobMonth = document.getElementById("dob-month");
-    const dobYear = document.getElementById("dob-year");
-    const dobInput = document.getElementById("dob");
-
-    // Populate Days
-    for (let i = 1; i <= 31; i++) {
-        const option = document.createElement("option");
-        option.value = i < 10 ? `0${i}` : i;
-        option.textContent = i;
-        dobDay.appendChild(option);
-    }
-
-    // Populate Years (18 years ago to 100 years ago)
-    const currentYear = new Date().getFullYear();
-    const minYear = currentYear - 100;
-    const maxYear = currentYear - 18;
-    for (let i = maxYear; i >= minYear; i--) {
-        const option = document.createElement("option");
-        option.value = i;
-        option.textContent = i;
-        dobYear.appendChild(option);
-    }
-
-    function updateDobHiddenInput() {
-        const d = dobDay.value;
-        const m = dobMonth.value;
-        const y = dobYear.value;
-        if (d && m && y) {
-            dobInput.value = `${y}-${m}-${d}`;
-        } else {
-            dobInput.value = "";
-        }
-    }
-
-    [dobDay, dobMonth, dobYear].forEach(el => {
-        el.addEventListener("change", updateDobHiddenInput);
-    });
 
     // 1. Check Auth State & Pre-fill Email
     onAuthStateChanged(auth, async (user) => {
@@ -82,20 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 document.getElementById("name").value = data.name || "";
-                document.getElementById("mobile").value = data.mobile || "";
                 document.getElementById("pgName").value = data.pgName || "";
                 document.getElementById("address").value = data.address || "";
-
-                // Pre-fill DOB Selects
-                if (data.dob) {
-                    const [y, m, d] = data.dob.split('-');
-                    if (y && m && d) {
-                        dobYear.value = y;
-                        dobMonth.value = m;
-                        dobDay.value = d;
-                        dobInput.value = data.dob;
-                    }
-                }
 
                 // Set Role
                 if (data.roleType) {
@@ -107,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
             }
+
         } else {
             showToast("You must be logged in to access this page.", "warning");
             window.location.href = "regimob.html?mode=login";
@@ -311,11 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const mobileValue = document.getElementById("mobile").value;
-        if (mobileValue.length !== 10) {
-            showToast("Mobile number must be exactly 10 digits", "warning");
-            return;
-        }
 
         if (selectedFiles.length === 0) {
             showToast("Please upload at least one photo of your PG", "warning");
@@ -341,16 +275,17 @@ document.addEventListener("DOMContentLoaded", () => {
             // Determine profile photo URL
             let finalPhotoUrl = selectedAvatarUrl || "https://api.dicebear.com/9.x/avataaars/svg?seed=User";
 
-            // Collect Data
+            // Collect Form Data
+            const activeRoleInput = document.querySelector('input[name="role"]:checked');
+            
             const formData = {
-                name: document.getElementById("name").value,
-                dob: document.getElementById("dob").value,
-                mobile: document.getElementById("mobile").value,
+                roleType: activeRoleInput.value,
+                name: document.getElementById("name").value.trim(),
                 email: user.email,
-                pgName: document.getElementById("pgName").value,
-                address: document.getElementById("address").value,
-                role: 'PG_OWNER', // System role
-                roleType: roleInput.value, // User selection (Owner/Agent)
+                mobile: user.phoneNumber || "",
+                pgName: document.getElementById("pgName").value.trim(),
+                address: document.getElementById("address").value.trim(),
+                role: 'PG_OWNER',
                 photoUrl: finalPhotoUrl,
                 storagePath: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? (await (await getDoc(doc(db, "users", user.uid))).data()?.storagePath) : null,
                 profileOption: selectedAvatarUrl && !selectedAvatarUrl.includes('dicebear') ? 'upload' : 'avatar',
