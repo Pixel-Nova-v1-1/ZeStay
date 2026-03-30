@@ -356,6 +356,7 @@ body {
 
 
 @media (max-width: 768px) {
+    .top-left-blob, .shape-top-left, .top-right-circle-outline, .top-right-circle-solid, .right-small-circle-1, .right-small-circle-2, .img { display: none !important; }
     .preference-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
@@ -368,7 +369,20 @@ body {
 
 @media (max-width: 480px) {
     .preference-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+    }
+
+    .icon-circle {
+        width: 65px;
+        height: 65px;
+        margin-bottom: 0.5rem;
+        border-width: 2px;
+    }
+
+    .pref-label {
+        font-size: 0.75rem;
+        text-align: center;
     }
 
     body {
@@ -501,5 +515,11 @@ body {
 [data-theme='dark'] .preference-grid {
     position: relative;
     z-index: 20; /* Higher than background shapes (10) */
+}
+
+@media (max-width: 1024px) {
+    .bg-shape, .img, .top-left-blob, .shape-top-left, .top-right-circle-outline, .top-right-circle-solid, .right-small-circle-1, .right-small-circle-2 {
+        display: none !important;
+    }
 }
 
