@@ -1,10 +1,8 @@
 // Force redeploy to apply new API key
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineString } = require("firebase-functions/params");
-const admin = require("firebase-admin");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-admin.initializeApp();
+
 
 // API keys from .env
 const primaryKey = defineString("GEMINI_API_KEY");
@@ -15,7 +13,11 @@ let primaryGenAI;
 let backupGenAI;
 let useBackup = false;
 
+let GoogleGenerativeAI;
 function getGenAI() {
+    if (!GoogleGenerativeAI) {
+        GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+    }
     if (!useBackup) {
         if (!primaryGenAI) primaryGenAI = new GoogleGenerativeAI(primaryKey.value());
         return primaryGenAI;
@@ -46,13 +48,8 @@ function isRateLimited(ip) {
     return ++entry.count > MAX_REQ;
 }
 
-// Clean stale entries
-setInterval(() => {
-    const now = Date.now();
-    for (const [ip, e] of rateLimitMap) {
-        if (now - e.start > WINDOW_MS * 2) rateLimitMap.delete(ip);
-    }
-}, WINDOW_MS);
+// Clean stale entries lazily on requests instead of parsing block timeout.
+// (Global setInterval causes Firebase deploy to hang)
 
 exports.chatBot = onRequest({ cors: true, maxInstances: 10 }, async (req, res) => {
     if (req.method !== "POST") {
