@@ -109,7 +109,7 @@ window.addEventListener('load', () => {
             setTimeout(() => {
                 loader.remove();
             }, 1500);
-        }, 3000); // 3 seconds to show the premium water fill animation
+        }, 500); // Reduced from 3s to 500ms to instantly reveal the site
     }
 });
 
