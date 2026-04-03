@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const profileDropZone = document.getElementById("profileDropZone");
     const avatarOptions = document.querySelectorAll(".avatar-option");
     let selectedAvatarUrl = null;
-
     let selectedFiles = [];
+    let savePgDraft = () => {};
 
     // 1. Check Auth State & Pre-fill Email
     onAuthStateChanged(auth, async (user) => {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Check if user already has data
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
+            if (docSnap.exists() && docSnap.data() && docSnap.data().name) {
                 const data = docSnap.data();
                 document.getElementById("name").value = data.name || "";
                 document.getElementById("pgName").value = data.pgName || "";
@@ -44,7 +44,55 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
                 }
+
+                // Pre-fill Avatar/Photo
+                if (data.photoUrl) {
+                    selectedAvatarUrl = data.photoUrl;
+                    if (data.profileOption === 'avatar') {
+                        avatarOptions.forEach(img => {
+                            if (img.src === data.photoUrl) img.classList.add("selected");
+                        });
+                    } else if (data.profileOption === 'upload') {
+                        if (profilePreview) {
+                            profilePreview.classList.remove("hidden");
+                            profilePreview.style.backgroundImage = `url(${data.photoUrl})`;
+                            profilePreview.style.backgroundSize = 'cover';
+                            profilePreview.style.backgroundPosition = 'center';
+                        }
+                    }
+                }
+            } else {
+                const draft = localStorage.getItem('draft_pg_form');
+                if (draft) {
+                   try {
+                     const parsed = JSON.parse(draft);
+                     if(parsed.name) document.getElementById("name").value = parsed.name;
+                     if(parsed.pgName) document.getElementById("pgName").value = parsed.pgName;
+                     if(parsed.address) document.getElementById("address").value = parsed.address;
+
+                     if (parsed.avatar) {
+                        selectedAvatarUrl = parsed.avatar;
+                        avatarOptions.forEach(img => {
+                            if (img.src === parsed.avatar) img.classList.add("selected");
+                        });
+                      }
+                   } catch(e) {}
+                }
             }
+            
+            savePgDraft = () => {
+                const d = {
+                    name: document.getElementById("name").value,
+                    pgName: document.getElementById("pgName").value,
+                    address: document.getElementById("address").value,
+                    avatar: selectedAvatarUrl
+                };
+                localStorage.setItem('draft_pg_form', JSON.stringify(d));
+            };
+
+            ["name", "pgName", "address"].forEach(id => {
+               document.getElementById(id)?.addEventListener('input', savePgDraft);
+            });
 
         } else {
             showToast("You must be logged in to access this page.", "warning");
@@ -76,6 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             img.classList.add("selected");
             selectedAvatarUrl = img.src;
+            
+            // Trigger draft save immediately
+            savePgDraft();
         });
     });
 
@@ -303,6 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Saved.");
 
             showToast("Profile saved successfully!", "success");
+
+            localStorage.removeItem('draft_pg_form');
+            localStorage.removeItem('draft_role');
 
             // Redirect
             setTimeout(() => {

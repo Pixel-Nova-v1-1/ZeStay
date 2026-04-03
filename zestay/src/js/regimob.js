@@ -412,12 +412,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (pgOwnerYesBtn) {
     pgOwnerYesBtn.addEventListener("click", () => {
+      localStorage.setItem('draft_role', 'PG_OWNER');
       window.location.href = "phone_verify.html";
     });
   }
 
   if (pgOwnerNoBtn) {
     pgOwnerNoBtn.addEventListener("click", () => {
+      localStorage.setItem('draft_role', 'USER');
       window.location.href = "register.html";
     });
   }
@@ -454,5 +456,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
   });
+
+  const action = params.get("action");
+  if (action === "select_role") {
+      setTimeout(() => {
+          showPxOwnerModal();
+      }, 100);
+  }
 
 });

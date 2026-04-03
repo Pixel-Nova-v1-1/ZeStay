@@ -98,8 +98,8 @@ onAuthStateChanged(auth, async (user) => {
       });
 
       // Don't redirect if we are in the middle of registration flow
-      if (path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
-        window.location.replace("/questions.html");
+      if (path !== "/regimob.html" && path !== "/register.html" && path !== "/pg_owner_details.html" && path !== "/phone_verify.html") {
+        window.location.replace("/regimob.html?action=select_role");
       }
       return;
     }
@@ -115,35 +115,34 @@ onAuthStateChanged(auth, async (user) => {
         // Allow index/profile/listings
       }
     } else {
-      if (!path.includes("questions") && !path.includes("preference") && !path.includes("register") && !path.includes("pg_owner_details")) {
-        // Redirect to onboarding if not complete? 
-        // For now, let's just focus on header UI
-      }
+      // INCOMPLETE ONBOARDING - FORCE COMPLETION
+      const isOnboardingPath = 
+        path.includes("register.html") || 
+        path.includes("preference.html") || 
+        path.includes("ques.html") || 
+        path.includes("pg_owner_details.html") || 
+        path.includes("phone_verify.html") || 
+        path.includes("veri_details.html") || 
+        path.includes("regimob.html");
 
-      // C. CHECKPOINT 2: Has the user selected Preferences?
-      // We check if the 'preferences' array exists and has at least 5 items
-      const hasPreferences = data.preferences && Array.isArray(data.preferences) && data.preferences.length >= 5;
-
-      if (!hasPreferences) {
-        // If they haven't picked preferences yet, force them to preference.html
-        // But don't redirect if they are already there or on a public page!
-        if (!PUBLIC_PAGES.includes(path) && path !== "/preference.html" && path !== "/register.html" && path !== "/pg_owner_details.html") {
-          console.log("Preferences missing. Redirecting to selection...");
-          window.location.replace("/preference.html");
+      if (!isOnboardingPath) {
+        // --- ALWAYS take back to Step 1 if profile is incomplete ---
+        // This allows user to "verify and press next" as requested.
+        const draftRole = localStorage.getItem('draft_role');
+        
+        if (draftRole === 'PG_OWNER') {
+            window.location.replace("/phone_verify.html");
+        } else if (draftRole === 'USER' || (data && data.name)) {
+            // data.name check covers users who already filled the first page but haven't finished onboarding
+            window.location.replace("/register.html");
+        } else {
+            // No role selected yet, take to selection modal
+            window.location.replace("/regimob.html?action=select_role");
         }
         return;
       }
 
-      // D. USER IS FULLY SET UP
-      // If they are currently on a "Setup Page" (Login, Register, Preference), send them to the App.
-      // We allow landing page ("/" or "/index.html") to remain open even if logged in.
-      if (path.includes("regimob.html") || path === "/register.html" || path === "/preference.html") {
-        // You can change this to "/ques.html" if that's specifically where they go next
-        window.location.replace("/why.html");
-      }
-
-      // If they are already on /ques.html or /why.html, we do nothing and let them stay.
-
+      // If they are on an onboarding page, let them proceed (e.g. regimob catching select_role, or preference taking input)
     }
   } catch (error) {
     console.error("Auth Listener Error:", error);

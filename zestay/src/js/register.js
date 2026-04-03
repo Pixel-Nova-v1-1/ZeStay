@@ -21,6 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const dobYear = document.getElementById("dob-year");
     const dobInput = document.getElementById("dob");
 
+    function updateDobHiddenInput() {
+        if (!dobDay || !dobMonth || !dobYear || !dobInput) return;
+        const d = dobDay.value;
+        const m = dobMonth.value;
+        const y = dobYear.value;
+        if (d && m && y) {
+            dobInput.value = `${y}-${m}-${d}`;
+        } else {
+            dobInput.value = "";
+        }
+    }
+
     if (dobDay && dobMonth && dobYear && dobInput) {
         // Populate Days
         for (let i = 1; i <= 31; i++) {
@@ -41,23 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
             dobYear.appendChild(option);
         }
 
-        function updateDobHiddenInput() {
-            const d = dobDay.value;
-            const m = dobMonth.value;
-            const y = dobYear.value;
-            if (d && m && y) {
-                dobInput.value = `${y}-${m}-${d}`;
-            } else {
-                dobInput.value = "";
-            }
-        }
-
         [dobDay, dobMonth, dobYear].forEach(el => {
             el.addEventListener("change", updateDobHiddenInput);
         });
     }
 
     // 1. Check Auth State & Pre-fill Email
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             emailInput.value = user.email;
@@ -65,8 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Check if user already has data
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                // Optional: Pre-fill other fields if editing
+            if (docSnap.exists() && docSnap.data() && docSnap.data().name) {
+                // Pre-fill fields if editing
                 const data = docSnap.data();
                 document.getElementById("name").value = data.name || "";
                 document.getElementById("occupation").value = data.occupation || "";
@@ -85,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Pre-fill hobbies
                 const hobbies = data.hobbies || "";
-                // Handle both array and string (legacy)
                 const hobbyList = Array.isArray(hobbies) ? hobbies : (typeof hobbies === 'string' ? hobbies.split(',') : []);
                 
                 hobbyList.forEach(hobby => {
@@ -93,7 +94,65 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (option) option.classList.add('selected');
                 });
                 document.getElementById("hobbies").value = hobbyList.join(',');
+
+                // Pre-fill Avatar/Photo
+                if (data.photoUrl) {
+                    selectedAvatarUrl = data.photoUrl;
+                    if (data.profileOption === 'avatar') {
+                        avatarOptions.forEach(img => {
+                            if (img.src === data.photoUrl) img.classList.add("selected");
+                        });
+                    } else if (data.profileOption === 'upload') {
+                        if (filePreview) {
+                            filePreview.classList.remove("hidden");
+                            filePreview.style.backgroundImage = `url(${data.photoUrl})`;
+                            filePreview.style.backgroundSize = 'cover';
+                            filePreview.style.backgroundPosition = 'center';
+                        }
+                    }
+                }
+            } else {
+                // Pre-fill from localStorage draft if available
+                const savedDraft = localStorage.getItem('draft_user_form');
+                if (savedDraft) {
+                    try {
+                        const parsed = JSON.parse(savedDraft);
+                        if (parsed.name) document.getElementById("name").value = parsed.name;
+                        if (parsed.occupation) document.getElementById("occupation").value = parsed.occupation;
+                        if (parsed.gender) document.getElementById("gender").value = parsed.gender;
+                        if (parsed.dob_y) dobYear.value = parsed.dob_y;
+                        if (parsed.dob_m) dobMonth.value = parsed.dob_m;
+                        if (parsed.dob_d) dobDay.value = parsed.dob_d;
+                        updateDobHiddenInput();
+
+                        if (parsed.avatar) {
+                            selectedAvatarUrl = parsed.avatar;
+                            avatarOptions.forEach(img => {
+                                if (img.src === parsed.avatar) img.classList.add("selected");
+                            });
+                        }
+                    } catch (e) {}
+                }
             }
+
+            // Save Draft to LocalStorage dynamically
+            const saveDraftToLocal = () => {
+                const d = {
+                    name: document.getElementById("name").value,
+                    occupation: document.getElementById("occupation").value,
+                    gender: document.getElementById("gender").value,
+                    dob_y: dobYear.value,
+                    dob_m: dobMonth.value,
+                    dob_d: dobDay.value,
+                    avatar: selectedAvatarUrl
+                };
+                localStorage.setItem('draft_user_form', JSON.stringify(d));
+            };
+
+            document.getElementById("name").addEventListener('input', saveDraftToLocal);
+            document.getElementById("occupation").addEventListener('change', saveDraftToLocal);
+            document.getElementById("gender").addEventListener('change', saveDraftToLocal);
+            [dobDay, dobMonth, dobYear].forEach(el => el.addEventListener("change", saveDraftToLocal));
         } else {
             showToast("You must be logged in to access this page.", "warning");
             window.location.href = "regimob.html?mode=login";
@@ -111,6 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Select this
             img.classList.add("selected");
             selectedAvatarUrl = img.src;
+
+            // Trigger draft save immediately for avatar choice
+            saveDraftToLocal();
         });
     });
 
@@ -233,6 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Saved to Firestore.");
 
             // Redirect to Preferences
+            localStorage.removeItem('draft_user_form');
+            localStorage.removeItem('draft_role');
             window.location.href = "preference.html";
 
         } catch (error) {

@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 await updateDoc(doc(db, "users", user.uid), {
                     personalityScore: totalScore,
-                    onboardingCompleted: true
+                    onboardingComplete: true
                 });
 
                 showToast("Profile setup complete!", "success");
