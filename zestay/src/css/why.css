@@ -186,6 +186,14 @@ body {
   animation: fadeInUp 0.4s ease-out;
 }
 
+.modal-card h2 {
+  color: #333;
+}
+
+.modal-card p {
+  color: #666;
+}
+
 .modal-card::-webkit-scrollbar {
   width: 8px;
 }
@@ -443,6 +451,12 @@ textarea:focus {
     border-radius: 0;
   }
 
+  #verificationModal .modal-card {
+    height: auto;
+    max-height: 90vh;
+    border-radius: 24px;
+  }
+
   .subtitle p {
     width: 90%;
   }
@@ -497,12 +511,9 @@ textarea:focus {
   }
 
   .scam {
-    position: fixed;
-    bottom: 20%;
-    left: 0;
     width: 100%;
-    margin: 0;
-    z-index: 100;
+    margin-top: 30px;
+    margin-bottom: 30px;
     padding: 0 20px;
   }
 
@@ -673,6 +684,15 @@ textarea:focus {
 [data-theme="dark"] .modal-card {
   background-color: #292a2d;
   color: #e8eaed;
+}
+
+[data-theme="dark"] .modal-card h1,
+[data-theme="dark"] .modal-card h2 {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .modal-card p {
+  color: #9aa0a6;
 }
 
 [data-theme="dark"] .close-btn {
