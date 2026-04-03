@@ -230,6 +230,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
         }
+
+        // Get Started Button Logic
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        if (getStartedBtn) {
+            getStartedBtn.onclick = (e) => {
+                e.preventDefault();
+                if (user) {
+                    showToast("You are already registered!", "info");
+                } else {
+                    window.location.href = 'regimob.html?mode=register';
+                }
+            };
+        }
     });
 });
 
