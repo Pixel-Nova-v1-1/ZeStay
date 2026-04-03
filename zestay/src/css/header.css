@@ -326,13 +326,13 @@
         gap: 10px;
     }
 
-    .btn-primary span,
-    .btn-logout span {
+    .header-actions .btn-primary span,
+    .header-actions .btn-logout span {
         display: none;
     }
 
-    .btn-primary,
-    .btn-logout {
+    .header-actions .btn-primary,
+    .header-actions .btn-logout {
         padding: 10px 12px;
     }
 
@@ -352,14 +352,14 @@
         /* Hide text on very small screens, keep logo */
     }
 
-    .btn-primary {
+    .header-actions .btn-primary {
         padding: 8px;
         width: 36px;
         height: 36px;
         justify-content: center;
     }
 
-    .btn-primary i {
+    .header-actions .btn-primary i {
         margin: 0;
     }
 
